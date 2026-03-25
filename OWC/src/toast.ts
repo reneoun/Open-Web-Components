@@ -183,6 +183,7 @@ export class OWCToast extends HTMLElement {
   }
 
   dismiss() {
+    if (this.fallbackTimer !== null) { clearTimeout(this.fallbackTimer); this.fallbackTimer = null }
     this.classList.add('exiting')
     this.addEventListener('animationend', () => this.remove(), { once: true })
     setTimeout(() => this.remove(), 400) // fallback if animationend never fires
@@ -191,11 +192,8 @@ export class OWCToast extends HTMLElement {
 
 customElements.define('o-toast', OWCToast)
 
-let containerCreated = false
-
 function ensureContainer(): HTMLElement {
-  if (!containerCreated || !document.getElementById('o-toast-container')) {
-    containerCreated = true
+  if (!document.getElementById('o-toast-container')) {
 
     const style = document.createElement('style')
     style.setAttribute('data-owc-toast', '')
@@ -229,6 +227,12 @@ function ensureContainer(): HTMLElement {
   return document.getElementById('o-toast-container')!
 }
 
+/**
+ * Show a toast notification.
+ * @param content - Text or HTML string. **Caller is responsible for sanitizing HTML** — content is injected as `innerHTML`.
+ * @param type - Toast type
+ * @param options - Optional settings
+ */
 export function toast(
   content: string,
   type: ToastType,
