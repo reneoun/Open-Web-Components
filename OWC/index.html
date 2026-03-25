@@ -54,6 +54,25 @@
       <o-button id="btn-long">8s toast</o-button>
     </div>
 
+    <!-- o-table -->
+    <h2>o-table</h2>
+    <o-table id="demo-table" storage="local" storage-key="owc-demo-table"></o-table>
+    <script type="module">
+      import '/src/table.ts'
+      const t = document.getElementById('demo-table')
+      t.columns = [
+        { key: 'name',  label: 'Name',  width: 160, sortable: true },
+        { key: 'role',  label: 'Role',  width: 140, sortable: true },
+        { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60 },
+      ]
+      t.data = [
+        { name: 'Alice', role: 'Engineer', score: 92 },
+        { name: 'Bob',   role: 'Designer', score: 85 },
+        { name: 'Carol', role: 'Manager',  score: 78 },
+        { name: 'Dave',  role: 'Engineer', score: 95 },
+      ]
+    </script>
+
     <script type="module" src="/src/main.ts"></script>
     <script type="module">
       import { toast } from '/src/toast.ts'
