@@ -1,0 +1,21 @@
+{
+  "name": "owc",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:cdn": "bun build src/index.ts --outfile dist/components.js --target browser",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^4.1.1",
+    "happy-dom": "^20.8.8",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^4.1.1"
+  }
+}
