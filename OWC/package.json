@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:cdn": "bun build src/index.ts --outfile dist/components.js --target browser",
+    "build:cdn": "bun build src/index.ts --outfile dist/components.js --target browser --format=iife",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
