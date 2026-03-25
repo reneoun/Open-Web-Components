@@ -20,7 +20,7 @@ export class OWCToast extends HTMLElement {
   }
 
   private msgEl!: HTMLSpanElement
-  private slot!: HTMLSlotElement
+  private slotEl!: HTMLSlotElement
   private timer: ReturnType<typeof setTimeout> | null = null
   private fallbackTimer: ReturnType<typeof setTimeout> | null = null
   private startedAt = 0
@@ -47,7 +47,7 @@ export class OWCToast extends HTMLElement {
     this.removeEventListener('mouseleave', this.onMouseLeave)
   }
 
-  attributeChangedCallback(name: string, _old: string, val: string) {
+  attributeChangedCallback(name: string, _old: string, _val: string) {
     if (!this.shadowRoot!.firstChild) return // not yet rendered
     if (name === 'type') this.updateAccent()
     if (name === 'message') this.updateSlotOrFallback()
@@ -129,19 +129,19 @@ export class OWCToast extends HTMLElement {
     `
 
     this.msgEl = this.shadowRoot!.querySelector('#msg')!
-    this.slot = this.shadowRoot!.querySelector('slot')!
+    this.slotEl = this.shadowRoot!.querySelector('slot')!
     const bar = this.shadowRoot!.querySelector('.progress') as HTMLElement
     if (bar) bar.style.setProperty('--_dur', `${this.durationMs}ms`)
 
-    this.slot.addEventListener('slotchange', () => this.updateSlotOrFallback())
+    this.slotEl.addEventListener('slotchange', () => this.updateSlotOrFallback())
     this.shadowRoot!.querySelector('.close')!.addEventListener('click', () => this.dismiss())
 
     this.style.setProperty('--_accent', color)
   }
 
   private updateSlotOrFallback() {
-    if (!this.msgEl || !this.slot) return
-    const hasSlot = this.slot.assignedNodes({ flatten: true }).length > 0
+    if (!this.msgEl || !this.slotEl) return
+    const hasSlot = this.slotEl.assignedNodes({ flatten: true }).length > 0
     if (hasSlot) {
       this.msgEl.style.display = 'none'
     } else {
@@ -239,7 +239,7 @@ export function toast(
   options?: { duration?: number }
 ): void {
   const container = ensureContainer()
-  const el = document.createElement('o-toast') as OWCToast & HTMLElement
+  const el = document.createElement('o-toast') as HTMLElement
   el.setAttribute('type', type)
   if (options?.duration !== undefined) {
     el.setAttribute('duration', String(options.duration))
