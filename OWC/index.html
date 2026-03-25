@@ -73,6 +73,19 @@
       ]
     </script>
 
+    <!-- o-toggle -->
+    <h2>o-toggle</h2>
+    <div class="row">
+      <o-toggle id="demo-toggle" options="Day,Week,Month"></o-toggle>
+      <o-toggle options="S,M,L,XL" value="m"></o-toggle>
+    </div>
+    <script type="module">
+      import '/src/toggle.ts'
+      document.getElementById('demo-toggle').addEventListener('o-change', e => {
+        console.log('toggle changed:', e.detail)
+      })
+    </script>
+
     <script type="module" src="/src/main.ts"></script>
     <script type="module">
       import { toast } from '/src/toast.ts'
