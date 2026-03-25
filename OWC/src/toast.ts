@@ -183,7 +183,7 @@ export class OWCToast extends HTMLElement {
   }
 
   dismiss() {
-    if (this.fallbackTimer !== null) { clearTimeout(this.fallbackTimer); this.fallbackTimer = null }
+    this.clearTimer()
     this.classList.add('exiting')
     this.addEventListener('animationend', () => this.remove(), { once: true })
     setTimeout(() => this.remove(), 400) // fallback if animationend never fires
