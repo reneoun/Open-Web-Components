@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import './toast'
 
 describe('OWCToast', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
   })
+
+  afterEach(() => vi.useRealTimers())
 
   it('registers as o-toast', () => {
     expect(customElements.get('o-toast')).toBeDefined()
@@ -48,7 +50,6 @@ describe('OWCToast', () => {
     document.body.appendChild(el)
     vi.advanceTimersByTime(1200) // duration + fallback timeout
     expect(document.body.contains(el)).toBe(false)
-    vi.useRealTimers()
   })
 
   it('does not remove itself before duration', () => {
@@ -60,6 +61,5 @@ describe('OWCToast', () => {
     document.body.appendChild(el)
     vi.advanceTimersByTime(1000)
     expect(document.body.contains(el)).toBe(true)
-    vi.useRealTimers()
   })
 })

@@ -22,6 +22,7 @@ export class OWCToast extends HTMLElement {
   private msgEl!: HTMLSpanElement
   private slot!: HTMLSlotElement
   private timer: ReturnType<typeof setTimeout> | null = null
+  private fallbackTimer: ReturnType<typeof setTimeout> | null = null
   private startedAt = 0
   private elapsed = 0
   private durationMs = 3000
@@ -35,8 +36,6 @@ export class OWCToast extends HTMLElement {
     this.durationMs = parseInt(this.getAttribute('duration') ?? '3000', 10)
     this.render()
     this.updateSlotOrFallback()
-    const bar = this.shadowRoot!.querySelector('.progress') as HTMLElement
-    bar.style.setProperty('--_dur', `${this.durationMs}ms`)
     this.startTimer()
     this.addEventListener('mouseenter', this.onMouseEnter)
     this.addEventListener('mouseleave', this.onMouseLeave)
@@ -89,7 +88,10 @@ export class OWCToast extends HTMLElement {
           position: absolute; bottom: 0; left: 0; height: 3px;
           background: var(--_accent); border-radius: 0 0 var(--o-toast-radius, 10px) var(--o-toast-radius, 10px);
           width: 100%; transform-origin: left;
+          animation: shrink linear both;
+          animation-duration: var(--_dur, 3000ms);
         }
+        .progress.paused { animation-play-state: paused; }
         @media (prefers-reduced-motion: no-preference) {
           :host { animation: slideInRight 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
           :host(.exiting) { animation: slideOutRight 0.25s ease-in both; }
@@ -114,11 +116,6 @@ export class OWCToast extends HTMLElement {
             }
           }
         }
-        .progress {
-          animation: shrink linear both;
-          animation-duration: var(--_dur, 3000ms);
-        }
-        .progress.paused { animation-play-state: paused; }
         @keyframes shrink {
           from { transform: scaleX(1); }
           to   { transform: scaleX(0); }
@@ -133,6 +130,8 @@ export class OWCToast extends HTMLElement {
 
     this.msgEl = this.shadowRoot!.querySelector('#msg')!
     this.slot = this.shadowRoot!.querySelector('slot')!
+    const bar = this.shadowRoot!.querySelector('.progress') as HTMLElement
+    if (bar) bar.style.setProperty('--_dur', `${this.durationMs}ms`)
 
     this.slot.addEventListener('slotchange', () => this.updateSlotOrFallback())
     this.shadowRoot!.querySelector('.close')!.addEventListener('click', () => this.dismiss())
@@ -163,15 +162,12 @@ export class OWCToast extends HTMLElement {
     this.startedAt = Date.now()
     const ms = remaining ?? (this.durationMs - this.elapsed)
     this.timer = setTimeout(() => this.dismiss(), ms)
-    // fallback removal: ensures removal even if animationend never fires (reduced motion, etc.)
-    setTimeout(() => { if (this.isConnected) this.remove() }, ms + 600)
+    this.fallbackTimer = setTimeout(() => { if (this.isConnected) this.remove() }, ms + 600)
   }
 
   private clearTimer() {
-    if (this.timer !== null) {
-      clearTimeout(this.timer)
-      this.timer = null
-    }
+    if (this.timer !== null) { clearTimeout(this.timer); this.timer = null }
+    if (this.fallbackTimer !== null) { clearTimeout(this.fallbackTimer); this.fallbackTimer = null }
   }
 
   private onMouseEnter = () => {
@@ -182,14 +178,14 @@ export class OWCToast extends HTMLElement {
 
   private onMouseLeave = () => {
     this.startedAt = Date.now()
-    this.startTimer(this.durationMs - this.elapsed)
+    this.startTimer(Math.max(0, this.durationMs - this.elapsed))
     this.shadowRoot?.querySelector('.progress')?.classList.remove('paused')
   }
 
   dismiss() {
     this.classList.add('exiting')
     this.addEventListener('animationend', () => this.remove(), { once: true })
-    // fallback removal is already scheduled in startTimer
+    setTimeout(() => this.remove(), 400) // fallback if animationend never fires
   }
 }
 
