@@ -82,8 +82,7 @@ export class OToggle extends HTMLElement {
     const idx = segments.findIndex(s => s.contains(e.target as Node))
     if (idx === -1) return
     const opt = this._options[idx]
-    if (!opt || opt.value === this._value) return // no-op: same or 1-option
-    if (this._options.length <= 1) return
+    if (!opt || opt.value === this._value) return // no-op: already selected or no valid target
     const prev = this._value
     this._value = opt.value
     this.setAttribute('value', opt.value)
@@ -144,7 +143,7 @@ export class OToggle extends HTMLElement {
       </style>
       <div class="container">
         ${n > 0 ? '<div class="indicator"></div>' : ''}
-        ${this._options.map((o, i) =>
+        ${this._options.map((o) =>
           `<div class="segment${o.value === this._value ? ' active' : ''}" data-value="${o.value}">${o.label}</div>`
         ).join('')}
       </div>
