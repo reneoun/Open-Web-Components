@@ -1,17 +1,6 @@
 console.log('Open Web Components (OWC) Core Module Loaded - René Oun');
 
 export type Coordinates = { x: number, y: number };
-export type CentralDataType = {
-    start?: Coordinates;
-    end?: Coordinates;
-    panel?: HTMLDivElement;
-}
-
-declare global {
-    interface Window {
-        CENTRAL_DATA?: CentralDataType
-    }
-}
 
 class OWCButton extends HTMLElement {
     constructor() {
@@ -49,6 +38,10 @@ class OWCPanel extends HTMLElement {
         return ['move'];
     }
 
+    private panelEl!: HTMLDivElement;
+    private dragStart: Coordinates | null = null;
+    private dragOffset: Coordinates = { x: 0, y: 0 };
+
     constructor() {
         super();
         const panel = document.createElement('div') as HTMLDivElement;
@@ -68,6 +61,7 @@ class OWCPanel extends HTMLElement {
         `;
         panel.innerHTML = this.innerHTML || '<p style="margin:0">Default Panel Content</p>';
         this.innerHTML = '';
+        this.panelEl = panel;
 
         if (this.hasAttribute('move')) {
             const moveButton = document.createElement('button');
@@ -84,28 +78,24 @@ class OWCPanel extends HTMLElement {
         }
 
         this.appendChild(panel);
-        window.CENTRAL_DATA = { panel };
     }
 
     private mouseDownHandler(e: MouseEvent) {
         e.preventDefault();
         (e.target as HTMLElement).style.cursor = 'grabbing';
-        if (window.CENTRAL_DATA) {
-            window.CENTRAL_DATA.start = { x: e.screenX, y: e.screenY };
-        }
+        this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
         document.addEventListener('mousemove', this.mouseMoveHandler);
         document.addEventListener('mouseup', this.mouseUpHandler.bind(this));
     }
 
-    private mouseMoveHandler(e: MouseEvent) {
-        if (window.CENTRAL_DATA?.panel && window.CENTRAL_DATA.start) {
-            const { panel, start } = window.CENTRAL_DATA;
-            panel.style.transform = `translate(${e.screenX - start.x}px, ${e.screenY - start.y}px)`;
-            window.CENTRAL_DATA.end = { x: e.clientX, y: e.clientY };
-        }
+    private mouseMoveHandler = (e: MouseEvent) => {
+        if (!this.dragStart) return;
+        this.dragOffset = { x: e.screenX - this.dragStart.x, y: e.screenY - this.dragStart.y };
+        this.panelEl.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
     }
 
     private mouseUpHandler(e: MouseEvent) {
+        this.dragStart = null;
         (e.target as HTMLElement).style.cursor = 'grab';
         document.removeEventListener('mousemove', this.mouseMoveHandler);
         document.removeEventListener('mouseup', this.mouseUpHandler.bind(this));
