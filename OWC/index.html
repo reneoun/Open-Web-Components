@@ -2,29 +2,68 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Web Components</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        min-height: 100vh;
+        padding: 2rem;
+        font-family: sans-serif;
+        color: #fff;
+      }
+      h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
+      h2 { margin: 2rem 0 0.75rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    </style>
   </head>
-  <body style="background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 2rem; font-family: sans-serif;">
+  <body>
 
-    <h1 style="color: white; margin-bottom: 1rem;">OWC Toast Demo</h1>
+    <h1>Open Web Components</h1>
+    <p style="opacity:0.7;margin:0 0 2rem">Glassmorphism component library</p>
 
-    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem;">
-      <button onclick="toast('File saved successfully!', 'success')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #4ade80;">Success</button>
-      <button onclick="toast('Connection failed', 'error')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #f87171;">Error</button>
-      <button onclick="toast('Low disk space', 'warning')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #fbbf24;">Warning</button>
-      <button onclick="toast('Update available', 'info')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #60a5fa;">Info</button>
-      <button onclick="toast('Long toast stays for 8s', 'info', { duration: 8000 })" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: white;">8s Toast</button>
+    <!-- o-button -->
+    <h2>o-button</h2>
+    <div class="row">
+      <o-button>Click me</o-button>
+      <o-button>Save</o-button>
+      <o-button>Cancel</o-button>
     </div>
 
-    <!-- Declarative usage -->
-    <o-toast type="success">Declarative toast — <strong>slot content</strong></o-toast>
+    <!-- o-panel -->
+    <h2>o-panel (drag the ⠿ handle)</h2>
+    <div class="row">
+      <o-panel move>
+        <strong>Draggable panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8">Grab the handle to move me around.</p>
+      </o-panel>
+      <o-panel>
+        <strong>Static panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8">No move attribute.</p>
+      </o-panel>
+    </div>
+
+    <!-- o-toast -->
+    <h2>o-toast</h2>
+    <div class="row">
+      <o-button id="btn-success">Success</o-button>
+      <o-button id="btn-error">Error</o-button>
+      <o-button id="btn-warning">Warning</o-button>
+      <o-button id="btn-info">Info</o-button>
+      <o-button id="btn-long">8s toast</o-button>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
     <script type="module">
       import { toast } from '/src/toast.ts'
       window.toast = toast
+
+      document.getElementById('btn-success').addEventListener('o-click', () => toast('File saved successfully!', 'success'))
+      document.getElementById('btn-error').addEventListener('o-click', () => toast('Connection failed', 'error'))
+      document.getElementById('btn-warning').addEventListener('o-click', () => toast('Low disk space', 'warning'))
+      document.getElementById('btn-info').addEventListener('o-click', () => toast('Update available', 'info'))
+      document.getElementById('btn-long').addEventListener('o-click', () => toast('Long toast — 8 seconds', 'info', { duration: 8000 }))
     </script>
   </body>
 </html>
