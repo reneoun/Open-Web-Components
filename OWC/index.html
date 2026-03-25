@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/src/core.ts" defer></script>
+    <title>Open Web Components</title>
+  </head>
+  <body style="background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 2rem; font-family: sans-serif;">
+
+    <h1 style="color: white; margin-bottom: 1rem;">OWC Toast Demo</h1>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem;">
+      <button onclick="toast('File saved successfully!', 'success')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #4ade80;">Success</button>
+      <button onclick="toast('Connection failed', 'error')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #f87171;">Error</button>
+      <button onclick="toast('Low disk space', 'warning')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #fbbf24;">Warning</button>
+      <button onclick="toast('Update available', 'info')" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: #60a5fa;">Info</button>
+      <button onclick="toast('Long toast stays for 8s', 'info', { duration: 8000 })" style="padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; background: white;">8s Toast</button>
+    </div>
+
+    <!-- Declarative usage -->
+    <o-toast type="success">Declarative toast — <strong>slot content</strong></o-toast>
+
+    <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+      import { toast } from '/src/toast.ts'
+      window.toast = toast
+    </script>
+  </body>
+</html>
