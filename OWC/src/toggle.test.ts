@@ -61,4 +61,63 @@ describe('OToggle', () => {
     ;(el as any).options = ['Only']
     expect(el.shadowRoot!.querySelectorAll('.segment').length).toBe(1)
   })
+
+  it('defaults value to first option, no event fired', () => {
+    let fired = false
+    el.addEventListener('o-change', () => { fired = true })
+    ;(el as any).options = ['Day', 'Week']
+    expect((el as any).value).toBe('day')
+    expect(fired).toBe(false)
+  })
+
+  it('value property reflects current selection', () => {
+    ;(el as any).options = ['Day', 'Week', 'Month']
+    expect((el as any).value).toBe('day')
+    ;(el as any).value = 'week'
+    expect((el as any).value).toBe('week')
+  })
+
+  it('setting value does not fire o-change', () => {
+    ;(el as any).options = ['Day', 'Week']
+    let fired = false
+    el.addEventListener('o-change', () => { fired = true })
+    ;(el as any).value = 'week'
+    expect(fired).toBe(false)
+  })
+
+  it('setting value to unknown string: no-op', () => {
+    ;(el as any).options = ['Day', 'Week']
+    ;(el as any).value = 'day'
+    ;(el as any).value = 'unknown'
+    expect((el as any).value).toBe('day')
+  })
+
+  it('clicking a segment fires o-change with correct detail', () => {
+    ;(el as any).options = ['Day', 'Week', 'Month']
+    let detail: any = null
+    el.addEventListener('o-change', (e: any) => { detail = e.detail })
+    const segments = el.shadowRoot!.querySelectorAll<HTMLElement>('.segment')
+    segments[1].click()
+    expect(detail).not.toBeNull()
+    expect(detail.value).toBe('week')
+    expect(detail.index).toBe(1)
+    expect(detail.prev).toBe('day')
+  })
+
+  it('clicking already-selected segment does not fire o-change', () => {
+    ;(el as any).options = ['Day', 'Week']
+    let fired = false
+    el.addEventListener('o-change', () => { fired = true })
+    const segments = el.shadowRoot!.querySelectorAll<HTMLElement>('.segment')
+    segments[0].click() // already selected
+    expect(fired).toBe(false)
+  })
+
+  it('1 option: clicking does not fire o-change', () => {
+    ;(el as any).options = ['Only']
+    let fired = false
+    el.addEventListener('o-change', () => { fired = true })
+    el.shadowRoot!.querySelector<HTMLElement>('.segment')!.click()
+    expect(fired).toBe(false)
+  })
 })
