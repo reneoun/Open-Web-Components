@@ -5,13 +5,15 @@ Glassmorphism web components — drop a single script tag and use them anywhere.
 ## Quick Start
 
 ```html
-<script src="https://raw.githubusercontent.com/reneoun/Open-Web-Components/main/OWC/dist/components.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.0.0/OWC/dist/components.js"></script>
 ```
 
-> **Tip:** For production, use [jsDelivr](https://www.jsdelivr.com/) which serves GitHub files via CDN:
-> ```html
-> <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components/OWC/dist/components.js"></script>
-> ```
+[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.0.0` pins the version so updates never break your page.
+
+To always get the latest (not recommended for production):
+```html
+<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@main/OWC/dist/components.js"></script>
+```
 
 ---
 
@@ -104,7 +106,7 @@ Toasts appear **top-right** on desktop and **bottom-center** on mobile. Hover to
 <!doctype html>
 <html>
 <head>
-  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components/OWC/dist/components.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.0.0/OWC/dist/components.js"></script>
 </head>
 <body style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2rem;">
 
