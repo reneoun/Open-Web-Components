@@ -120,4 +120,35 @@ describe('OToggle', () => {
     el.shadowRoot!.querySelector<HTMLElement>('.segment')!.click()
     expect(fired).toBe(false)
   })
+
+  it('changing options preserves value if still in new set', () => {
+    ;(el as any).options = ['Day', 'Week', 'Month']
+    ;(el as any).value = 'week'
+    ;(el as any).options = ['Week', 'Month', 'Year']
+    expect((el as any).value).toBe('week')
+    expect(el.shadowRoot!.querySelectorAll('.segment').length).toBe(3)
+  })
+
+  it('changing options resets value to first if old value gone', () => {
+    ;(el as any).options = ['Day', 'Week']
+    ;(el as any).value = 'week'
+    ;(el as any).options = ['Month', 'Year']
+    expect((el as any).value).toBe('month')
+  })
+
+  it('options attribute change via setAttribute re-renders', () => {
+    el.setAttribute('options', 'A,B,C')
+    expect(el.shadowRoot!.querySelectorAll('.segment').length).toBe(3)
+    el.setAttribute('options', 'X,Y')
+    expect(el.shadowRoot!.querySelectorAll('.segment').length).toBe(2)
+  })
+
+  it('value attribute change via setAttribute updates selection silently', () => {
+    el.setAttribute('options', 'Day,Week,Month')
+    let fired = false
+    el.addEventListener('o-change', () => { fired = true })
+    el.setAttribute('value', 'week')
+    expect((el as any).value).toBe('week')
+    expect(fired).toBe(false)
+  })
 })
