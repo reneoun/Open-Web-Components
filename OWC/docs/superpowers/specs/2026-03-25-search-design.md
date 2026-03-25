@@ -120,7 +120,7 @@ On `o-select`:
 - `<input>` element created once in constructor. `input` event listener attached in constructor. Stored as `this._input`.
 - `render()` builds the full shadow DOM once (constructor or first `connectedCallback`). After that, only `updateDropdown()` is called to update the dropdown — never `render()` — so `<input>` is never destroyed and focus is never lost.
 - `document` click listener attached in `connectedCallback`, removed in `disconnectedCallback`.
-- Click-outside: `event.composedPath().includes(this)` — if false, close dropdown.
+- Click-outside: `e.target instanceof Node && !this.contains(e.target as Node)` — works correctly with both real and synthetic events in happy-dom.
 - Each dropdown result item has `data-index` = its index in the **current filtered results array** (not the original `data` array). Click handler resolves item via `this._currentResults[idx]`.
 - `this._currentResults` is updated on every filter pass and used by the click handler.
 - "No results" item has no `data-index` and is skipped by the click handler.
