@@ -86,6 +86,24 @@
       })
     </script>
 
+    <!-- o-search -->
+    <h2>o-search</h2>
+    <o-search id="demo-search" placeholder="Search people..." style="max-width:400px"></o-search>
+    <script type="module">
+      import '/src/search.ts'
+      const s = document.getElementById('demo-search')
+      s.data = [
+        { name: 'Alice', role: 'Engineer' },
+        { name: 'Bob',   role: 'Designer' },
+        { name: 'Carol', role: 'Manager'  },
+        { name: 'Dave',  role: 'Engineer' },
+      ]
+      s.searchKeys = ['name', 'role']
+      s.valueKey = 'name'
+      s.renderItem = item => `<strong>${item.name}</strong> <span style="opacity:0.6">${item.role}</span>`
+      s.addEventListener('o-select', e => console.log('selected:', e.detail))
+    </script>
+
     <script type="module" src="/src/main.ts"></script>
     <script type="module">
       import { toast } from '/src/toast.ts'
