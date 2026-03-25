@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import './toast'
 
 describe('OWCToast', () => {
@@ -37,5 +37,29 @@ describe('OWCToast', () => {
     document.body.appendChild(el)
     const msg = el.shadowRoot!.querySelector('#msg') as HTMLElement
     expect(msg.style.display).toBe('none')
+  })
+
+  it('removes itself after duration', async () => {
+    vi.useFakeTimers()
+    const el = document.createElement('o-toast') as HTMLElement
+    el.setAttribute('type', 'success')
+    el.setAttribute('duration', '500')
+    el.innerHTML = 'Hi'
+    document.body.appendChild(el)
+    vi.advanceTimersByTime(1200) // duration + fallback timeout
+    expect(document.body.contains(el)).toBe(false)
+    vi.useRealTimers()
+  })
+
+  it('does not remove itself before duration', () => {
+    vi.useFakeTimers()
+    const el = document.createElement('o-toast') as HTMLElement
+    el.setAttribute('type', 'success')
+    el.setAttribute('duration', '3000')
+    el.innerHTML = 'Hi'
+    document.body.appendChild(el)
+    vi.advanceTimersByTime(1000)
+    expect(document.body.contains(el)).toBe(true)
+    vi.useRealTimers()
   })
 })

@@ -21,6 +21,10 @@ export class OWCToast extends HTMLElement {
 
   private msgEl!: HTMLSpanElement
   private slot!: HTMLSlotElement
+  private timer: ReturnType<typeof setTimeout> | null = null
+  private startedAt = 0
+  private elapsed = 0
+  private durationMs = 3000
 
   constructor() {
     super()
@@ -28,8 +32,20 @@ export class OWCToast extends HTMLElement {
   }
 
   connectedCallback() {
+    this.durationMs = parseInt(this.getAttribute('duration') ?? '3000', 10)
     this.render()
     this.updateSlotOrFallback()
+    const bar = this.shadowRoot!.querySelector('.progress') as HTMLElement
+    bar.style.setProperty('--_dur', `${this.durationMs}ms`)
+    this.startTimer()
+    this.addEventListener('mouseenter', this.onMouseEnter)
+    this.addEventListener('mouseleave', this.onMouseLeave)
+  }
+
+  disconnectedCallback() {
+    this.clearTimer()
+    this.removeEventListener('mouseenter', this.onMouseEnter)
+    this.removeEventListener('mouseleave', this.onMouseLeave)
   }
 
   attributeChangedCallback(name: string, _old: string, val: string) {
@@ -74,6 +90,39 @@ export class OWCToast extends HTMLElement {
           background: var(--_accent); border-radius: 0 0 var(--o-toast-radius, 10px) var(--o-toast-radius, 10px);
           width: 100%; transform-origin: left;
         }
+        @media (prefers-reduced-motion: no-preference) {
+          :host { animation: slideInRight 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
+          :host(.exiting) { animation: slideOutRight 0.25s ease-in both; }
+          @keyframes slideInRight {
+            from { transform: translateX(110%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+          }
+          @keyframes slideOutRight {
+            from { transform: translateX(0);    opacity: 1; }
+            to   { transform: translateX(110%); opacity: 0; }
+          }
+          @media (max-width: 639px) {
+            :host { animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
+            :host(.exiting) { animation: slideDown 0.25s ease-in both; }
+            @keyframes slideUp {
+              from { transform: translateY(60px); opacity: 0; }
+              to   { transform: translateY(0);    opacity: 1; }
+            }
+            @keyframes slideDown {
+              from { transform: translateY(0);    opacity: 1; }
+              to   { transform: translateY(60px); opacity: 0; }
+            }
+          }
+        }
+        .progress {
+          animation: shrink linear both;
+          animation-duration: var(--_dur, 3000ms);
+        }
+        .progress.paused { animation-play-state: paused; }
+        @keyframes shrink {
+          from { transform: scaleX(1); }
+          to   { transform: scaleX(0); }
+        }
       </style>
       <span class="icon">${ICONS[type] ?? ICONS.info}</span>
       <span id="msg"></span>
@@ -110,8 +159,37 @@ export class OWCToast extends HTMLElement {
     if (iconEl) iconEl.textContent = ICONS[type] ?? ICONS.info
   }
 
+  private startTimer(remaining?: number) {
+    this.startedAt = Date.now()
+    const ms = remaining ?? (this.durationMs - this.elapsed)
+    this.timer = setTimeout(() => this.dismiss(), ms)
+    // fallback removal: ensures removal even if animationend never fires (reduced motion, etc.)
+    setTimeout(() => { if (this.isConnected) this.remove() }, ms + 600)
+  }
+
+  private clearTimer() {
+    if (this.timer !== null) {
+      clearTimeout(this.timer)
+      this.timer = null
+    }
+  }
+
+  private onMouseEnter = () => {
+    this.elapsed += Date.now() - this.startedAt
+    this.clearTimer()
+    this.shadowRoot?.querySelector('.progress')?.classList.add('paused')
+  }
+
+  private onMouseLeave = () => {
+    this.startedAt = Date.now()
+    this.startTimer(this.durationMs - this.elapsed)
+    this.shadowRoot?.querySelector('.progress')?.classList.remove('paused')
+  }
+
   dismiss() {
-    this.remove()
+    this.classList.add('exiting')
+    this.addEventListener('animationend', () => this.remove(), { once: true })
+    // fallback removal is already scheduled in startTimer
   }
 }
 
