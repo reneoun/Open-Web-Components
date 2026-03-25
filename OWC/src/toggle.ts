@@ -30,7 +30,7 @@ export class OToggle extends HTMLElement {
     if (!this._options.find(o => o.value === v)) return // unknown value: no-op
     this._value = v
     this.setAttribute('value', v)
-    this.render()
+    this.updateSelection()
   }
 
   constructor() {
@@ -72,7 +72,7 @@ export class OToggle extends HTMLElement {
     if (name === 'value' && val !== null) {
       if (this._options.find(o => o.value === val)) {
         this._value = val
-        this.render()
+        this.updateSelection()
       }
     }
   }
@@ -86,11 +86,21 @@ export class OToggle extends HTMLElement {
     const prev = this._value
     this._value = opt.value
     this.setAttribute('value', opt.value)
-    this.render()
+    this.updateSelection()
     this.dispatchEvent(new CustomEvent<OToggleChangeEvent>('o-change', {
       bubbles: true, composed: true,
       detail: { value: opt.value, index: idx, prev }
     }))
+  }
+
+  private updateSelection() {
+    const container = this.shadowRoot?.querySelector<HTMLElement>('.container')
+    if (!container) { this.render(); return }
+    const idx = this._options.findIndex(o => o.value === this._value)
+    container.style.setProperty('--idx', String(idx >= 0 ? idx : 0))
+    this.shadowRoot!.querySelectorAll<HTMLElement>('.segment').forEach((s, i) => {
+      s.classList.toggle('active', i === idx)
+    })
   }
 
   private render() {
