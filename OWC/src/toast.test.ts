@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import './toast'
+import { toast } from './toast'
 
 describe('OWCToast', () => {
   beforeEach(() => {
@@ -61,5 +62,42 @@ describe('OWCToast', () => {
     document.body.appendChild(el)
     vi.advanceTimersByTime(1000)
     expect(document.body.contains(el)).toBe(true)
+  })
+})
+
+describe('toast() helper', () => {
+  beforeEach(() => {
+    document.body.innerHTML = ''
+    document.head.querySelectorAll('style[data-owc-toast]').forEach(s => s.remove())
+    const container = document.getElementById('o-toast-container')
+    container?.remove()
+  })
+
+  it('creates container on first call', () => {
+    toast('Hello', 'success')
+    expect(document.getElementById('o-toast-container')).not.toBeNull()
+  })
+
+  it('appends o-toast element', () => {
+    toast('Hello', 'success')
+    const container = document.getElementById('o-toast-container')!
+    expect(container.querySelector('o-toast')).not.toBeNull()
+  })
+
+  it('sets content as innerHTML', () => {
+    toast('<strong>Hi</strong>', 'error')
+    const el = document.querySelector('o-toast')!
+    expect(el.innerHTML).toBe('<strong>Hi</strong>')
+  })
+
+  it('sets type attribute', () => {
+    toast('Hi', 'warning')
+    expect(document.querySelector('o-toast')!.getAttribute('type')).toBe('warning')
+  })
+
+  it('does not create duplicate containers', () => {
+    toast('A', 'info')
+    toast('B', 'info')
+    expect(document.querySelectorAll('#o-toast-container').length).toBe(1)
   })
 })

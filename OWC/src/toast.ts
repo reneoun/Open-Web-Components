@@ -190,3 +190,56 @@ export class OWCToast extends HTMLElement {
 }
 
 customElements.define('o-toast', OWCToast)
+
+let containerCreated = false
+
+function ensureContainer(): HTMLElement {
+  if (!containerCreated || !document.getElementById('o-toast-container')) {
+    containerCreated = true
+
+    const style = document.createElement('style')
+    style.setAttribute('data-owc-toast', '')
+    style.textContent = `
+      #o-toast-container {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 9999;
+        top: 1rem;
+        right: 1rem;
+        pointer-events: none;
+      }
+      #o-toast-container > * { pointer-events: all; }
+      @media (max-width: 639px) {
+        #o-toast-container {
+          top: auto; right: auto;
+          bottom: 1rem; left: 50%;
+          transform: translateX(-50%);
+          align-items: center;
+        }
+      }
+    `
+    document.head.appendChild(style)
+
+    const container = document.createElement('div')
+    container.id = 'o-toast-container'
+    document.body.appendChild(container)
+  }
+  return document.getElementById('o-toast-container')!
+}
+
+export function toast(
+  content: string,
+  type: ToastType,
+  options?: { duration?: number }
+): void {
+  const container = ensureContainer()
+  const el = document.createElement('o-toast') as OWCToast & HTMLElement
+  el.setAttribute('type', type)
+  if (options?.duration !== undefined) {
+    el.setAttribute('duration', String(options.duration))
+  }
+  el.innerHTML = content
+  container.appendChild(el)
+}
