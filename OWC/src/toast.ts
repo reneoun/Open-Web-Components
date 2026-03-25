@@ -58,7 +58,7 @@ export class OWCToast extends HTMLElement {
           color: var(--o-toast-color, #fff);
           font-family: sans-serif;
           font-size: 14px;
-          border-left: 4px solid ${color};
+          border-left: 4px solid var(--_accent);
           box-sizing: border-box;
         }
         .icon { margin-right: 8px; font-weight: bold; }
@@ -71,7 +71,7 @@ export class OWCToast extends HTMLElement {
         .close:hover { opacity: 1; }
         .progress {
           position: absolute; bottom: 0; left: 0; height: 3px;
-          background: ${color}; border-radius: 0 0 var(--o-toast-radius, 10px) var(--o-toast-radius, 10px);
+          background: var(--_accent); border-radius: 0 0 var(--o-toast-radius, 10px) var(--o-toast-radius, 10px);
           width: 100%; transform-origin: left;
         }
       </style>
@@ -87,6 +87,8 @@ export class OWCToast extends HTMLElement {
 
     this.slot.addEventListener('slotchange', () => this.updateSlotOrFallback())
     this.shadowRoot!.querySelector('.close')!.addEventListener('click', () => this.dismiss())
+
+    this.style.setProperty('--_accent', color)
   }
 
   private updateSlotOrFallback() {
@@ -101,9 +103,11 @@ export class OWCToast extends HTMLElement {
   }
 
   private updateAccent() {
-    // Re-render to apply new accent color (simple approach for v1)
-    this.render()
-    this.updateSlotOrFallback()
+    const type = (this.getAttribute('type') ?? 'info') as ToastType
+    const color = COLORS[type] ?? COLORS.info
+    this.style.setProperty('--_accent', color)
+    const iconEl = this.shadowRoot!.querySelector('.icon') as HTMLElement
+    if (iconEl) iconEl.textContent = ICONS[type] ?? ICONS.info
   }
 
   dismiss() {
