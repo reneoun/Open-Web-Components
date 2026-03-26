@@ -74,7 +74,7 @@ export class OTable extends HTMLElement {
       <style>
         :host { display: block; overflow-x: auto; }
         table {
-          width: 100%; border-collapse: collapse;
+          border-collapse: collapse;
           font-family: sans-serif; font-size: 14px;
           background: rgba(255,255,255,0.08);
           border-radius: 10px; overflow: hidden;
@@ -171,6 +171,7 @@ export class OTable extends HTMLElement {
       const colIdx = this._columns.findIndex(c => c.key === key)
       const col = this._columns[colIdx]
 
+      handle.addEventListener('click', (e: MouseEvent) => e.stopPropagation())
       handle.addEventListener('mousedown', (e: MouseEvent) => {
         e.preventDefault()
         const startX = e.screenX
