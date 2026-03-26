@@ -221,9 +221,12 @@ export class OTable extends HTMLElement {
         const onUp = () => {
           document.removeEventListener('mousemove', onMove)
           document.removeEventListener('mouseup', onUp)
+          const offset = this.selectable ? 1 : 0
           this.shadowRoot!.querySelectorAll<HTMLElement>('th').forEach((t, i) => {
+            const colIdx = i - offset
+            if (colIdx < 0 || colIdx >= this._columns.length) return
             const w = parseInt(t.style.width) || t.offsetWidth
-            if (w) this._columns[i] = { ...this._columns[i], width: w }
+            if (w) this._columns[colIdx] = { ...this._columns[colIdx], width: w }
           })
           this.persistState()
         }
