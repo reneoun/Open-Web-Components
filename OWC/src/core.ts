@@ -2,6 +2,43 @@ console.log('Open Web Components (OWC) Core Module Loaded - René Oun');
 
 export type Coordinates = { x: number, y: number };
 
+// --- Snap grid overlay (shared singleton) ---
+let _gridEl: HTMLDivElement | null = null;
+let _gridFadeOut: ReturnType<typeof setTimeout> | null = null;
+
+function showSnapGrid(snap: number) {
+    if (snap < 8) return;
+    if (_gridFadeOut) { clearTimeout(_gridFadeOut); _gridFadeOut = null; }
+    if (!_gridEl) {
+        _gridEl = document.createElement('div');
+        Object.assign(_gridEl.style, {
+            position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: '9998',
+            transition: 'opacity 200ms ease',
+            opacity: '0',
+        });
+        document.body.appendChild(_gridEl);
+    }
+    _gridEl.style.backgroundImage = [
+        `linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)`,
+        `linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)`,
+    ].join(',');
+    _gridEl.style.backgroundSize = `${snap}px ${snap}px`;
+    // force reflow so transition fires
+    void _gridEl.offsetHeight;
+    _gridEl.style.opacity = '1';
+}
+
+function hideSnapGrid() {
+    if (!_gridEl) return;
+    _gridEl.style.opacity = '0';
+    const el = _gridEl;
+    _gridFadeOut = setTimeout(() => {
+        el.remove();
+        if (_gridEl === el) _gridEl = null;
+        _gridFadeOut = null;
+    }, 220);
+}
+
 class OWCButton extends HTMLElement {
     constructor() {
         super();
@@ -154,6 +191,7 @@ class OWCPanel extends HTMLElement {
         e.preventDefault();
         (e.currentTarget as HTMLElement).style.cursor = 'grabbing';
         this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
+        showSnapGrid(this.snapSize);
         document.addEventListener('mousemove', this.onDragMove);
         document.addEventListener('mouseup', this.onDragEnd);
     }
@@ -170,6 +208,7 @@ class OWCPanel extends HTMLElement {
         this.dragStart = null;
         const handle = this.shadowRoot!.querySelector<HTMLElement>('.move-handle');
         if (handle) handle.style.cursor = 'grab';
+        hideSnapGrid();
         document.removeEventListener('mousemove', this.onDragMove);
         document.removeEventListener('mouseup', this.onDragEnd);
     }
@@ -185,6 +224,7 @@ class OWCPanel extends HTMLElement {
             w: panel.offsetWidth, h: panel.offsetHeight,
             edge: (e.currentTarget as HTMLElement).dataset.edge!
         };
+        showSnapGrid(this.snapSize);
         document.addEventListener('mousemove', this.onResizeMove);
         document.addEventListener('mouseup', this.onResizeEnd);
     }
@@ -203,6 +243,7 @@ class OWCPanel extends HTMLElement {
 
     private onResizeEnd = () => {
         this.resizeStart = null;
+        hideSnapGrid();
         document.removeEventListener('mousemove', this.onResizeMove);
         document.removeEventListener('mouseup', this.onResizeEnd);
     }

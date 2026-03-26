@@ -39,6 +39,47 @@
 
   // src/core.ts
   console.log("Open Web Components (OWC) Core Module Loaded - René Oun");
+  var _gridEl = null;
+  var _gridFadeOut = null;
+  function showSnapGrid(snap) {
+    if (snap < 8)
+      return;
+    if (_gridFadeOut) {
+      clearTimeout(_gridFadeOut);
+      _gridFadeOut = null;
+    }
+    if (!_gridEl) {
+      _gridEl = document.createElement("div");
+      Object.assign(_gridEl.style, {
+        position: "fixed",
+        inset: "0",
+        pointerEvents: "none",
+        zIndex: "9998",
+        transition: "opacity 200ms ease",
+        opacity: "0"
+      });
+      document.body.appendChild(_gridEl);
+    }
+    _gridEl.style.backgroundImage = [
+      `linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)`,
+      `linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)`
+    ].join(",");
+    _gridEl.style.backgroundSize = `${snap}px ${snap}px`;
+    _gridEl.offsetHeight;
+    _gridEl.style.opacity = "1";
+  }
+  function hideSnapGrid() {
+    if (!_gridEl)
+      return;
+    _gridEl.style.opacity = "0";
+    const el = _gridEl;
+    _gridFadeOut = setTimeout(() => {
+      el.remove();
+      if (_gridEl === el)
+        _gridEl = null;
+      _gridFadeOut = null;
+    }, 220);
+  }
 
   class OWCButton extends HTMLElement {
     constructor() {
@@ -178,6 +219,7 @@
       e.preventDefault();
       e.currentTarget.style.cursor = "grabbing";
       this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
+      showSnapGrid(this.snapSize);
       document.addEventListener("mousemove", this.onDragMove);
       document.addEventListener("mouseup", this.onDragEnd);
     };
@@ -194,6 +236,7 @@
       const handle = this.shadowRoot.querySelector(".move-handle");
       if (handle)
         handle.style.cursor = "grab";
+      hideSnapGrid();
       document.removeEventListener("mousemove", this.onDragMove);
       document.removeEventListener("mouseup", this.onDragEnd);
     };
@@ -208,6 +251,7 @@
         h: panel.offsetHeight,
         edge: e.currentTarget.dataset.edge
       };
+      showSnapGrid(this.snapSize);
       document.addEventListener("mousemove", this.onResizeMove);
       document.addEventListener("mouseup", this.onResizeEnd);
     };
@@ -225,6 +269,7 @@
     };
     onResizeEnd = () => {
       this.resizeStart = null;
+      hideSnapGrid();
       document.removeEventListener("mousemove", this.onResizeMove);
       document.removeEventListener("mouseup", this.onResizeEnd);
     };
