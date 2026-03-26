@@ -9,20 +9,32 @@ export interface OTableColumn {
 
 export type SortDir = 'asc' | 'desc' | 'none'
 export interface OTableSortEvent { col: string; dir: SortDir }
+export interface OTableRowSelectEvent { selected: Record<string, unknown>[] }
 
 export class OTable extends HTMLElement {
-  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode'] }
+  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable'] }
 
   private _columns: OTableColumn[] = []
   private _data: Record<string, unknown>[] = []
   private _sortCol: string | null = null
   private _sortDir: SortDir = 'none'
+  private _selectedRows: Set<Record<string, unknown>> = new Set()
 
   get columns() { return this._columns }
   set columns(v: OTableColumn[]) { this._columns = v; this.render() }
 
   get data() { return this._data }
-  set data(v: Record<string, unknown>[]) { this._data = v; this.render() }
+  set data(v: Record<string, unknown>[]) {
+    this._data = v
+    this._selectedRows.clear()
+    this.render()
+  }
+
+  get selected(): Record<string, unknown>[] {
+    return this._data.filter(row => this._selectedRows.has(row))
+  }
+
+  get selectable() { return this.hasAttribute('selectable') }
 
   constructor() {
     super()
@@ -99,9 +111,14 @@ export class OTable extends HTMLElement {
           background: transparent;
         }
         .resize-handle:hover { background: rgba(255,255,255,0.3); }
+        tbody tr.selected td { background: rgba(255,255,255,0.12); }
+        input[type="checkbox"] {
+          width: 15px; height: 15px; cursor: pointer;
+          accent-color: rgba(255,255,255,0.9);
+        }
       </style>
       <table>
-        <thead><tr>${this._columns.map(c => this.renderTh(c)).join('')}</tr></thead>
+        <thead><tr>${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ''}${this._columns.map(c => this.renderTh(c)).join('')}</tr></thead>
         <tbody>${this.getSortedData().map(row => this.renderRow(row)).join('')}</tbody>
       </table>
     `
@@ -127,7 +144,12 @@ export class OTable extends HTMLElement {
   }
 
   private renderRow(row: Record<string, unknown>): string {
-    return `<tr>${this._columns.map(c =>
+    const checked = this._selectedRows.has(row) ? ' checked' : ''
+    const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : ''
+    const checkbox = this.selectable
+      ? `<td><input type="checkbox" data-select-row${checked}></td>`
+      : ''
+    return `<tr${selectedClass}>${checkbox}${this._columns.map(c =>
       `<td>${row[c.key] ?? ''}</td>`
     ).join('')}</tr>`
   }
@@ -210,6 +232,46 @@ export class OTable extends HTMLElement {
         document.addEventListener('mouseup', onUp)
       })
     })
+
+    // Row selection handlers
+    if (this.selectable) {
+      // Per-row checkboxes
+      this.shadowRoot!.querySelectorAll<HTMLInputElement>('tbody [data-select-row]').forEach((cb, i) => {
+        const row = this.getSortedData()[i]
+        cb.addEventListener('click', (e) => {
+          e.stopPropagation()
+          if (this._selectedRows.has(row)) {
+            this._selectedRows.delete(row)
+          } else {
+            this._selectedRows.add(row)
+          }
+          this.dispatchEvent(new CustomEvent<OTableRowSelectEvent>('o-row-select', {
+            bubbles: true, composed: true,
+            detail: { selected: this.selected }
+          }))
+          this.render()
+        })
+      })
+
+      // Header "select all" checkbox
+      const headerCb = this.shadowRoot!.querySelector<HTMLInputElement>('[data-select-all]')
+      if (headerCb) {
+        headerCb.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const allSelected = this.getSortedData().every(row => this._selectedRows.has(row))
+          if (allSelected) {
+            this._selectedRows.clear()
+          } else {
+            this.getSortedData().forEach(row => this._selectedRows.add(row))
+          }
+          this.dispatchEvent(new CustomEvent<OTableRowSelectEvent>('o-row-select', {
+            bubbles: true, composed: true,
+            detail: { selected: this.selected }
+          }))
+          this.render()
+        })
+      }
+    }
   }
 }
 
