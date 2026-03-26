@@ -106,6 +106,7 @@
       import '/src/search.ts'
       import '/src/table.ts'
       import '/src/toggle.ts'
+      import '/src/button.ts'
 
       const COLUMNS = [
         { key: 'name',       label: 'Name',       width: 160 },
@@ -184,6 +185,7 @@
           filteredData = allData
           render()
         })
+        .catch(err => console.error('Failed to load users', err))
 
       search.addEventListener('o-input', e => applySearch(e.detail.query))
 
