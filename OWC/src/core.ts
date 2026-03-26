@@ -43,7 +43,15 @@ class OWCPanel extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        // Do NOT render here — attributes are not yet set for parser-created elements
+    }
+
+    connectedCallback() {
         this.render();
+    }
+
+    attributeChangedCallback() {
+        if (this.isConnected) this.render();
     }
 
     private get snapSize() {
@@ -59,6 +67,11 @@ class OWCPanel extends HTMLElement {
     private render() {
         const hasDrag   = this.hasAttribute('move');
         const hasResize = this.hasAttribute('resize');
+
+        // Preserve panel dimensions across re-renders
+        const prev = this.shadowRoot!.querySelector<HTMLElement>('.panel');
+        const savedW = prev?.style.width ?? '';
+        const savedH = prev?.style.height ?? '';
 
         this.shadowRoot!.innerHTML = `
             <style>
@@ -117,6 +130,12 @@ class OWCPanel extends HTMLElement {
                 ` : ''}
             </div>
         `;
+
+        const panel = this.shadowRoot!.querySelector<HTMLElement>('.panel')!;
+        if (savedW) panel.style.width  = savedW;
+        if (savedH) panel.style.height = savedH;
+        if (this.dragOffset.x || this.dragOffset.y)
+            this.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
 
         if (hasDrag) {
             this.shadowRoot!.querySelector('.move-handle')!

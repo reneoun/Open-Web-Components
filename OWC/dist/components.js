@@ -81,7 +81,13 @@
     constructor() {
       super();
       this.attachShadow({ mode: "open" });
+    }
+    connectedCallback() {
       this.render();
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
     }
     get snapSize() {
       const v = parseInt(this.getAttribute("snap") ?? "1");
@@ -94,6 +100,9 @@
     render() {
       const hasDrag = this.hasAttribute("move");
       const hasResize = this.hasAttribute("resize");
+      const prev = this.shadowRoot.querySelector(".panel");
+      const savedW = prev?.style.width ?? "";
+      const savedH = prev?.style.height ?? "";
       this.shadowRoot.innerHTML = `
             <style>
                 :host { display: inline-block; }
@@ -151,6 +160,13 @@
                 ` : ""}
             </div>
         `;
+      const panel = this.shadowRoot.querySelector(".panel");
+      if (savedW)
+        panel.style.width = savedW;
+      if (savedH)
+        panel.style.height = savedH;
+      if (this.dragOffset.x || this.dragOffset.y)
+        this.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
       if (hasDrag) {
         this.shadowRoot.querySelector(".move-handle").addEventListener("mousedown", this.onDragStart);
       }
