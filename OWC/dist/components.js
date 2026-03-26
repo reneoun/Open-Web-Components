@@ -41,7 +41,7 @@
   console.log("Open Web Components (OWC) Core Module Loaded - René Oun");
   var _gridEl = null;
   var _gridFadeOut = null;
-  function showSnapGrid(snap) {
+  function showSnapGrid(snap, offsetX = 0, offsetY = 0) {
     if (snap < 8)
       return;
     if (_gridFadeOut) {
@@ -65,6 +65,7 @@
       `linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)`
     ].join(",");
     _gridEl.style.backgroundSize = `${snap}px ${snap}px`;
+    _gridEl.style.backgroundPosition = `${offsetX % snap}px ${offsetY % snap}px`;
     _gridEl.offsetHeight;
     _gridEl.style.opacity = "1";
   }
@@ -219,7 +220,8 @@
       e.preventDefault();
       e.currentTarget.style.cursor = "grabbing";
       this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
-      showSnapGrid(this.snapSize);
+      const r = this.getBoundingClientRect();
+      showSnapGrid(this.snapSize, r.left, r.top);
       document.addEventListener("mousemove", this.onDragMove);
       document.addEventListener("mouseup", this.onDragEnd);
     };
@@ -251,7 +253,8 @@
         h: panel.offsetHeight,
         edge: e.currentTarget.dataset.edge
       };
-      showSnapGrid(this.snapSize);
+      const r = this.getBoundingClientRect();
+      showSnapGrid(this.snapSize, r.left, r.top);
       document.addEventListener("mousemove", this.onResizeMove);
       document.addEventListener("mouseup", this.onResizeEnd);
     };
