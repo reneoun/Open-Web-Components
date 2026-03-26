@@ -41,6 +41,7 @@ class OWCPanel extends HTMLElement {
     private panelEl!: HTMLDivElement;
     private dragStart: Coordinates | null = null;
     private dragOffset: Coordinates = { x: 0, y: 0 };
+    private _connected = false;
 
     constructor() {
         super();
@@ -59,9 +60,15 @@ class OWCPanel extends HTMLElement {
             font-family: sans-serif;
             font-size: 14px;
         `;
-        panel.innerHTML = this.innerHTML || '<p style="margin:0">Default Panel Content</p>';
-        this.innerHTML = '';
         this.panelEl = panel;
+    }
+
+    connectedCallback() {
+        if (this._connected) return;
+        this._connected = true;
+
+        this.panelEl.innerHTML = this.innerHTML || '<p style="margin:0">Default Panel Content</p>';
+        this.innerHTML = '';
 
         if (this.hasAttribute('move')) {
             const moveButton = document.createElement('button');
@@ -74,10 +81,10 @@ class OWCPanel extends HTMLElement {
                 padding: 2px 5px; line-height: 1;
             `;
             moveButton.addEventListener('mousedown', this.mouseDownHandler.bind(this));
-            panel.appendChild(moveButton);
+            this.panelEl.appendChild(moveButton);
         }
 
-        this.appendChild(panel);
+        this.appendChild(this.panelEl);
     }
 
     private mouseDownHandler(e: MouseEvent) {

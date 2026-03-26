@@ -78,6 +78,7 @@
     panelEl;
     dragStart = null;
     dragOffset = { x: 0, y: 0 };
+    _connected = false;
     constructor() {
       super();
       const panel = document.createElement("div");
@@ -95,9 +96,14 @@
             font-family: sans-serif;
             font-size: 14px;
         `;
-      panel.innerHTML = this.innerHTML || '<p style="margin:0">Default Panel Content</p>';
-      this.innerHTML = "";
       this.panelEl = panel;
+    }
+    connectedCallback() {
+      if (this._connected)
+        return;
+      this._connected = true;
+      this.panelEl.innerHTML = this.innerHTML || '<p style="margin:0">Default Panel Content</p>';
+      this.innerHTML = "";
       if (this.hasAttribute("move")) {
         const moveButton = document.createElement("button");
         moveButton.textContent = "⠿";
@@ -109,9 +115,9 @@
                 padding: 2px 5px; line-height: 1;
             `;
         moveButton.addEventListener("mousedown", this.mouseDownHandler.bind(this));
-        panel.appendChild(moveButton);
+        this.panelEl.appendChild(moveButton);
       }
-      this.appendChild(panel);
+      this.appendChild(this.panelEl);
     }
     mouseDownHandler(e) {
       e.preventDefault();
@@ -345,10 +351,14 @@
           const onUp = () => {
             document.removeEventListener("mousemove", onMove);
             document.removeEventListener("mouseup", onUp);
+            const offset = this.selectable ? 1 : 0;
             this.shadowRoot.querySelectorAll("th").forEach((t, i) => {
+              const colIdx2 = i - offset;
+              if (colIdx2 < 0 || colIdx2 >= this._columns.length)
+                return;
               const w = parseInt(t.style.width) || t.offsetWidth;
               if (w)
-                this._columns[i] = { ...this._columns[i], width: w };
+                this._columns[colIdx2] = { ...this._columns[colIdx2], width: w };
             });
             this.persistState();
           };
