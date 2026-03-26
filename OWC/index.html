@@ -154,16 +154,17 @@ search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, q
     <p class="desc">Live example combining <code>o-search</code>, <code>o-table</code> (selectable), <code>o-toggle</code> for pages + page size, and <code>o-button</code> for prev/next.</p>
     <o-search id="demo-search" placeholder="Search people..." no-dropdown style="max-width:500px"></o-search>
 
-    <div style="margin-top:12px">
-      <o-table id="demo-table2" selectable></o-table>
-    </div>
-
-    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
-      <o-button id="btn-prev">‹</o-button>
-      <o-toggle id="tgl-pages" options="1"></o-toggle>
-      <o-button id="btn-next">›</o-button>
-      <div style="flex:1"></div>
-      <o-toggle id="tgl-pagesize" options="5,10,25,All" value="10"></o-toggle>
+    <div style="width:max-content;max-width:100%">
+      <div style="margin-top:12px">
+        <o-table id="demo-table2" selectable></o-table>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <o-button id="btn-prev">‹</o-button>
+        <o-toggle id="tgl-pages" options="1"></o-toggle>
+        <o-button id="btn-next">›</o-button>
+        <div style="flex:1"></div>
+        <o-toggle id="tgl-pagesize" options="5,10,25,All" value="10"></o-toggle>
+      </div>
     </div>
 
     <script>
