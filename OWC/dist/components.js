@@ -139,12 +139,13 @@
   // src/table.ts
   class OTable extends HTMLElement {
     static get observedAttributes() {
-      return ["storage", "storage-key", "resize-mode"];
+      return ["storage", "storage-key", "resize-mode", "selectable"];
     }
     _columns = [];
     _data = [];
     _sortCol = null;
     _sortDir = "none";
+    _selectedRows = new Set;
     get columns() {
       return this._columns;
     }
@@ -157,7 +158,14 @@
     }
     set data(v) {
       this._data = v;
+      this._selectedRows.clear();
       this.render();
+    }
+    get selected() {
+      return this._data.filter((row) => this._selectedRows.has(row));
+    }
+    get selectable() {
+      return this.hasAttribute("selectable");
     }
     constructor() {
       super();
@@ -212,7 +220,7 @@
       <style>
         :host { display: block; overflow-x: auto; }
         table {
-          width: 100%; border-collapse: collapse;
+          border-collapse: collapse;
           font-family: sans-serif; font-size: 14px;
           background: rgba(255,255,255,0.08);
           border-radius: 10px; overflow: hidden;
@@ -237,9 +245,14 @@
           background: transparent;
         }
         .resize-handle:hover { background: rgba(255,255,255,0.3); }
+        tbody tr.selected td { background: rgba(255,255,255,0.12); }
+        input[type="checkbox"] {
+          width: 15px; height: 15px; cursor: pointer;
+          accent-color: rgba(255,255,255,0.9);
+        }
       </style>
       <table>
-        <thead><tr>${this._columns.map((c) => this.renderTh(c)).join("")}</tr></thead>
+        <thead><tr>${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ""}${this._columns.map((c) => this.renderTh(c)).join("")}</tr></thead>
         <tbody>${this.getSortedData().map((row) => this.renderRow(row)).join("")}</tbody>
       </table>
     `;
@@ -257,7 +270,10 @@
     </th>`;
     }
     renderRow(row) {
-      return `<tr>${this._columns.map((c) => `<td>${row[c.key] ?? ""}</td>`).join("")}</tr>`;
+      const checked = this._selectedRows.has(row) ? " checked" : "";
+      const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : "";
+      const checkbox = this.selectable ? `<td><input type="checkbox" data-select-row${checked}></td>` : "";
+      return `<tr${selectedClass}>${checkbox}${this._columns.map((c) => `<td>${row[c.key] ?? ""}</td>`).join("")}</tr>`;
     }
     getSortedData() {
       if (!this._sortCol || this._sortDir === "none")
@@ -304,6 +320,7 @@
         const key = handle.dataset.resize;
         const colIdx = this._columns.findIndex((c) => c.key === key);
         const col = this._columns[colIdx];
+        handle.addEventListener("click", (e) => e.stopPropagation());
         handle.addEventListener("mousedown", (e) => {
           e.preventDefault();
           const startX = e.screenX;
@@ -339,6 +356,43 @@
           document.addEventListener("mouseup", onUp);
         });
       });
+      if (this.selectable) {
+        this.shadowRoot.querySelectorAll("tbody [data-select-row]").forEach((cb, i) => {
+          const row = this.getSortedData()[i];
+          cb.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (this._selectedRows.has(row)) {
+              this._selectedRows.delete(row);
+            } else {
+              this._selectedRows.add(row);
+            }
+            this.dispatchEvent(new CustomEvent("o-row-select", {
+              bubbles: true,
+              composed: true,
+              detail: { selected: this.selected }
+            }));
+            this.render();
+          });
+        });
+        const headerCb = this.shadowRoot.querySelector("[data-select-all]");
+        if (headerCb) {
+          headerCb.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const allSelected = this.getSortedData().every((row) => this._selectedRows.has(row));
+            if (allSelected) {
+              this._selectedRows.clear();
+            } else {
+              this.getSortedData().forEach((row) => this._selectedRows.add(row));
+            }
+            this.dispatchEvent(new CustomEvent("o-row-select", {
+              bubbles: true,
+              composed: true,
+              detail: { selected: this.selected }
+            }));
+            this.render();
+          });
+        }
+      }
     }
   }
   customElements.define("o-table", OTable);
