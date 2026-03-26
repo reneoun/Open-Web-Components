@@ -135,4 +135,85 @@ describe('OTable', () => {
     const cells = el2.shadowRoot!.querySelectorAll('td')
     expect([...cells].map((c: HTMLElement) => c.textContent)).toEqual(['10', '5'])
   })
+
+  // --- selectable ---
+
+  describe('selectable', () => {
+    let el: any
+
+    beforeEach(() => {
+      document.body.innerHTML = ''
+      el = document.createElement('o-table')
+      el.setAttribute('selectable', '')
+      el.columns = [{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }]
+      el.data = [{ name: 'Alice', role: 'Eng' }, { name: 'Bob', role: 'Design' }]
+      document.body.appendChild(el)
+    })
+
+    it('adds a checkbox th when selectable', () => {
+      const headers = el.shadowRoot.querySelectorAll('th')
+      expect(headers.length).toBe(3) // checkbox + 2 columns
+      expect(headers[0].querySelector('input[type="checkbox"]')).not.toBeNull()
+    })
+
+    it('adds a checkbox td per row', () => {
+      const rows = el.shadowRoot.querySelectorAll('tbody tr')
+      rows.forEach((tr: Element) => {
+        expect(tr.querySelector('td input[type="checkbox"]')).not.toBeNull()
+      })
+    })
+
+    it('selected is empty by default', () => {
+      expect(el.selected).toEqual([])
+    })
+
+    it('clicking a row checkbox selects that row', () => {
+      const cb = el.shadowRoot.querySelector('tbody tr input[type="checkbox"]') as HTMLInputElement
+      cb.click()
+      expect(el.selected).toEqual([{ name: 'Alice', role: 'Eng' }])
+    })
+
+    it('clicking a selected row checkbox deselects it', () => {
+      const cb = el.shadowRoot.querySelector('tbody tr input[type="checkbox"]') as HTMLInputElement
+      cb.click()
+      cb.click()
+      expect(el.selected).toEqual([])
+    })
+
+    it('fires o-row-select with selected rows on change', () => {
+      let detail: any = null
+      el.addEventListener('o-row-select', (e: any) => { detail = e.detail })
+      const cb = el.shadowRoot.querySelector('tbody tr input[type="checkbox"]') as HTMLInputElement
+      cb.click()
+      expect(detail).toEqual({ selected: [{ name: 'Alice', role: 'Eng' }] })
+    })
+
+    it('header checkbox selects all rows', () => {
+      const headerCb = el.shadowRoot.querySelector('thead input[type="checkbox"]') as HTMLInputElement
+      headerCb.click()
+      expect(el.selected).toEqual([{ name: 'Alice', role: 'Eng' }, { name: 'Bob', role: 'Design' }])
+    })
+
+    it('header checkbox when all selected deselects all', () => {
+      const headerCb = el.shadowRoot.querySelector('thead input[type="checkbox"]') as HTMLInputElement
+      headerCb.click() // select all
+      headerCb.click() // deselect all
+      expect(el.selected).toEqual([])
+    })
+
+    it('reassigning data resets selection', () => {
+      const cb = el.shadowRoot.querySelector('tbody tr input[type="checkbox"]') as HTMLInputElement
+      cb.click()
+      expect(el.selected.length).toBe(1)
+      el.data = [{ name: 'Carol', role: 'Mgmt' }]
+      expect(el.selected).toEqual([])
+    })
+
+    it('selected rows are visually highlighted', () => {
+      const cb = el.shadowRoot.querySelector('tbody tr input[type="checkbox"]') as HTMLInputElement
+      cb.click()
+      const selectedTr = el.shadowRoot.querySelector('tbody tr.selected')
+      expect(selectedTr).not.toBeNull()
+    })
+  })
 })
