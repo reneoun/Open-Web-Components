@@ -192,7 +192,7 @@ class OWCPanel extends HTMLElement {
         e.preventDefault();
         (e.currentTarget as HTMLElement).style.cursor = 'grabbing';
         this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
-        const r = this.getBoundingClientRect();
+        const r = this.shadowRoot!.querySelector<HTMLElement>('.panel')!.getBoundingClientRect();
         showSnapGrid(this.snapSize, r.left, r.top);
         document.addEventListener('mousemove', this.onDragMove);
         document.addEventListener('mouseup', this.onDragEnd);
@@ -226,7 +226,7 @@ class OWCPanel extends HTMLElement {
             w: panel.offsetWidth, h: panel.offsetHeight,
             edge: (e.currentTarget as HTMLElement).dataset.edge!
         };
-        const r = this.getBoundingClientRect();
+        const r = this.shadowRoot!.querySelector<HTMLElement>('.panel')!.getBoundingClientRect();
         showSnapGrid(this.snapSize, r.left, r.top);
         document.addEventListener('mousemove', this.onResizeMove);
         document.addEventListener('mouseup', this.onResizeEnd);

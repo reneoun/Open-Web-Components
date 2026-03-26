@@ -220,7 +220,7 @@
       e.preventDefault();
       e.currentTarget.style.cursor = "grabbing";
       this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
-      const r = this.getBoundingClientRect();
+      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
       showSnapGrid(this.snapSize, r.left, r.top);
       document.addEventListener("mousemove", this.onDragMove);
       document.addEventListener("mouseup", this.onDragEnd);
@@ -253,7 +253,7 @@
         h: panel.offsetHeight,
         edge: e.currentTarget.dataset.edge
       };
-      const r = this.getBoundingClientRect();
+      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
       showSnapGrid(this.snapSize, r.left, r.top);
       document.addEventListener("mousemove", this.onResizeMove);
       document.addEventListener("mouseup", this.onResizeEnd);
