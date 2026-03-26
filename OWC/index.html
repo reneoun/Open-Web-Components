@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Web Components</title>
+    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@main/OWC/dist/components.js"></script>
     <style>
       * { box-sizing: border-box; }
       body {
@@ -14,38 +15,61 @@
         color: #fff;
       }
       h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
-      h2 { margin: 2rem 0 0.75rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
+      h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
       .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .desc { opacity: 0.6; font-size: 13px; margin: 0 0 10px; }
+      .code {
+        background: rgba(0,0,0,0.35);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-family: monospace;
+        font-size: 12px;
+        color: rgba(255,255,255,0.85);
+        overflow-x: auto;
+        white-space: pre;
+        margin-top: 10px;
+      }
     </style>
   </head>
   <body>
 
     <h1>Open Web Components</h1>
-    <p style="opacity:0.7;margin:0 0 2rem">Glassmorphism component library</p>
+    <p style="opacity:0.7;margin:0 0 0.25rem">Glassmorphism web component library</p>
+    <div class="code" style="margin:12px 0 0;display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@main/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
 
     <!-- o-button -->
     <h2>o-button</h2>
+    <p class="desc">Glassmorphic button. Fires <code>o-click</code> instead of native click.</p>
     <div class="row">
       <o-button>Click me</o-button>
       <o-button>Save</o-button>
       <o-button>Cancel</o-button>
     </div>
+    <div class="code">&lt;o-button&gt;Click me&lt;/o-button&gt;
+
+// Event
+btn.addEventListener('o-click', () =&gt; console.log('clicked'))</div>
 
     <!-- o-panel -->
-    <h2>o-panel (drag the ⠿ handle)</h2>
+    <h2>o-panel</h2>
+    <p class="desc">Glassmorphic content panel. Add <code>move</code> attribute to make it draggable.</p>
     <div class="row">
       <o-panel move>
         <strong>Draggable panel</strong>
-        <p style="margin:8px 0 0;opacity:0.8">Grab the handle to move me around.</p>
+        <p style="margin:8px 0 0;opacity:0.8">Grab the ⠿ handle to move.</p>
       </o-panel>
       <o-panel>
         <strong>Static panel</strong>
         <p style="margin:8px 0 0;opacity:0.8">No move attribute.</p>
       </o-panel>
     </div>
+    <div class="code">&lt;o-panel&gt;Content&lt;/o-panel&gt;
+&lt;o-panel move&gt;Draggable content&lt;/o-panel&gt;</div>
 
     <!-- o-toast -->
     <h2>o-toast</h2>
+    <p class="desc">Programmatic toast notifications. Call <code>window.toast(message, type?, options?)</code> after loading the CDN bundle.</p>
     <div class="row">
       <o-button id="btn-success">Success</o-button>
       <o-button id="btn-error">Error</o-button>
@@ -53,41 +77,70 @@
       <o-button id="btn-info">Info</o-button>
       <o-button id="btn-long">8s toast</o-button>
     </div>
-
-    <!-- o-table -->
-    <h2>o-table</h2>
-    <o-table id="demo-table" storage="local" storage-key="owc-demo-table"></o-table>
-    <script type="module">
-      import '/src/table.ts'
-      const t = document.getElementById('demo-table')
-      t.columns = [
-        { key: 'name',  label: 'Name',  width: 160, sortable: true },
-        { key: 'role',  label: 'Role',  width: 140, sortable: true },
-        { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60 },
-      ]
-      t.data = [
-        { name: 'Alice', role: 'Engineer', score: 92 },
-        { name: 'Bob',   role: 'Designer', score: 85 },
-        { name: 'Carol', role: 'Manager',  score: 78 },
-        { name: 'Dave',  role: 'Engineer', score: 95 },
-      ]
-    </script>
+    <div class="code">// type: 'success' | 'error' | 'warning' | 'info'  (default: 'info')
+toast('File saved!', 'success')
+toast('Connection failed', 'error')
+toast('Long message', 'info', { duration: 8000 })</div>
 
     <!-- o-toggle -->
     <h2>o-toggle</h2>
+    <p class="desc">Segmented control toggle. Pass options as a comma-separated string or array. Fires <code>o-change</code> with <code>{ value, index }</code>.</p>
     <div class="row">
       <o-toggle id="demo-toggle" options="Day,Week,Month"></o-toggle>
       <o-toggle options="S,M,L,XL" value="m"></o-toggle>
     </div>
-    <script type="module">
-      import '/src/toggle.ts'
-      document.getElementById('demo-toggle').addEventListener('o-change', e => {
-        console.log('toggle changed:', e.detail)
-      })
-    </script>
+    <div class="code">&lt;o-toggle options="Day,Week,Month" value="day"&gt;&lt;/o-toggle&gt;
+
+// Or set via JS
+toggle.options = [{ label: 'Day', value: 'day' }, { label: 'Week', value: 'week' }]
+toggle.value = 'week'
+
+// Event
+toggle.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value, index, prev }</div>
+
+    <!-- o-table -->
+    <h2>o-table</h2>
+    <p class="desc">Sortable, resizable, glassmorphic data table. Supports column persistence and optional row selection.</p>
+    <o-table id="demo-table" storage="local" storage-key="owc-demo-table"></o-table>
+    <div class="code">&lt;o-table selectable&gt;&lt;/o-table&gt;
+
+table.columns = [
+  { key: 'name',  label: 'Name',  width: 160, sortable: true },
+  { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60 },
+]
+table.data = [{ name: 'Alice', score: 92 }, ...]
+
+// Events
+table.addEventListener('o-sort',       e =&gt; console.log(e.detail)) // { col, dir }
+table.addEventListener('o-row-select', e =&gt; console.log(e.detail)) // { selected: row[] }
+
+// Attributes
+// storage="local|session"  storage-key="my-key"  — persists sort + column widths
+// selectable                                      — adds checkbox column</div>
+
+    <!-- o-search -->
+    <h2>o-search</h2>
+    <p class="desc">Glassmorphic search bar with built-in filtering and optional dropdown. Add <code>no-dropdown</code> to use it as a pure filter input.</p>
+    <o-search id="demo-search-standalone" placeholder="Search fruits..." style="max-width:400px"></o-search>
+    <div id="search-result" style="margin-top:8px;opacity:0.7;font-size:13px"></div>
+    <div class="code">&lt;o-search placeholder="Search..." no-dropdown&gt;&lt;/o-search&gt;
+
+search.data       = [{ name: 'Apple' }, { name: 'Banana' }]
+search.searchKeys = ['name']
+search.valueKey   = 'name'                           // fills input on select
+search.renderItem = item =&gt; `&lt;b&gt;${item.name}&lt;/b&gt;`   // custom dropdown row
+
+// Custom filter (overrides searchKeys)
+search.filterFn = (query, item) =&gt; item.name.startsWith(query)
+
+// Events
+search.addEventListener('o-input',   e =&gt; console.log(e.detail)) // { query }
+search.addEventListener('o-results', e =&gt; console.log(e.detail)) // { query, results }
+search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, query }</div>
 
     <!-- Combined: o-search + o-table + pagination -->
-    <h2>Search + Table</h2>
+    <h2>Search + Table + Pagination</h2>
+    <p class="desc">Live example combining <code>o-search</code>, <code>o-table</code> (selectable), <code>o-toggle</code> for pages + page size, and <code>o-button</code> for prev/next.</p>
     <o-search id="demo-search" placeholder="Search people..." no-dropdown style="max-width:500px"></o-search>
 
     <div style="margin-top:12px">
@@ -102,11 +155,7 @@
       <o-toggle id="tgl-pagesize" options="5,10,25,All" value="10"></o-toggle>
     </div>
 
-    <script type="module">
-      import '/src/search.ts'
-      import '/src/table.ts'
-      import '/src/toggle.ts'
-
+    <script>
       const COLUMNS = [
         { key: 'name',       label: 'Name',       width: 160 },
         { key: 'company',    label: 'Company',     width: 200 },
@@ -114,12 +163,12 @@
         { key: 'age',        label: 'Age',         width: 60  },
       ]
 
-      const search    = document.getElementById('demo-search')
-      const table     = document.getElementById('demo-table2')
-      const btnPrev   = document.getElementById('btn-prev')
-      const btnNext   = document.getElementById('btn-next')
-      const tglPages  = document.getElementById('tgl-pages')
-      const tglSize   = document.getElementById('tgl-pagesize')
+      const search   = document.getElementById('demo-search')
+      const table    = document.getElementById('demo-table2')
+      const btnPrev  = document.getElementById('btn-prev')
+      const btnNext  = document.getElementById('btn-next')
+      const tglPages = document.getElementById('tgl-pages')
+      const tglSize  = document.getElementById('tgl-pagesize')
 
       table.columns = COLUMNS
 
@@ -131,25 +180,19 @@
       function getPageSize() {
         return tglSize.value === 'all' ? Infinity : parseInt(tglSize.value)
       }
-
       function totalPages() {
-        if (pageSize === Infinity) return 1
-        return Math.max(1, Math.ceil(filteredData.length / pageSize))
+        return pageSize === Infinity ? 1 : Math.max(1, Math.ceil(filteredData.length / pageSize))
       }
-
       function updatePageToggle() {
         const n = totalPages()
         tglPages.options = Array.from({ length: n }, (_, i) => String(i + 1))
         tglPages.value = String(currentPage)
       }
-
       function updateNavButtons() {
-        const disabled = 'opacity:0.35;pointer-events:none'
-        const enabled  = ''
-        btnPrev.style.cssText = currentPage <= 1 ? disabled : enabled
-        btnNext.style.cssText = currentPage >= totalPages() ? disabled : enabled
+        const off = 'opacity:0.35;pointer-events:none'
+        btnPrev.style.cssText = currentPage <= 1 ? off : ''
+        btnNext.style.cssText = currentPage >= totalPages() ? off : ''
       }
-
       function render() {
         const start = pageSize === Infinity ? 0 : (currentPage - 1) * pageSize
         const end   = pageSize === Infinity ? filteredData.length : start + pageSize
@@ -157,21 +200,18 @@
         updatePageToggle()
         updateNavButtons()
       }
-
       function applySearch(query) {
         const q = query.toLowerCase()
         filteredData = q
           ? allData.filter(r =>
               r.name.toLowerCase().includes(q) ||
               r.company.toLowerCase().includes(q) ||
-              r.department.toLowerCase().includes(q)
-            )
+              r.department.toLowerCase().includes(q))
           : allData
         currentPage = 1
         render()
       }
 
-      // Fetch data
       fetch('https://dummyjson.com/users?limit=50')
         .then(r => r.json())
         .then(({ users }) => {
@@ -186,42 +226,52 @@
         })
         .catch(err => console.error('Failed to load users', err))
 
-      search.addEventListener('o-input', e => applySearch(e.detail.query))
-
-      tglPages.addEventListener('o-change', e => {
-        currentPage = parseInt(e.detail.value)
-        render()
-      })
-
-      tglSize.addEventListener('o-change', () => {
-        pageSize = getPageSize()
-        currentPage = 1
-        render()
-      })
-
-      btnPrev.addEventListener('o-click', () => {
-        if (currentPage > 1) { currentPage--; render() }
-      })
-
-      btnNext.addEventListener('o-click', () => {
-        if (currentPage < totalPages()) { currentPage++; render() }
-      })
-
-      table.addEventListener('o-row-select', e => {
-        console.log('selected rows:', e.detail.selected)
-      })
+      search.addEventListener('o-input',  e => applySearch(e.detail.query))
+      tglPages.addEventListener('o-change', e => { currentPage = parseInt(e.detail.value); render() })
+      tglSize.addEventListener('o-change',  () => { pageSize = getPageSize(); currentPage = 1; render() })
+      btnPrev.addEventListener('o-click',   () => { if (currentPage > 1) { currentPage--; render() } })
+      btnNext.addEventListener('o-click',   () => { if (currentPage < totalPages()) { currentPage++; render() } })
+      table.addEventListener('o-row-select', e => console.log('selected:', e.detail.selected))
     </script>
 
-    <script type="module" src="/src/main.ts"></script>
-    <script type="module">
-      import { toast } from '/src/toast.ts'
-      window.toast = toast
+    <script>
+      // o-table demo
+      const t = document.getElementById('demo-table')
+      t.columns = [
+        { key: 'name',  label: 'Name',  width: 160, sortable: true },
+        { key: 'role',  label: 'Role',  width: 140, sortable: true },
+        { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60 },
+      ]
+      t.data = [
+        { name: 'Alice', role: 'Engineer', score: 92 },
+        { name: 'Bob',   role: 'Designer', score: 85 },
+        { name: 'Carol', role: 'Manager',  score: 78 },
+        { name: 'Dave',  role: 'Engineer', score: 95 },
+      ]
 
+      // o-toggle demo
+      document.getElementById('demo-toggle').addEventListener('o-change', e => {
+        console.log('toggle changed:', e.detail)
+      })
+
+      // o-toast demo
       document.getElementById('btn-success').addEventListener('o-click', () => toast('File saved successfully!', 'success'))
-      document.getElementById('btn-error').addEventListener('o-click', () => toast('Connection failed', 'error'))
+      document.getElementById('btn-error').addEventListener('o-click',   () => toast('Connection failed', 'error'))
       document.getElementById('btn-warning').addEventListener('o-click', () => toast('Low disk space', 'warning'))
-      document.getElementById('btn-info').addEventListener('o-click', () => toast('Update available', 'info'))
-      document.getElementById('btn-long').addEventListener('o-click', () => toast('Long toast — 8 seconds', 'info', { duration: 8000 }))
+      document.getElementById('btn-info').addEventListener('o-click',    () => toast('Update available', 'info'))
+      document.getElementById('btn-long').addEventListener('o-click',    () => toast('Long toast — 8 seconds', 'info', { duration: 8000 }))
+
+      // o-search standalone demo
+      const ss = document.getElementById('demo-search-standalone')
+      ss.data = ['Apple','Banana','Cherry','Date','Elderberry','Fig','Grape','Honeydew','Kiwi','Lemon','Mango'].map(n => ({ name: n }))
+      ss.searchKeys = ['name']
+      ss.valueKey = 'name'
+      ss.renderItem = item => item.name
+      ss.addEventListener('o-results', e => {
+        document.getElementById('search-result').textContent =
+          e.detail.query ? `${e.detail.results.length} result(s) for "${e.detail.query}"` : ''
+      })
     </script>
+
   </body>
 </html>
