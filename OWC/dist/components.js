@@ -33,7 +33,8 @@
     toast: () => toast,
     OWCToast: () => OWCToast,
     OToggle: () => OToggle,
-    OTable: () => OTable
+    OTable: () => OTable,
+    OSearch: () => OSearch
   });
 
   // src/core.ts
@@ -211,7 +212,7 @@
       <style>
         :host { display: block; overflow-x: auto; }
         table {
-          border-collapse: collapse;
+          width: 100%; border-collapse: collapse;
           font-family: sans-serif; font-size: 14px;
           background: rgba(255,255,255,0.08);
           border-radius: 10px; overflow: hidden;
@@ -303,7 +304,6 @@
         const key = handle.dataset.resize;
         const colIdx = this._columns.findIndex((c) => c.key === key);
         const col = this._columns[colIdx];
-        handle.addEventListener("click", (e) => e.stopPropagation());
         handle.addEventListener("mousedown", (e) => {
           e.preventDefault();
           const startX = e.screenX;
@@ -605,7 +605,7 @@
         return;
       this._value = v;
       this.setAttribute("value", v);
-      this.render();
+      this.updateSelection();
     }
     constructor() {
       super();
@@ -643,7 +643,7 @@
       if (name === "value" && val !== null) {
         if (this._options.find((o) => o.value === val)) {
           this._value = val;
-          this.render();
+          this.updateSelection();
         }
       }
     }
@@ -658,13 +658,25 @@
       const prev = this._value;
       this._value = opt.value;
       this.setAttribute("value", opt.value);
-      this.render();
+      this.updateSelection();
       this.dispatchEvent(new CustomEvent("o-change", {
         bubbles: true,
         composed: true,
         detail: { value: opt.value, index: idx, prev }
       }));
     };
+    updateSelection() {
+      const container = this.shadowRoot?.querySelector(".container");
+      if (!container) {
+        this.render();
+        return;
+      }
+      const idx = this._options.findIndex((o) => o.value === this._value);
+      container.style.setProperty("--idx", String(idx >= 0 ? idx : 0));
+      this.shadowRoot.querySelectorAll(".segment").forEach((s, i) => {
+        s.classList.toggle("active", i === idx);
+      });
+    }
     render() {
       if (!this.shadowRoot)
         return;
@@ -721,6 +733,194 @@
     }
   }
   customElements.define("o-toggle", OToggle);
+
+  // src/search.ts
+  class OSearch extends HTMLElement {
+    static get observedAttributes() {
+      return ["placeholder", "value-key", "no-dropdown"];
+    }
+    _input;
+    _data = [];
+    _searchKeys = [];
+    _renderItem = null;
+    _filterFn = null;
+    _valueKey = null;
+    _currentResults = [];
+    get placeholder() {
+      return this.getAttribute("placeholder") ?? "Search…";
+    }
+    set placeholder(v) {
+      this.setAttribute("placeholder", v);
+    }
+    get valueKey() {
+      return this._valueKey;
+    }
+    set valueKey(v) {
+      this._valueKey = v;
+      this.setAttribute("value-key", v ?? "");
+    }
+    get noDropdown() {
+      return this.hasAttribute("no-dropdown");
+    }
+    set noDropdown(v) {
+      v ? this.setAttribute("no-dropdown", "") : this.removeAttribute("no-dropdown");
+    }
+    set data(v) {
+      this._data = v;
+    }
+    set searchKeys(v) {
+      this._searchKeys = v;
+    }
+    set renderItem(fn) {
+      this._renderItem = fn;
+    }
+    set filterFn(fn) {
+      this._filterFn = fn;
+    }
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" });
+      this._input = document.createElement("input");
+      this._input.addEventListener("input", this.handleInput);
+      this.render();
+    }
+    connectedCallback() {
+      document.addEventListener("click", this.handleDocumentClick);
+    }
+    disconnectedCallback() {
+      document.removeEventListener("click", this.handleDocumentClick);
+    }
+    attributeChangedCallback(name, _old, val) {
+      if (name === "placeholder") {
+        this._input.placeholder = val ?? "Search…";
+      }
+      if (name === "value-key") {
+        this._valueKey = val;
+        this.updateDropdown();
+      }
+      if (name === "no-dropdown") {
+        this.updateDropdown();
+      }
+    }
+    handleInput = () => {
+      const query = this._input.value;
+      this.dispatchEvent(new CustomEvent("o-input", {
+        bubbles: true,
+        composed: true,
+        detail: { query }
+      }));
+      const results = this.filter(query);
+      this._currentResults = results;
+      this.dispatchEvent(new CustomEvent("o-results", {
+        bubbles: true,
+        composed: true,
+        detail: { query, results }
+      }));
+      this.updateDropdown();
+    };
+    filter(query) {
+      if (!query)
+        return [];
+      if (this._filterFn)
+        return this._data.filter((item) => this._filterFn(query, item));
+      if (this._searchKeys.length === 0)
+        return [];
+      const q = query.toLowerCase();
+      return this._data.filter((item) => this._searchKeys.some((key) => String(item[key] ?? "").toLowerCase().includes(q)));
+    }
+    handleDocumentClick = (e) => {
+      if (e.target instanceof Node && !this.contains(e.target)) {
+        this.closeDropdown();
+      }
+    };
+    closeDropdown() {
+      const dropdown = this.shadowRoot.querySelector(".dropdown");
+      if (dropdown)
+        dropdown.style.display = "none";
+    }
+    updateDropdown() {
+      const dropdown = this.shadowRoot.querySelector(".dropdown");
+      if (!dropdown)
+        return;
+      const query = this._input.value;
+      const show = !this.noDropdown && this._renderItem !== null && query.length > 0;
+      if (!show) {
+        dropdown.style.display = "none";
+        return;
+      }
+      dropdown.style.display = "block";
+      if (this._currentResults.length === 0) {
+        dropdown.innerHTML = `<div class="item no-results">No results</div>`;
+        return;
+      }
+      dropdown.innerHTML = this._currentResults.map((item, i) => `<div class="item" data-index="${i}">${this._renderItem(item)}</div>`).join("");
+    }
+    handleDropdownClick = (e) => {
+      const item = e.target.closest("[data-index]");
+      if (!item)
+        return;
+      const idx = parseInt(item.dataset.index);
+      const selected = this._currentResults[idx];
+      if (selected === undefined)
+        return;
+      const query = this._input.value;
+      if (this._valueKey) {
+        const val = selected[this._valueKey];
+        if (val !== undefined)
+          this._input.value = String(val);
+      }
+      this.closeDropdown();
+      this.dispatchEvent(new CustomEvent("o-select", {
+        bubbles: true,
+        composed: true,
+        detail: { item: selected, query }
+      }));
+    };
+    render() {
+      const shadow = this.shadowRoot;
+      shadow.innerHTML = `
+      <style>
+        :host { display: block; position: relative; }
+        .container {
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.2);
+          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          border-radius: 999px; padding: 8px 16px;
+        }
+        .icon { opacity: 0.6; flex-shrink: 0; }
+        input {
+          flex: 1; background: transparent; border: none; outline: none;
+          color: #fff; font-size: 14px; font-family: sans-serif;
+        }
+        input::placeholder { color: rgba(255,255,255,0.4); }
+        .dropdown {
+          display: none; position: absolute;
+          top: calc(100% + 6px); left: 0; right: 0;
+          background: rgba(255,255,255,0.12);
+          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+          overflow: hidden; z-index: 10;
+        }
+        .item {
+          padding: 8px 14px; color: #fff;
+          font-size: 14px; font-family: sans-serif; cursor: pointer;
+        }
+        .item:hover { background: rgba(255,255,255,0.1); }
+        .no-results { opacity: 0.5; cursor: default; }
+      </style>
+      <div class="container">
+        <span class="icon">\uD83D\uDD0D</span>
+      </div>
+      <div class="dropdown"></div>
+    `;
+      const container = shadow.querySelector(".container");
+      this._input.placeholder = this.getAttribute("placeholder") ?? "Search…";
+      container.appendChild(this._input);
+      shadow.querySelector(".dropdown").addEventListener("click", this.handleDropdownClick);
+    }
+  }
+  customElements.define("o-search", OSearch);
 
   // src/index.ts
   if (typeof window !== "undefined") {
