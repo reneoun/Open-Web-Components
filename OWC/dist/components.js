@@ -73,71 +73,145 @@
 
   class OWCPanel extends HTMLElement {
     static get observedAttributes() {
-      return ["move"];
+      return ["move", "snap", "resize"];
     }
-    panelEl;
     dragStart = null;
     dragOffset = { x: 0, y: 0 };
-    _connected = false;
+    resizeStart = null;
     constructor() {
       super();
-      const panel = document.createElement("div");
-      panel.style.cssText = `
-            background: rgba(255,255,255,0.18);
-            border: 1px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 16px;
-            margin: 8px;
-            border-radius: 10px;
-            width: fit-content;
-            position: relative;
-            color: #fff;
-            font-family: sans-serif;
-            font-size: 14px;
+      this.attachShadow({ mode: "open" });
+      this.render();
+    }
+    get snapSize() {
+      const v = parseInt(this.getAttribute("snap") ?? "1");
+      return isNaN(v) || v < 1 ? 1 : v;
+    }
+    snapTo(v) {
+      const s = this.snapSize;
+      return Math.round(v / s) * s;
+    }
+    render() {
+      const hasDrag = this.hasAttribute("move");
+      const hasResize = this.hasAttribute("resize");
+      this.shadowRoot.innerHTML = `
+            <style>
+                :host { display: inline-block; }
+                .panel {
+                    background: rgba(255,255,255,0.18);
+                    border: 1px solid rgba(255,255,255,0.3);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    padding: 16px;
+                    margin: 8px;
+                    border-radius: 10px;
+                    min-width: 120px;
+                    min-height: 40px;
+                    position: relative;
+                    color: #fff;
+                    font-family: sans-serif;
+                    font-size: 14px;
+                    box-sizing: border-box;
+                }
+                .move-handle {
+                    position: absolute; top: 6px; right: 8px;
+                    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+                    color: #fff; border-radius: 6px; cursor: grab; font-size: 14px;
+                    padding: 2px 5px; line-height: 1;
+                }
+                .resize-e {
+                    position: absolute; right: 0; top: 20%; bottom: 20%;
+                    width: 5px; cursor: ew-resize;
+                    background: rgba(255,255,255,0.15); border-radius: 0 10px 10px 0;
+                    transition: background 0.15s;
+                }
+                .resize-s {
+                    position: absolute; bottom: 0; left: 20%; right: 20%;
+                    height: 5px; cursor: ns-resize;
+                    background: rgba(255,255,255,0.15); border-radius: 0 0 10px 10px;
+                    transition: background 0.15s;
+                }
+                .resize-se {
+                    position: absolute; right: 0; bottom: 0;
+                    width: 14px; height: 14px; cursor: nwse-resize;
+                    border-right: 3px solid rgba(255,255,255,0.3);
+                    border-bottom: 3px solid rgba(255,255,255,0.3);
+                    border-radius: 0 0 10px 0;
+                }
+                .resize-e:hover, .resize-s:hover { background: rgba(255,255,255,0.35); }
+                .resize-se:hover { border-color: rgba(255,255,255,0.6); }
+            </style>
+            <div class="panel">
+                ${hasDrag ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
+                <slot></slot>
+                ${hasResize ? `
+                    <div class="resize-e"  data-edge="e"></div>
+                    <div class="resize-s"  data-edge="s"></div>
+                    <div class="resize-se" data-edge="se"></div>
+                ` : ""}
+            </div>
         `;
-      this.panelEl = panel;
-    }
-    connectedCallback() {
-      if (this._connected)
-        return;
-      this._connected = true;
-      this.panelEl.innerHTML = this.innerHTML || '<p style="margin:0">Default Panel Content</p>';
-      this.innerHTML = "";
-      if (this.hasAttribute("move")) {
-        const moveButton = document.createElement("button");
-        moveButton.textContent = "⠿";
-        moveButton.title = "Drag to move";
-        moveButton.style.cssText = `
-                position: absolute; top: 6px; right: 8px;
-                background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
-                color: #fff; border-radius: 6px; cursor: grab; font-size: 14px;
-                padding: 2px 5px; line-height: 1;
-            `;
-        moveButton.addEventListener("mousedown", this.mouseDownHandler.bind(this));
-        this.panelEl.appendChild(moveButton);
+      if (hasDrag) {
+        this.shadowRoot.querySelector(".move-handle").addEventListener("mousedown", this.onDragStart);
       }
-      this.appendChild(this.panelEl);
+      if (hasResize) {
+        this.shadowRoot.querySelectorAll("[data-edge]").forEach((el) => el.addEventListener("mousedown", this.onResizeStart));
+      }
     }
-    mouseDownHandler(e) {
+    onDragStart = (e) => {
       e.preventDefault();
-      e.target.style.cursor = "grabbing";
+      e.currentTarget.style.cursor = "grabbing";
       this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
-      document.addEventListener("mousemove", this.mouseMoveHandler);
-      document.addEventListener("mouseup", this.mouseUpHandler.bind(this));
-    }
-    mouseMoveHandler = (e) => {
+      document.addEventListener("mousemove", this.onDragMove);
+      document.addEventListener("mouseup", this.onDragEnd);
+    };
+    onDragMove = (e) => {
       if (!this.dragStart)
         return;
-      this.dragOffset = { x: e.screenX - this.dragStart.x, y: e.screenY - this.dragStart.y };
-      this.panelEl.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
+      const x = this.snapTo(e.screenX - this.dragStart.x);
+      const y = this.snapTo(e.screenY - this.dragStart.y);
+      this.dragOffset = { x, y };
+      this.style.transform = `translate(${x}px, ${y}px)`;
     };
-    mouseUpHandler(e) {
+    onDragEnd = () => {
       this.dragStart = null;
-      e.target.style.cursor = "grab";
-      document.removeEventListener("mousemove", this.mouseMoveHandler);
-      document.removeEventListener("mouseup", this.mouseUpHandler.bind(this));
-    }
+      const handle = this.shadowRoot.querySelector(".move-handle");
+      if (handle)
+        handle.style.cursor = "grab";
+      document.removeEventListener("mousemove", this.onDragMove);
+      document.removeEventListener("mouseup", this.onDragEnd);
+    };
+    onResizeStart = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const panel = this.shadowRoot.querySelector(".panel");
+      this.resizeStart = {
+        x: e.screenX,
+        y: e.screenY,
+        w: panel.offsetWidth,
+        h: panel.offsetHeight,
+        edge: e.currentTarget.dataset.edge
+      };
+      document.addEventListener("mousemove", this.onResizeMove);
+      document.addEventListener("mouseup", this.onResizeEnd);
+    };
+    onResizeMove = (e) => {
+      if (!this.resizeStart)
+        return;
+      const panel = this.shadowRoot.querySelector(".panel");
+      const dx = e.screenX - this.resizeStart.x;
+      const dy = e.screenY - this.resizeStart.y;
+      const { edge, w, h } = this.resizeStart;
+      if (edge === "e" || edge === "se")
+        panel.style.width = `${Math.max(120, this.snapTo(w + dx))}px`;
+      if (edge === "s" || edge === "se")
+        panel.style.height = `${Math.max(40, this.snapTo(h + dy))}px`;
+    };
+    onResizeEnd = () => {
+      this.resizeStart = null;
+      document.removeEventListener("mousemove", this.onResizeMove);
+      document.removeEventListener("mouseup", this.onResizeEnd);
+    };
   }
   customElements.define("o-panel", OWCPanel);
   customElements.define("o-button", OWCButton);

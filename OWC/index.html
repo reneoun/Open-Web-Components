@@ -53,19 +53,30 @@ btn.addEventListener('o-click', () =&gt; console.log('clicked'))</div>
 
     <!-- o-panel -->
     <h2>o-panel</h2>
-    <p class="desc">Glassmorphic content panel. Add <code>move</code> attribute to make it draggable.</p>
+    <p class="desc">Glassmorphic content panel. Supports dragging, grid snapping, and resizing.</p>
     <div class="row">
-      <o-panel move>
-        <strong>Draggable panel</strong>
-        <p style="margin:8px 0 0;opacity:0.8">Grab the ⠿ handle to move.</p>
+      <o-panel move snap="20">
+        <strong>Draggable + snap 20px</strong>
+        <p style="margin:8px 0 0;opacity:0.8">Grab ⠿ to move. Snaps to 20px grid.</p>
+      </o-panel>
+      <o-panel resize>
+        <strong>Resizable panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8">Drag the right / bottom / corner handles.</p>
+      </o-panel>
+      <o-panel move snap="40" resize>
+        <strong>Drag + snap 40px + resize</strong>
+        <p style="margin:8px 0 0;opacity:0.8">All features combined.</p>
       </o-panel>
       <o-panel>
         <strong>Static panel</strong>
-        <p style="margin:8px 0 0;opacity:0.8">No move attribute.</p>
+        <p style="margin:8px 0 0;opacity:0.8">No attributes.</p>
       </o-panel>
     </div>
-    <div class="code">&lt;o-panel&gt;Content&lt;/o-panel&gt;
-&lt;o-panel move&gt;Draggable content&lt;/o-panel&gt;</div>
+    <div class="code">&lt;o-panel&gt;Static content&lt;/o-panel&gt;
+&lt;o-panel move&gt;Draggable&lt;/o-panel&gt;
+&lt;o-panel move snap="20"&gt;Snaps to 20px grid while dragging&lt;/o-panel&gt;
+&lt;o-panel resize&gt;Resizable (right / bottom / corner handles)&lt;/o-panel&gt;
+&lt;o-panel move snap="20" resize&gt;All combined&lt;/o-panel&gt;</div>
 
     <!-- o-toast -->
     <h2>o-toast</h2>
