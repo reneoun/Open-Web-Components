@@ -216,4 +216,97 @@ describe('OTable', () => {
       expect(selectedTr).not.toBeNull()
     })
   })
+
+  describe('editable', () => {
+    let el: any
+
+    beforeEach(() => {
+      document.body.innerHTML = ''
+      el = document.createElement('o-table')
+      el.setAttribute('editable', '')
+      el.columns = [
+        { key: 'name',   label: 'Name',   editable: 'always' },
+        { key: 'role',   label: 'Role',   editable: 'click'  },
+        { key: 'status', label: 'Status' }
+      ]
+      el.data = [{ name: 'Alice', role: 'Eng', status: 'Active' }]
+      document.body.appendChild(el)
+    })
+
+    it('renders input for always-editable column', () => {
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')
+      expect(input).not.toBeNull()
+    })
+
+    it('does not render input for read-only column', () => {
+      const inputs = [...el.shadowRoot.querySelectorAll<HTMLInputElement>('input.cell-input')]
+      expect(inputs.map(i => i.dataset.key)).not.toContain('status')
+    })
+
+    it('renders edit button for rows with click-editable columns', () => {
+      expect(el.shadowRoot.querySelector('.edit-btn')).not.toBeNull()
+    })
+
+    it('click edit button shows input for click-editable column', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const keys = [...el.shadowRoot.querySelectorAll<HTMLInputElement>('input.cell-input')]
+        .map(i => i.dataset.key)
+      expect(keys).toContain('role')
+    })
+
+    it('click edit button shows confirm and cancel buttons', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      expect(el.shadowRoot.querySelector('.edit-confirm')).not.toBeNull()
+      expect(el.shadowRoot.querySelector('.edit-cancel')).not.toBeNull()
+    })
+
+    it('fires o-cell-change on blur when always-editable value changed', () => {
+      let detail: any = null
+      el.addEventListener('o-cell-change', (e: any) => { detail = e.detail })
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')!
+      input.value = 'Bob'
+      input.dispatchEvent(new Event('blur'))
+      expect(detail).not.toBeNull()
+      expect(detail.key).toBe('name')
+      expect(detail.value).toBe('Bob')
+    })
+
+    it('does not fire o-cell-change when value unchanged on blur', () => {
+      let fired = false
+      el.addEventListener('o-cell-change', () => { fired = true })
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')!
+      input.value = 'Alice'
+      input.dispatchEvent(new Event('blur'))
+      expect(fired).toBe(false)
+    })
+
+    it('fires o-row-change on confirm with changed click-editable values', () => {
+      let detail: any = null
+      el.addEventListener('o-row-change', (e: any) => { detail = e.detail })
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
+      input.value = 'Design'
+      el.shadowRoot.querySelector('.edit-confirm').click()
+      expect(detail).not.toBeNull()
+      expect(detail.changes).toEqual({ role: 'Design' })
+    })
+
+    it('cancel restores original row values', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
+      input.value = 'Design'
+      el.shadowRoot.querySelector('.edit-cancel').click()
+      const tds = [...el.shadowRoot.querySelectorAll('tbody td')]
+      expect(tds.some(td => td.textContent === 'Eng')).toBe(true)
+    })
+
+    it('no edit controls when editable attribute absent', () => {
+      document.body.innerHTML = ''
+      const el2 = document.createElement('o-table') as any
+      el2.columns = [{ key: 'name', label: 'Name', editable: 'always' }]
+      el2.data = [{ name: 'Alice' }]
+      document.body.appendChild(el2)
+      expect(el2.shadowRoot.querySelector('input.cell-input')).toBeNull()
+    })
+  })
 })
