@@ -3,6 +3,8 @@ import './table'
 import { toast } from './toast'
 import './toggle'
 import './search'
+import './note'
+import './dialog'
 
 export * from './core'
 export * from './toast'

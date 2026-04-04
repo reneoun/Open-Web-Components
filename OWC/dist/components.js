@@ -283,13 +283,15 @@
   // src/table.ts
   class OTable extends HTMLElement {
     static get observedAttributes() {
-      return ["storage", "storage-key", "resize-mode", "selectable"];
+      return ["storage", "storage-key", "resize-mode", "selectable", "editable"];
     }
     _columns = [];
     _data = [];
     _sortCol = null;
     _sortDir = "none";
     _selectedRows = new Set;
+    _editingRows = new Set;
+    _rowOriginals = new Map;
     get columns() {
       return this._columns;
     }
@@ -303,6 +305,8 @@
     set data(v) {
       this._data = v;
       this._selectedRows.clear();
+      this._editingRows.clear();
+      this._rowOriginals.clear();
       this.render();
     }
     get selected() {
@@ -311,6 +315,9 @@
     get selectable() {
       return this.hasAttribute("selectable");
     }
+    get editable() {
+      return this.hasAttribute("editable");
+    }
     constructor() {
       super();
       this.attachShadow({ mode: "open" });
@@ -318,6 +325,10 @@
     connectedCallback() {
       this.restoreState();
       this.render();
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
     }
     getStorage() {
       const s = this.getAttribute("storage");
@@ -394,11 +405,39 @@
           width: 15px; height: 15px; cursor: pointer;
           accent-color: rgba(255,255,255,0.9);
         }
+        .cell-input {
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(251,191,36,0.5);
+          border-radius: 4px;
+          color: #fff;
+          padding: 4px 8px;
+          font-size: 13px;
+          width: calc(100% - 4px);
+          outline: none;
+          font-family: sans-serif;
+        }
+        .cell-input:focus { border-color: rgba(251,191,36,0.9); background: rgba(255,255,255,0.15); }
+        .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
+        .edit-btn, .edit-confirm, .edit-cancel {
+          background: none; border: none; cursor: pointer;
+          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: #fff; border-radius: 3px;
+        }
+        .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
+        .edit-confirm { color: rgba(74,222,128,0.9); }
+        .edit-cancel { color: rgba(248,113,113,0.9); }
       </style>
-      <table>
-        <thead><tr>${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ""}${this._columns.map((c) => this.renderTh(c)).join("")}</tr></thead>
-        <tbody>${this.getSortedData().map((row) => this.renderRow(row)).join("")}</tbody>
-      </table>
+      ${(() => {
+        const hasClickEditable = this._columns.some((c) => c.editable === "click");
+        const editTh = this.editable && hasClickEditable ? '<th style="width:72px"></th>' : "";
+        return `<table>
+        <thead><tr>
+          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ""}
+          ${this._columns.map((c) => this.renderTh(c)).join("")}
+          ${editTh}
+        </tr></thead>
+        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i, hasClickEditable)).join("")}</tbody>
+      </table>`;
+      })()}
     `;
       this.attachHandlers();
     }
@@ -413,11 +452,28 @@
       <div class="resize-handle" data-resize="${col.key}"></div>
     </th>`;
     }
-    renderRow(row) {
+    renderRow(row, rowIndex, hasClickEditable) {
       const checked = this._selectedRows.has(row) ? " checked" : "";
       const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : "";
       const checkbox = this.selectable ? `<td><input type="checkbox" data-select-row${checked}></td>` : "";
-      return `<tr${selectedClass}>${checkbox}${this._columns.map((c) => `<td>${row[c.key] ?? ""}</td>`).join("")}</tr>`;
+      const isEditing = this._editingRows.has(row);
+      let editTd = "";
+      if (this.editable && hasClickEditable) {
+        editTd = isEditing ? `<td class="edit-actions">
+            <button class="edit-confirm" data-row-index="${rowIndex}" title="Confirm">✓</button>
+            <button class="edit-cancel" data-row-index="${rowIndex}" title="Cancel">✗</button>
+           </td>` : `<td class="edit-actions">
+            <button class="edit-btn" data-row-index="${rowIndex}" title="Edit">✏️</button>
+           </td>`;
+      }
+      const cells = this._columns.map((c) => {
+        if (this.editable && c.editable && (c.editable === "always" || isEditing)) {
+          const val = String(row[c.key] ?? "").replace(/"/g, "&quot;");
+          return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`;
+        }
+        return `<td>${row[c.key] ?? ""}</td>`;
+      }).join("");
+      return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`;
     }
     getSortedData() {
       if (!this._sortCol || this._sortDir === "none")
@@ -540,6 +596,89 @@
             this.render();
           });
         }
+      }
+      if (this.editable) {
+        this.shadowRoot.querySelectorAll("input.cell-input").forEach((input) => {
+          const key = input.dataset.key;
+          const rowIndex = parseInt(input.dataset.rowIndex);
+          const col = this._columns.find((c) => c.key === key);
+          if (col?.editable !== "always")
+            return;
+          const commit = () => {
+            const row = this.getSortedData()[rowIndex];
+            if (!row)
+              return;
+            const oldVal = String(row[key] ?? "");
+            const newVal = input.value;
+            if (newVal !== oldVal) {
+              row[key] = newVal;
+              this.dispatchEvent(new CustomEvent("o-cell-change", {
+                bubbles: true,
+                composed: true,
+                detail: { key, value: newVal, rowIndex, row }
+              }));
+            }
+          };
+          input.addEventListener("blur", commit);
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              commit();
+              input.blur();
+            }
+          });
+        });
+        this.shadowRoot.querySelectorAll(".edit-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const rowIndex = parseInt(btn.dataset.rowIndex);
+            const row = this.getSortedData()[rowIndex];
+            this._rowOriginals.set(row, { ...row });
+            this._editingRows.add(row);
+            this.render();
+          });
+        });
+        this.shadowRoot.querySelectorAll(".edit-confirm").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const rowIndex = parseInt(btn.dataset.rowIndex);
+            const row = this.getSortedData()[rowIndex];
+            const original = this._rowOriginals.get(row) ?? {};
+            const changes = {};
+            this.shadowRoot.querySelectorAll(`tr[data-row-index="${rowIndex}"] input.cell-input`).forEach((input) => {
+              const k = input.dataset.key;
+              const col = this._columns.find((c) => c.key === k);
+              if (col?.editable === "click") {
+                row[k] = input.value;
+                if (input.value !== String(original[k] ?? ""))
+                  changes[k] = input.value;
+              }
+            });
+            this._editingRows.delete(row);
+            this._rowOriginals.delete(row);
+            if (Object.keys(changes).length > 0) {
+              this.dispatchEvent(new CustomEvent("o-row-change", {
+                bubbles: true,
+                composed: true,
+                detail: { rowIndex, row, changes }
+              }));
+            }
+            this.render();
+          });
+        });
+        this.shadowRoot.querySelectorAll(".edit-cancel").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const rowIndex = parseInt(btn.dataset.rowIndex);
+            const row = this.getSortedData()[rowIndex];
+            const original = this._rowOriginals.get(row);
+            if (original) {
+              Object.assign(row, original);
+              this._rowOriginals.delete(row);
+            }
+            this._editingRows.delete(row);
+            this.render();
+          });
+        });
       }
     }
   }
@@ -1123,6 +1262,315 @@
     }
   }
   customElements.define("o-search", OSearch);
+
+  // src/note.ts
+  class ONote extends HTMLElement {
+    static get observedAttributes() {
+      return ["variant", "label", "placeholder", "max-length", "value"];
+    }
+    _tags = [];
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" });
+    }
+    connectedCallback() {
+      this.render();
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
+    }
+    get variant() {
+      return this.getAttribute("variant") ?? "textarea";
+    }
+    render() {
+      if (this.variant === "card")
+        this.renderCard();
+      else
+        this.renderTextarea();
+      this.attachNoteHandlers();
+    }
+    renderTextarea() {
+      const label = this.getAttribute("label") ?? "";
+      const placeholder = this.getAttribute("placeholder") ?? " ";
+      const maxLen = this.getAttribute("max-length");
+      const value = this.getAttribute("value") ?? "";
+      this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          --glass-bg: rgba(255,255,255,0.07);
+          --glass-border: rgba(255,255,255,0.12);
+          --glass-blur: 12px;
+          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          --accent-warm: rgba(251,191,36,0.6);
+          display: block;
+        }
+        .wrap {
+          position: relative;
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 12px;
+          backdrop-filter: blur(var(--glass-blur));
+          box-shadow: var(--glass-shadow);
+          padding: ${label ? "24px 16px 12px" : "12px 16px"};
+          transition: border-color 0.15s;
+        }
+        .wrap:focus-within { border-color: var(--accent-warm); }
+        label {
+          position: absolute; top: 8px; left: 16px;
+          color: rgba(255,255,255,0.5); font-size: 11px;
+          font-family: sans-serif; pointer-events: none;
+        }
+        textarea {
+          display: block; width: 100%;
+          background: none; border: none; resize: none; outline: none;
+          color: #fff; font-size: 14px; font-family: sans-serif;
+          min-height: 80px; overflow: hidden;
+        }
+        .counter { text-align: right; font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+      </style>
+      <div class="wrap">
+        ${label ? `<label>${label}</label>` : ""}
+        <textarea placeholder="${placeholder}"${maxLen ? ` maxlength="${maxLen}"` : ""}>${value}</textarea>
+      </div>
+      ${maxLen ? `<div class="counter"><span class="count">${value.length}</span> / ${maxLen}</div>` : ""}
+    `;
+    }
+    renderCard() {
+      const placeholder = this.getAttribute("placeholder") ?? "Write something…";
+      this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          --glass-bg: rgba(255,255,255,0.07);
+          --glass-border: rgba(255,255,255,0.12);
+          --glass-blur: 12px;
+          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          --accent-warm: rgba(251,191,36,0.6);
+          display: block;
+        }
+        .card {
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 12px;
+          backdrop-filter: blur(var(--glass-blur));
+          box-shadow: var(--glass-shadow);
+          padding: 16px;
+          display: flex; flex-direction: column; gap: 12px;
+        }
+        .title-input {
+          background: none; border: none;
+          border-bottom: 1px solid rgba(255,255,255,0.15);
+          color: #fff; font-size: 18px; font-weight: 600;
+          font-family: sans-serif; outline: none; padding-bottom: 8px; width: 100%;
+        }
+        .title-input:focus { border-color: var(--accent-warm); }
+        .title-input::placeholder { color: rgba(255,255,255,0.3); }
+        .body-area {
+          background: none; border: none; resize: none; outline: none;
+          color: #fff; font-size: 14px; font-family: sans-serif;
+          min-height: 80px; overflow: hidden; width: 100%;
+        }
+        .body-area::placeholder { color: rgba(255,255,255,0.3); }
+        .tag-area { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .chip {
+          background: var(--accent-warm); border-radius: 999px;
+          padding: 2px 10px; font-size: 12px; color: #000; cursor: pointer;
+        }
+        .tag-input {
+          background: none; border: none; color: #fff;
+          font-size: 12px; font-family: sans-serif; outline: none; min-width: 80px;
+        }
+        .tag-input::placeholder { color: rgba(255,255,255,0.3); }
+      </style>
+      <div class="card">
+        <input class="title-input" placeholder="Title" />
+        <textarea class="body-area" placeholder="${placeholder}"></textarea>
+        <div class="tag-area">
+          ${this._tags.map((t, i) => `<span class="chip" data-tag-index="${i}">${t} ×</span>`).join("")}
+          <input class="tag-input" placeholder="Add tag…" />
+        </div>
+      </div>
+    `;
+    }
+    attachNoteHandlers() {
+      if (this.variant !== "card") {
+        const ta = this.shadowRoot.querySelector("textarea");
+        const count = this.shadowRoot.querySelector(".count");
+        ta?.addEventListener("input", () => {
+          ta.style.height = "auto";
+          ta.style.height = ta.scrollHeight + "px";
+          if (count)
+            count.textContent = String(ta.value.length);
+          this.dispatchEvent(new CustomEvent("o-change", {
+            bubbles: true,
+            composed: true,
+            detail: { value: ta.value }
+          }));
+        });
+        return;
+      }
+      const titleInput = this.shadowRoot.querySelector(".title-input");
+      const bodyArea = this.shadowRoot.querySelector(".body-area");
+      const tagInput = this.shadowRoot.querySelector(".tag-input");
+      const fireChange = () => {
+        const title = this.shadowRoot.querySelector(".title-input")?.value ?? "";
+        const body = this.shadowRoot.querySelector(".body-area")?.value ?? "";
+        this.dispatchEvent(new CustomEvent("o-change", {
+          bubbles: true,
+          composed: true,
+          detail: { title, body, tags: [...this._tags] }
+        }));
+      };
+      titleInput?.addEventListener("input", fireChange);
+      bodyArea?.addEventListener("input", () => {
+        bodyArea.style.height = "auto";
+        bodyArea.style.height = bodyArea.scrollHeight + "px";
+        fireChange();
+      });
+      tagInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && tagInput.value.trim()) {
+          this._tags.push(tagInput.value.trim());
+          tagInput.value = "";
+          this.render();
+          fireChange();
+        }
+      });
+      this.shadowRoot.querySelectorAll(".chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          this._tags.splice(parseInt(chip.dataset.tagIndex), 1);
+          this.render();
+          fireChange();
+        });
+      });
+    }
+  }
+  customElements.define("o-note", ONote);
+
+  // src/dialog.ts
+  class ODialog extends HTMLElement {
+    static get observedAttributes() {
+      return ["open"];
+    }
+    _onKeyDown = null;
+    _onClick = null;
+    _rendered = false;
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" });
+    }
+    connectedCallback() {
+      if (!this._rendered) {
+        this.render();
+        this._rendered = true;
+      }
+      this._onKeyDown = (e) => {
+        if (e.key === "Escape" && this.hasAttribute("open")) {
+          this.handleCancel();
+        }
+      };
+      document.addEventListener("keydown", this._onKeyDown);
+      this._onClick = (e) => {
+        const target = e.target;
+        if (target.getAttribute("type") === "submit" || target.closest('[type="submit"]')) {
+          e.preventDefault();
+          this.handleSubmit();
+        }
+      };
+      this.addEventListener("click", this._onClick);
+    }
+    disconnectedCallback() {
+      if (this._onKeyDown)
+        document.removeEventListener("keydown", this._onKeyDown);
+      if (this._onClick)
+        this.removeEventListener("click", this._onClick);
+    }
+    attributeChangedCallback(name, _old, _new) {
+      if (name !== "open")
+        return;
+      const backdrop = this.shadowRoot?.querySelector(".backdrop");
+      if (!backdrop)
+        return;
+      if (_new !== null)
+        backdrop.classList.add("visible");
+      else
+        backdrop.classList.remove("visible");
+    }
+    open() {
+      this.setAttribute("open", "");
+    }
+    close() {
+      this.removeAttribute("open");
+    }
+    handleSubmit() {
+      const detail = {};
+      this.querySelectorAll("input[name],select[name],textarea[name]").forEach((input) => {
+        detail[input.name] = input.value;
+      });
+      this.dispatchEvent(new CustomEvent("o-submit", { bubbles: true, composed: true, detail }));
+      this.close();
+    }
+    handleCancel() {
+      this.close();
+      this.dispatchEvent(new CustomEvent("o-cancel", { bubbles: true, composed: true, detail: null }));
+    }
+    render() {
+      const isOpen = this.hasAttribute("open");
+      this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          --glass-bg: rgba(255,255,255,0.07);
+          --glass-border: rgba(255,255,255,0.12);
+          --glass-blur: 12px;
+          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          --accent-warm: rgba(251,191,36,0.6);
+          display: contents;
+        }
+        .backdrop {
+          display: flex;
+          position: fixed; inset: 0; z-index: 1000;
+          background: rgba(0,0,0,0.5);
+          backdrop-filter: blur(4px);
+          align-items: center; justify-content: center;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+        }
+        .backdrop.visible {
+          opacity: 1;
+          visibility: visible;
+        }
+        .panel {
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 16px;
+          backdrop-filter: blur(var(--glass-blur));
+          box-shadow: var(--glass-shadow);
+          padding: 24px; min-width: 320px; max-width: 90vw;
+          color: #fff;
+        }
+        .backdrop.visible .panel {
+          animation: scaleIn 0.2s ease-out;
+        }
+        .panel-title { font-size: 18px; font-weight: 600; margin: 0 0 16px; }
+        .panel-body { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+        .panel-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      </style>
+      <div class="backdrop${isOpen ? " visible" : ""}">
+        <div class="panel">
+          <div class="panel-title"><slot name="title"></slot></div>
+          <div class="panel-body"><slot></slot></div>
+          <div class="panel-actions"><slot name="actions"></slot></div>
+        </div>
+      </div>
+    `;
+      this.shadowRoot.querySelector(".backdrop").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget)
+          this.handleCancel();
+      });
+    }
+  }
+  customElements.define("o-dialog", ODialog);
 
   // src/index.ts
   if (typeof window !== "undefined") {
