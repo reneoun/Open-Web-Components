@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Web Components</title>
-    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@216042250d60a38c4384eda0f8ef3a3abbd43a79/OWC/dist/components.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@e589349f8fc57c86b8087e8279902172949abd48/OWC/dist/components.js"></script>
     <style>
       * { box-sizing: border-box; }
       body {
@@ -36,7 +36,7 @@
 
     <h1>Open Web Components</h1>
     <p style="opacity:0.7;margin:0 0 0.25rem">Glassmorphism web component library</p>
-    <div class="code" style="margin:12px 0 0;display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@216042250d60a38c4384eda0f8ef3a3abbd43a79/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+    <div class="code" style="margin:12px 0 0;display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@e589349f8fc57c86b8087e8279902172949abd48/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
 
     <!-- o-button -->
     <h2>o-button</h2>
@@ -282,6 +282,114 @@ search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, q
       ss.addEventListener('o-results', e => {
         document.getElementById('search-result').textContent =
           e.detail.query ? `${e.detail.results.length} result(s) for "${e.detail.query}"` : ''
+      })
+    </script>
+
+
+    <!-- o-table editable -->
+    <h2>o-table (editable)</h2>
+    <p class="desc">
+      <code>editable="always"</code> renders inline inputs.
+      <code>editable="click"</code> uses a row edit button (✏️) with confirm/cancel.
+      Events: <code>o-cell-change</code>, <code>o-row-change</code>.
+    </p>
+    <o-table id="editable-table" editable selectable></o-table>
+    <div id="edit-log" style="margin-top:10px;font-size:12px;opacity:0.7;min-height:20px"></div>
+    <div class="code">&lt;o-table editable&gt;&lt;/o-table&gt;
+
+table.columns = [
+  { key: 'name', label: 'Name', editable: 'always' },
+  { key: 'role', label: 'Role', editable: 'click'  },
+  { key: 'status', label: 'Status' }
+]
+// Events: o-cell-change, o-row-change</div>
+    <script>
+      const editTable = document.getElementById('editable-table')
+      const editLog = document.getElementById('edit-log')
+      editTable.columns = [
+        { key: 'name',   label: 'Name',   editable: 'always', width: 160 },
+        { key: 'role',   label: 'Role',   editable: 'click',  width: 140 },
+        { key: 'status', label: 'Status', width: 120 }
+      ]
+      editTable.data = [
+        { name: 'Alice', role: 'Engineer', status: 'Active' },
+        { name: 'Bob',   role: 'Designer', status: 'Away'   },
+        { name: 'Carol', role: 'Manager',  status: 'Active' }
+      ]
+      editTable.addEventListener('o-cell-change', e => {
+        editLog.textContent = `o-cell-change: ${e.detail.key} = "${e.detail.value}" (row ${e.detail.rowIndex})`
+      })
+      editTable.addEventListener('o-row-change', e => {
+        editLog.textContent = `o-row-change: row ${e.detail.rowIndex} → ${JSON.stringify(e.detail.changes)}`
+      })
+    </script>
+
+    <!-- o-note -->
+    <h2>o-note</h2>
+    <p class="desc">Glass-styled note area. <code>variant="textarea"</code> (default) with floating label &amp; char count. <code>variant="card"</code> with title, body, and tag chips.</p>
+    <div class="row" style="align-items:flex-start">
+      <o-note label="Quick Note" placeholder="Type here…" max-length="200" style="width:280px"></o-note>
+      <o-note variant="card" placeholder="Body…" style="width:280px"></o-note>
+    </div>
+    <div id="note-log" style="margin-top:10px;font-size:12px;opacity:0.7;min-height:20px"></div>
+    <div class="code">&lt;o-note label="Quick Note" max-length="200"&gt;&lt;/o-note&gt;
+&lt;o-note variant="card"&gt;&lt;/o-note&gt;
+
+// Event: o-change → { value } or { title, body, tags }</div>
+    <script>
+      const noteLog = document.getElementById('note-log')
+      document.querySelectorAll('o-note').forEach(note => {
+        note.addEventListener('o-change', e => {
+          noteLog.textContent = 'o-change: ' + JSON.stringify(e.detail)
+        })
+      })
+    </script>
+
+    <!-- o-dialog -->
+    <h2>o-dialog</h2>
+    <p class="desc">Glassmorphism form dialog. Opens programmatically or via <code>open</code> attribute. Collects named inputs on submit.</p>
+    <div class="row">
+      <o-button id="open-dialog-btn">Open Dialog</o-button>
+    </div>
+    <div id="dialog-log" style="margin-top:10px;font-size:12px;opacity:0.7;min-height:20px"></div>
+    <o-dialog id="demo-dialog">
+      <span slot="title">Add Team Member</span>
+      <label style="font-size:13px;opacity:0.7">Name</label>
+      <input name="name" type="text" placeholder="Alice"
+             style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+                    border-radius:6px;color:#fff;padding:8px 10px;font-size:14px;
+                    outline:none;width:100%;" />
+      <label style="font-size:13px;opacity:0.7">Role</label>
+      <input name="role" type="text" placeholder="Engineer"
+             style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+                    border-radius:6px;color:#fff;padding:8px 10px;font-size:14px;
+                    outline:none;width:100%;" />
+      <div slot="actions">
+        <o-button type="submit">Save</o-button>
+        <o-button variant="ghost" id="cancel-btn">Cancel</o-button>
+      </div>
+    </o-dialog>
+    <div class="code">&lt;o-dialog id="my-dialog"&gt;
+  &lt;span slot="title"&gt;Add New Item&lt;/span&gt;
+  &lt;input name="name" type="text" /&gt;
+  &lt;div slot="actions"&gt;
+    &lt;o-button type="submit"&gt;Save&lt;/o-button&gt;
+  &lt;/div&gt;
+&lt;/o-dialog&gt;
+
+dialog.open()
+dialog.addEventListener('o-submit', e =&gt; console.log(e.detail))
+dialog.addEventListener('o-cancel', () =&gt; console.log('cancelled'))</div>
+    <script>
+      const dialog = document.getElementById('demo-dialog')
+      const dialogLog = document.getElementById('dialog-log')
+      document.getElementById('open-dialog-btn').addEventListener('o-click', () => dialog.open())
+      document.getElementById('cancel-btn').addEventListener('o-click', () => dialog.close())
+      dialog.addEventListener('o-submit', e => {
+        dialogLog.textContent = 'o-submit: ' + JSON.stringify(e.detail)
+      })
+      dialog.addEventListener('o-cancel', () => {
+        dialogLog.textContent = 'o-cancel fired'
       })
     </script>
 
