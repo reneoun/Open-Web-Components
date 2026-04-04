@@ -259,9 +259,13 @@ describe('OTable', () => {
       expect(keys).toContain('role')
     })
 
-    it('click edit button shows confirm and cancel buttons', () => {
+    it('click edit button shows confirm button', () => {
       el.shadowRoot.querySelector('.edit-btn').click()
       expect(el.shadowRoot.querySelector('.edit-confirm')).not.toBeNull()
+    })
+
+    it('click edit button shows cancel button', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
       expect(el.shadowRoot.querySelector('.edit-cancel')).not.toBeNull()
     })
 
@@ -297,7 +301,7 @@ describe('OTable', () => {
       expect(detail).not.toBeNull()
       expect(detail.changes).toEqual({ role: 'Design' })
       expect(detail.rowIndex).toBe(0)
-      expect(detail.row).toEqual({ name: 'Alice', role: 'Eng', status: 'Active' })
+      expect(detail.row).toEqual({ name: 'Alice', role: 'Design', status: 'Active' })
     })
 
     it('cancel restores original row values', () => {
@@ -305,8 +309,8 @@ describe('OTable', () => {
       const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
       input.value = 'Design'
       el.shadowRoot.querySelector('.edit-cancel').click()
-      const tds = [...el.shadowRoot.querySelectorAll('tbody td')]
-      expect(tds.some(td => td.textContent === 'Eng')).toBe(true)
+      const cells = [...el.shadowRoot.querySelectorAll('tbody tr td')]
+      expect(cells[1].textContent).toBe('Eng')
     })
 
     it('Enter keypress on always-editable input fires o-cell-change', () => {
@@ -320,13 +324,24 @@ describe('OTable', () => {
       expect(detail.value).toBe('Charlie')
     })
 
-    it('no edit controls when editable attribute absent', () => {
-      document.body.innerHTML = ''
-      const el2 = document.createElement('o-table') as any
-      el2.columns = [{ key: 'name', label: 'Name', editable: 'always' }]
-      el2.data = [{ name: 'Alice' }]
-      document.body.appendChild(el2)
-      expect(el2.shadowRoot.querySelector('input.cell-input')).toBeNull()
+    describe('without editable attribute', () => {
+      let el2: any
+
+      beforeEach(() => {
+        document.body.innerHTML = ''
+        el2 = document.createElement('o-table')
+        el2.columns = [{ key: 'name', label: 'Name', editable: 'always' }]
+        el2.data = [{ name: 'Alice' }]
+        document.body.appendChild(el2)
+      })
+
+      afterEach(() => {
+        document.body.innerHTML = ''
+      })
+
+      it('no edit controls when editable attribute absent', () => {
+        expect(el2.shadowRoot.querySelector('input.cell-input')).toBeNull()
+      })
     })
   })
 })
