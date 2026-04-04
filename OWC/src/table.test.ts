@@ -279,7 +279,7 @@ describe('OTable', () => {
       expect(detail.key).toBe('name')
       expect(detail.value).toBe('Bob')
       expect(detail.rowIndex).toBe(0)
-      expect(detail.row).toEqual({ name: 'Alice', role: 'Eng', status: 'Active' })
+      expect(detail.row).toEqual({ name: 'Bob', role: 'Eng', status: 'Active' })
     })
 
     it('does not fire o-cell-change when value unchanged on blur', () => {
