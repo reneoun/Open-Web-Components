@@ -158,7 +158,7 @@ export class OTable extends HTMLElement {
           ${this._columns.map(c => this.renderTh(c)).join('')}
           ${editTh}
         </tr></thead>
-        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i)).join('')}</tbody>
+        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i, hasClickEditable)).join('')}</tbody>
       </table>`
       })()}
     `
@@ -183,7 +183,7 @@ export class OTable extends HTMLElement {
     </th>`
   }
 
-  private renderRow(row: Record<string, unknown>, rowIndex: number): string {
+  private renderRow(row: Record<string, unknown>, rowIndex: number, hasClickEditable: boolean): string {
     const checked = this._selectedRows.has(row) ? ' checked' : ''
     const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : ''
     const checkbox = this.selectable
@@ -191,7 +191,6 @@ export class OTable extends HTMLElement {
       : ''
 
     const isEditing = this._editingRows.has(row)
-    const hasClickEditable = this._columns.some(c => c.editable === 'click')
 
     let editTd = ''
     if (this.editable && hasClickEditable) {
