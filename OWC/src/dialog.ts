@@ -2,6 +2,8 @@ class ODialog extends HTMLElement {
   static get observedAttributes() { return ['open'] }
 
   private _onKeyDown: ((e: KeyboardEvent) => void) | null = null
+  private _onClick: ((e: MouseEvent) => void) | null = null
+  private _rendered = false
 
   constructor() {
     super()
@@ -9,7 +11,10 @@ class ODialog extends HTMLElement {
   }
 
   connectedCallback() {
-    this.render()
+    if (!this._rendered) {
+      this.render()
+      this._rendered = true
+    }
     this._onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && this.hasAttribute('open')) {
         this.handleCancel()
@@ -18,7 +23,7 @@ class ODialog extends HTMLElement {
     document.addEventListener('keydown', this._onKeyDown)
 
     // Submit via native button[type=submit] click bubbling to host
-    this.addEventListener('click', (e: MouseEvent) => {
+    this._onClick = (e: MouseEvent) => {
       const target = e.target as Element
       if (
         target.getAttribute('type') === 'submit' ||
@@ -27,11 +32,13 @@ class ODialog extends HTMLElement {
         e.preventDefault()
         this.handleSubmit()
       }
-    })
+    }
+    this.addEventListener('click', this._onClick)
   }
 
   disconnectedCallback() {
     if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown)
+    if (this._onClick) this.removeEventListener('click', this._onClick)
   }
 
   attributeChangedCallback(name: string, _old: string | null, _new: string | null) {
@@ -71,13 +78,19 @@ class ODialog extends HTMLElement {
           display: contents;
         }
         .backdrop {
-          display: none;
+          display: flex;
           position: fixed; inset: 0; z-index: 1000;
           background: rgba(0,0,0,0.5);
           backdrop-filter: blur(4px);
           align-items: center; justify-content: center;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
         }
-        .backdrop.visible { display: flex; animation: fadeIn 0.2s ease-out; }
+        .backdrop.visible {
+          opacity: 1;
+          visibility: visible;
+        }
         .panel {
           background: var(--glass-bg);
           border: 1px solid var(--glass-border);
@@ -86,12 +99,13 @@ class ODialog extends HTMLElement {
           box-shadow: var(--glass-shadow);
           padding: 24px; min-width: 320px; max-width: 90vw;
           color: #fff;
+        }
+        .backdrop.visible .panel {
           animation: scaleIn 0.2s ease-out;
         }
         .panel-title { font-size: 18px; font-weight: 600; margin: 0 0 16px; }
         .panel-body { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
         .panel-actions { display: flex; justify-content: flex-end; gap: 8px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       </style>
       <div class="backdrop${isOpen ? ' visible' : ''}">
