@@ -24,11 +24,13 @@ describe('ONote - textarea variant', () => {
     expect(label?.textContent?.trim()).toBe('Notes')
   })
 
+  // Fix 1: .counter is outer element; .count is inner span holding current count
+  // Counter displays full "n / max" format
   it('shows character counter when max-length set', () => {
     el.setAttribute('max-length', '100')
     const counter = el.shadowRoot.querySelector('.counter')
     expect(counter).not.toBeNull()
-    expect(counter!.textContent).toContain('100')
+    expect(counter!.textContent?.trim()).toBe('0 / 100')
   })
 
   it('counter updates on input', () => {
@@ -53,6 +55,22 @@ describe('ONote - textarea variant', () => {
     const ta = el.shadowRoot.querySelector('textarea')!
     expect(ta.getAttribute('placeholder')).toBe('Write here')
   })
+
+  // Fix 2: value attribute sets textarea value
+  it('sets textarea value from value attribute', () => {
+    el.setAttribute('value', 'hello')
+    const ta = el.shadowRoot.querySelector('textarea')!
+    expect(ta.value).toBe('hello')
+  })
+
+  // Fix 5: max-length → maxlength passthrough on textarea
+  it('passes max-length as maxlength attribute on textarea', () => {
+    el.setAttribute('max-length', '50')
+    const ta = el.shadowRoot.querySelector('textarea')!
+    expect(ta.getAttribute('maxlength')).toBe('50')
+  })
+
+  // auto-resize tested visually — happy-dom does not compute scrollHeight
 })
 
 describe('ONote - card variant', () => {
@@ -110,5 +128,33 @@ describe('ONote - card variant', () => {
     tagInput.value = 'urgent'
     tagInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
     expect(detail).toMatchObject({ tags: ['urgent'] })
+  })
+
+  // Fix 3: o-change fires when body textarea receives input
+  it('fires o-change with { title, body, tags } on body textarea input', () => {
+    let detail: any = null
+    el.addEventListener('o-change', (e: any) => { detail = e.detail })
+    const bodyArea = el.shadowRoot.querySelector<HTMLTextAreaElement>('.body-area')!
+    bodyArea.value = 'some text'
+    bodyArea.dispatchEvent(new Event('input'))
+    expect(detail).toEqual({ title: '', body: 'some text', tags: [] })
+  })
+
+  // Fix 4: o-change fires after chip removal with tags: []
+  it('fires o-change with tags: [] after chip removal', () => {
+    const tagInput = el.shadowRoot.querySelector<HTMLInputElement>('.tag-input')!
+    tagInput.value = 'bug'
+    tagInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    let detail: any = null
+    el.addEventListener('o-change', (e: any) => { detail = e.detail })
+    el.shadowRoot.querySelector('.chip')!.click()
+    expect(detail).toMatchObject({ tags: [] })
+  })
+
+  // Fix 6: placeholder attribute sets placeholder on .body-area textarea
+  it('sets placeholder on body textarea from placeholder attribute', () => {
+    el.setAttribute('placeholder', 'Notes here')
+    const bodyArea = el.shadowRoot.querySelector<HTMLTextAreaElement>('.body-area')!
+    expect(bodyArea.getAttribute('placeholder')).toBe('Notes here')
   })
 })
