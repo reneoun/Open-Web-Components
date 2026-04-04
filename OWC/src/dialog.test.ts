@@ -47,11 +47,13 @@ describe('ODialog', () => {
   it('clicking backdrop fires o-cancel and closes', () => {
     el.open()
     let cancelled = false
-    el.addEventListener('o-cancel', () => { cancelled = true })
+    let cancelDetail: any = 'unset'
+    el.addEventListener('o-cancel', (e: any) => { cancelled = true; cancelDetail = e.detail })
     el.shadowRoot.querySelector('.backdrop').dispatchEvent(
       new MouseEvent('click', { bubbles: true })
     )
     expect(cancelled).toBe(true)
+    expect(cancelDetail).toBeNull()
     expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
   })
 
@@ -68,9 +70,11 @@ describe('ODialog', () => {
   it('Escape key fires o-cancel and closes', () => {
     el.open()
     let cancelled = false
-    el.addEventListener('o-cancel', () => { cancelled = true })
+    let cancelDetail: any = 'unset'
+    el.addEventListener('o-cancel', (e: any) => { cancelled = true; cancelDetail = e.detail })
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     expect(cancelled).toBe(true)
+    expect(cancelDetail).toBeNull()
     expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
   })
 
