@@ -150,9 +150,11 @@ class ONote extends HTMLElement {
     const tagInput = this.shadowRoot!.querySelector<HTMLInputElement>('.tag-input')
 
     const fireChange = () => {
+      const title = this.shadowRoot!.querySelector<HTMLInputElement>('.title-input')?.value ?? ''
+      const body = this.shadowRoot!.querySelector<HTMLTextAreaElement>('.body-area')?.value ?? ''
       this.dispatchEvent(new CustomEvent('o-change', {
         bubbles: true, composed: true,
-        detail: { title: titleInput?.value ?? '', body: bodyArea?.value ?? '', tags: [...this._tags] }
+        detail: { title, body, tags: [...this._tags] }
       }))
     }
 
