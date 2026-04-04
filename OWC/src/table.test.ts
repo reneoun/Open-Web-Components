@@ -247,6 +247,11 @@ describe('OTable', () => {
       expect(el.shadowRoot.querySelector('.edit-btn')).not.toBeNull()
     })
 
+    it('does not show input for click-editable column before edit button clicked', () => {
+      const input = el.shadowRoot.querySelector('input.cell-input[data-key="role"]')
+      expect(input).toBeNull()
+    })
+
     it('click edit button shows input for click-editable column', () => {
       el.shadowRoot.querySelector('.edit-btn').click()
       const keys = [...el.shadowRoot.querySelectorAll<HTMLInputElement>('input.cell-input')]
@@ -269,6 +274,8 @@ describe('OTable', () => {
       expect(detail).not.toBeNull()
       expect(detail.key).toBe('name')
       expect(detail.value).toBe('Bob')
+      expect(detail.rowIndex).toBe(0)
+      expect(detail.row).toEqual({ name: 'Alice', role: 'Eng', status: 'Active' })
     })
 
     it('does not fire o-cell-change when value unchanged on blur', () => {
@@ -289,6 +296,8 @@ describe('OTable', () => {
       el.shadowRoot.querySelector('.edit-confirm').click()
       expect(detail).not.toBeNull()
       expect(detail.changes).toEqual({ role: 'Design' })
+      expect(detail.rowIndex).toBe(0)
+      expect(detail.row).toEqual({ name: 'Alice', role: 'Eng', status: 'Active' })
     })
 
     it('cancel restores original row values', () => {
@@ -298,6 +307,17 @@ describe('OTable', () => {
       el.shadowRoot.querySelector('.edit-cancel').click()
       const tds = [...el.shadowRoot.querySelectorAll('tbody td')]
       expect(tds.some(td => td.textContent === 'Eng')).toBe(true)
+    })
+
+    it('Enter keypress on always-editable input fires o-cell-change', () => {
+      let detail: any = null
+      el.addEventListener('o-cell-change', (e: any) => { detail = e.detail })
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')!
+      input.value = 'Charlie'
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }))
+      expect(detail).not.toBeNull()
+      expect(detail.key).toBe('name')
+      expect(detail.value).toBe('Charlie')
     })
 
     it('no edit controls when editable attribute absent', () => {
