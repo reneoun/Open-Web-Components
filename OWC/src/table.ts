@@ -5,20 +5,25 @@ export interface OTableColumn {
   sortable?: boolean
   minWidth?: number
   maxWidth?: number
+  editable?: 'always' | 'click'
 }
 
 export type SortDir = 'asc' | 'desc' | 'none'
 export interface OTableSortEvent { col: string; dir: SortDir }
 export interface OTableRowSelectEvent { selected: Record<string, unknown>[] }
+export interface OTableCellChangeEvent { key: string; value: unknown; rowIndex: number; row: Record<string, unknown> }
+export interface OTableRowChangeEvent { rowIndex: number; row: Record<string, unknown>; changes: Record<string, unknown> }
 
 export class OTable extends HTMLElement {
-  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable'] }
+  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable', 'editable'] }
 
   private _columns: OTableColumn[] = []
   private _data: Record<string, unknown>[] = []
   private _sortCol: string | null = null
   private _sortDir: SortDir = 'none'
   private _selectedRows: Set<Record<string, unknown>> = new Set()
+  private _editingRows: Set<Record<string, unknown>> = new Set()
+  private _rowOriginals: Map<Record<string, unknown>, Record<string, unknown>> = new Map()
 
   get columns() { return this._columns }
   set columns(v: OTableColumn[]) { this._columns = v; this.render() }
@@ -27,6 +32,8 @@ export class OTable extends HTMLElement {
   set data(v: Record<string, unknown>[]) {
     this._data = v
     this._selectedRows.clear()
+    this._editingRows.clear()
+    this._rowOriginals.clear()
     this.render()
   }
 
@@ -35,6 +42,7 @@ export class OTable extends HTMLElement {
   }
 
   get selectable() { return this.hasAttribute('selectable') }
+  get editable() { return this.hasAttribute('editable') }
 
   constructor() {
     super()
@@ -44,6 +52,10 @@ export class OTable extends HTMLElement {
   connectedCallback() {
     this.restoreState()
     this.render()
+  }
+
+  attributeChangedCallback() {
+    if (this.isConnected) this.render()
   }
 
   private getStorage(): Storage | null {
@@ -116,11 +128,39 @@ export class OTable extends HTMLElement {
           width: 15px; height: 15px; cursor: pointer;
           accent-color: rgba(255,255,255,0.9);
         }
+        .cell-input {
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(251,191,36,0.5);
+          border-radius: 4px;
+          color: #fff;
+          padding: 4px 8px;
+          font-size: 13px;
+          width: calc(100% - 4px);
+          outline: none;
+          font-family: sans-serif;
+        }
+        .cell-input:focus { border-color: rgba(251,191,36,0.9); background: rgba(255,255,255,0.15); }
+        .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
+        .edit-btn, .edit-confirm, .edit-cancel {
+          background: none; border: none; cursor: pointer;
+          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: #fff; border-radius: 3px;
+        }
+        .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
+        .edit-confirm { color: rgba(74,222,128,0.9); }
+        .edit-cancel { color: rgba(248,113,113,0.9); }
       </style>
-      <table>
-        <thead><tr>${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ''}${this._columns.map(c => this.renderTh(c)).join('')}</tr></thead>
-        <tbody>${this.getSortedData().map(row => this.renderRow(row)).join('')}</tbody>
-      </table>
+      ${(() => {
+        const hasClickEditable = this._columns.some(c => c.editable === 'click')
+        const editTh = this.editable && hasClickEditable ? '<th style="width:72px"></th>' : ''
+        return `<table>
+        <thead><tr>
+          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ''}
+          ${this._columns.map(c => this.renderTh(c)).join('')}
+          ${editTh}
+        </tr></thead>
+        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i)).join('')}</tbody>
+      </table>`
+      })()}
     `
     this.attachHandlers()
   }
@@ -143,15 +183,37 @@ export class OTable extends HTMLElement {
     </th>`
   }
 
-  private renderRow(row: Record<string, unknown>): string {
+  private renderRow(row: Record<string, unknown>, rowIndex: number): string {
     const checked = this._selectedRows.has(row) ? ' checked' : ''
     const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : ''
     const checkbox = this.selectable
       ? `<td><input type="checkbox" data-select-row${checked}></td>`
       : ''
-    return `<tr${selectedClass}>${checkbox}${this._columns.map(c =>
-      `<td>${row[c.key] ?? ''}</td>`
-    ).join('')}</tr>`
+
+    const isEditing = this._editingRows.has(row)
+    const hasClickEditable = this._columns.some(c => c.editable === 'click')
+
+    let editTd = ''
+    if (this.editable && hasClickEditable) {
+      editTd = isEditing
+        ? `<td class="edit-actions">
+            <button class="edit-confirm" data-row-index="${rowIndex}" title="Confirm">✓</button>
+            <button class="edit-cancel" data-row-index="${rowIndex}" title="Cancel">✗</button>
+           </td>`
+        : `<td class="edit-actions">
+            <button class="edit-btn" data-row-index="${rowIndex}" title="Edit">✏️</button>
+           </td>`
+    }
+
+    const cells = this._columns.map(c => {
+      if (this.editable && c.editable && (c.editable === 'always' || isEditing)) {
+        const val = String(row[c.key] ?? '').replace(/"/g, '&quot;')
+        return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`
+      }
+      return `<td>${row[c.key] ?? ''}</td>`
+    }).join('')
+
+    return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`
   }
 
   private getSortedData(): Record<string, unknown>[] {
@@ -274,6 +336,93 @@ export class OTable extends HTMLElement {
           this.render()
         })
       }
+    }
+
+    // Editable handlers
+    if (this.editable) {
+      // always-editable cells: fire o-cell-change on blur/Enter when value changed
+      this.shadowRoot!.querySelectorAll<HTMLInputElement>('input.cell-input').forEach(input => {
+        const key = input.dataset.key!
+        const rowIndex = parseInt(input.dataset.rowIndex!)
+        const col = this._columns.find(c => c.key === key)
+        if (col?.editable !== 'always') return
+
+        const commit = () => {
+          const row = this.getSortedData()[rowIndex]
+          if (!row) return
+          const oldVal = String(row[key] ?? '')
+          const newVal = input.value
+          if (newVal !== oldVal) {
+            row[key] = newVal
+            this.dispatchEvent(new CustomEvent<OTableCellChangeEvent>('o-cell-change', {
+              bubbles: true, composed: true,
+              detail: { key, value: newVal, rowIndex, row }
+            }))
+          }
+        }
+        input.addEventListener('blur', commit)
+        input.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter') { commit(); input.blur() }
+        })
+      })
+
+      // Edit button: enter edit mode for that row
+      this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e: MouseEvent) => {
+          e.stopPropagation()
+          const rowIndex = parseInt(btn.dataset.rowIndex!)
+          const row = this.getSortedData()[rowIndex]
+          this._rowOriginals.set(row, { ...row })
+          this._editingRows.add(row)
+          this.render()
+        })
+      })
+
+      // Confirm button: commit changes, fire o-row-change
+      this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-confirm').forEach(btn => {
+        btn.addEventListener('click', (e: MouseEvent) => {
+          e.stopPropagation()
+          const rowIndex = parseInt(btn.dataset.rowIndex!)
+          const row = this.getSortedData()[rowIndex]
+          const original = this._rowOriginals.get(row) ?? {}
+          const changes: Record<string, unknown> = {}
+
+          this.shadowRoot!.querySelectorAll<HTMLInputElement>(
+            `tr[data-row-index="${rowIndex}"] input.cell-input`
+          ).forEach(input => {
+            const k = input.dataset.key!
+            const col = this._columns.find(c => c.key === k)
+            if (col?.editable === 'click') {
+              row[k] = input.value
+              if (input.value !== String(original[k] ?? '')) changes[k] = input.value
+            }
+          })
+
+          this._editingRows.delete(row)
+          this._rowOriginals.delete(row)
+
+          if (Object.keys(changes).length > 0) {
+            this.dispatchEvent(new CustomEvent<OTableRowChangeEvent>('o-row-change', {
+              bubbles: true, composed: true,
+              detail: { rowIndex, row, changes }
+            }))
+          }
+          this.render()
+        })
+      })
+
+      // Cancel button: restore original values, exit edit mode
+      this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-cancel').forEach(btn => {
+        btn.addEventListener('click', (e: MouseEvent) => {
+          e.stopPropagation()
+          const rowIndex = parseInt(btn.dataset.rowIndex!)
+          const row = this.getSortedData()[rowIndex]
+          const original = this._rowOriginals.get(row)
+          if (original) { Object.assign(row, original); this._rowOriginals.delete(row) }
+          this._editingRows.delete(row)
+          this.render()
+        })
+      })
     }
   }
 }
