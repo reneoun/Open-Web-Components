@@ -34,7 +34,9 @@
     OWCToast: () => OWCToast,
     OToggle: () => OToggle,
     OTable: () => OTable,
-    OSearch: () => OSearch
+    OSearch: () => OSearch,
+    ONote: () => ONote,
+    ODialog: () => ODialog
   });
 
   // src/core.ts
@@ -283,13 +285,14 @@
   // src/table.ts
   class OTable extends HTMLElement {
     static get observedAttributes() {
-      return ["storage", "storage-key", "resize-mode", "selectable"];
+      return ["storage", "storage-key", "resize-mode", "selectable", "editable"];
     }
     _columns = [];
     _data = [];
     _sortCol = null;
     _sortDir = "none";
     _selectedRows = new Set;
+    _editingRows = new Set;
     get columns() {
       return this._columns;
     }
@@ -303,6 +306,7 @@
     set data(v) {
       this._data = v;
       this._selectedRows.clear();
+      this._editingRows.clear();
       this.render();
     }
     get selected() {
@@ -354,8 +358,7 @@
         if (widths) {
           this._columns = this._columns.map((c) => widths[c.key] != null ? { ...c, width: widths[c.key] } : c);
         }
-      } catch {
-      }
+      } catch {}
     }
     render() {
       if (!this.shadowRoot)
@@ -394,10 +397,38 @@
           width: 15px; height: 15px; cursor: pointer;
           accent-color: rgba(255,255,255,0.9);
         }
+        .cell-input {
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 6px;
+          padding: 4px 8px;
+          color: #fff;
+          font-family: sans-serif;
+          font-size: 13px;
+          outline: none;
+          width: calc(100% - 16px);
+          box-sizing: border-box;
+        }
+        .cell-input:focus { border-color: rgba(251,191,36,0.6); }
+        .edit-btn {
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 5px;
+          color: #fff;
+          cursor: pointer;
+          padding: 2px 7px;
+          font-size: 13px;
+          font-family: sans-serif;
+        }
+        .edit-btn:hover { background: rgba(255,255,255,0.25); }
       </style>
       <table>
-        <thead><tr>${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ""}${this._columns.map((c) => this.renderTh(c)).join("")}</tr></thead>
-        <tbody>${this.getSortedData().map((row) => this.renderRow(row)).join("")}</tbody>
+        <thead><tr>
+          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ""}
+          ${this._columns.map((c) => this.renderTh(c)).join("")}
+          ${this.hasAttribute("editable") && this._columns.some((c) => c.editable === "click") ? `<th style="width:80px">Actions</th>` : ""}
+        </tr></thead>
+        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i)).join("")}</tbody>
       </table>
     `;
       this.attachHandlers();
@@ -413,11 +444,23 @@
       <div class="resize-handle" data-resize="${col.key}"></div>
     </th>`;
     }
-    renderRow(row) {
+    renderRow(row, rowIndex) {
       const checked = this._selectedRows.has(row) ? " checked" : "";
       const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : "";
       const checkbox = this.selectable ? `<td><input type="checkbox" data-select-row${checked}></td>` : "";
-      return `<tr${selectedClass}>${checkbox}${this._columns.map((c) => `<td>${row[c.key] ?? ""}</td>`).join("")}</tr>`;
+      const hasClickEditable = this.hasAttribute("editable") && this._columns.some((c) => c.editable === "click");
+      const isEditing = this._editingRows.has(row);
+      const cells = this._columns.map((c) => {
+        if (this.hasAttribute("editable") && c.editable === "always") {
+          return `<td><input class="cell-input" data-edit-always data-key="${c.key}" data-row="${rowIndex}" value="${OTable.escapeHtml(row[c.key])}"></td>`;
+        }
+        if (this.hasAttribute("editable") && c.editable === "click" && isEditing) {
+          return `<td><input class="cell-input" data-edit-click data-key="${c.key}" data-row="${rowIndex}" value="${OTable.escapeHtml(row[c.key])}"></td>`;
+        }
+        return `<td>${OTable.escapeHtml(row[c.key])}</td>`;
+      }).join("");
+      const actionCell = hasClickEditable ? `<td>${isEditing ? `<button class="edit-btn" data-confirm="${rowIndex}">✓</button> <button class="edit-btn" data-cancel="${rowIndex}">✗</button>` : `<button class="edit-btn" data-edit-row="${rowIndex}">✎</button>`}</td>` : "";
+      return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${actionCell}</tr>`;
     }
     getSortedData() {
       if (!this._sortCol || this._sortDir === "none")
@@ -432,6 +475,9 @@
         const cmp = av < bv ? -1 : av > bv ? 1 : 0;
         return this._sortDir === "asc" ? cmp : -cmp;
       });
+    }
+    static escapeHtml(v) {
+      return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
     handleSort(key) {
       const col = this._columns.find((c) => c.key === key);
@@ -541,9 +587,477 @@
           });
         }
       }
+      if (this.hasAttribute("editable")) {
+        this.shadowRoot.querySelectorAll("[data-edit-always]").forEach((input) => {
+          const key = input.dataset.key;
+          const rowIdx = parseInt(input.dataset.row);
+          const commit = () => {
+            const value = input.value;
+            const sortedData = this.getSortedData();
+            const row = sortedData[rowIdx];
+            if (!row)
+              return;
+            const updatedRow = { ...row, [key]: value };
+            this._data = this._data.map((r) => r === row ? updatedRow : r);
+            this.dispatchEvent(new CustomEvent("o-cell-change", {
+              bubbles: true,
+              composed: true,
+              detail: { key, value, rowIndex: rowIdx, row: updatedRow }
+            }));
+          };
+          input.addEventListener("change", commit);
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter")
+              commit();
+          });
+          input.addEventListener("click", (e) => e.stopPropagation());
+        });
+        this.shadowRoot.querySelectorAll("[data-edit-row]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const rowIdx = parseInt(btn.dataset.editRow);
+            const row = this.getSortedData()[rowIdx];
+            if (!row)
+              return;
+            this._editingRows.add(row);
+            this.render();
+          });
+        });
+        this.shadowRoot.querySelectorAll("[data-confirm]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const rowIdx = parseInt(btn.dataset.confirm);
+            const row = this.getSortedData()[rowIdx];
+            if (!row)
+              return;
+            const changes = {};
+            this.shadowRoot.querySelectorAll(`[data-edit-click][data-row="${rowIdx}"]`).forEach((input) => {
+              changes[input.dataset.key] = input.value;
+            });
+            const updatedRow = { ...row, ...changes };
+            this._data = this._data.map((r) => r === row ? updatedRow : r);
+            this._editingRows.delete(row);
+            this.dispatchEvent(new CustomEvent("o-row-change", {
+              bubbles: true,
+              composed: true,
+              detail: { rowIndex: rowIdx, row: updatedRow, changes }
+            }));
+            this.render();
+          });
+        });
+        this.shadowRoot.querySelectorAll("[data-cancel]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const rowIdx = parseInt(btn.dataset.cancel);
+            const row = this.getSortedData()[rowIdx];
+            if (!row)
+              return;
+            this._editingRows.delete(row);
+            this.render();
+          });
+        });
+      }
     }
   }
   customElements.define("o-table", OTable);
+
+  // src/note.ts
+  class ONote extends HTMLElement {
+    static get observedAttributes() {
+      return ["variant", "label", "placeholder", "max-length"];
+    }
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" });
+    }
+    connectedCallback() {
+      this.render();
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
+    }
+    get variant() {
+      return this.getAttribute("variant") ?? "textarea";
+    }
+    render() {
+      this.variant === "card" ? this.renderCard() : this.renderTextarea();
+    }
+    renderTextarea() {
+      const label = this.getAttribute("label") ?? "";
+      const placeholder = this.getAttribute("placeholder") ?? "";
+      const maxLength = this.getAttribute("max-length");
+      const value = this.getAttribute("value") ?? "";
+      this.shadowRoot.innerHTML = `
+      <style>
+        :host { display: block; }
+        .wrap {
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 10px;
+          padding: 12px 16px;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+        }
+        .wrap:focus-within { border-color: rgba(251,191,36,0.6); }
+        label {
+          display: block;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: rgba(255,255,255,0.5);
+          margin-bottom: 6px;
+          font-family: sans-serif;
+        }
+        textarea {
+          width: 100%;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #fff;
+          font-family: sans-serif;
+          font-size: 14px;
+          resize: none;
+          overflow: hidden;
+          min-height: 60px;
+          box-sizing: border-box;
+        }
+        ::placeholder { color: rgba(255,255,255,0.3); }
+        .counter {
+          text-align: right;
+          font-size: 11px;
+          color: rgba(255,255,255,0.4);
+          margin-top: 4px;
+          font-family: sans-serif;
+        }
+        .counter.over { color: #f87171; }
+      </style>
+      <div class="wrap">
+        <textarea></textarea>
+        ${maxLength ? `<div class="counter"><span class="counter-cur">0</span> / <span class="counter-max"></span></div>` : ""}
+      </div>
+    `;
+      const wrap = this.shadowRoot.querySelector(".wrap");
+      const ta = this.shadowRoot.querySelector("textarea");
+      ta.placeholder = placeholder;
+      ta.value = value;
+      if (label) {
+        const labelEl = document.createElement("label");
+        labelEl.textContent = label;
+        wrap.prepend(labelEl);
+      }
+      if (maxLength) {
+        const maxInt = parseInt(maxLength) || 0;
+        this.shadowRoot.querySelector(".counter-max").textContent = String(maxInt);
+        const cur = this.shadowRoot.querySelector(".counter-cur");
+        cur.textContent = String(ta.value.length);
+        ta.addEventListener("input", () => {
+          cur.textContent = String(ta.value.length);
+          cur.parentElement.classList.toggle("over", ta.value.length > maxInt);
+          autoResize();
+          this.dispatchEvent(new CustomEvent("o-change", {
+            bubbles: true,
+            composed: true,
+            detail: { value: ta.value }
+          }));
+        });
+      } else {
+        ta.addEventListener("input", () => {
+          autoResize();
+          this.dispatchEvent(new CustomEvent("o-change", {
+            bubbles: true,
+            composed: true,
+            detail: { value: ta.value }
+          }));
+        });
+      }
+      const autoResize = () => {
+        ta.style.height = "auto";
+        ta.style.height = ta.scrollHeight + "px";
+      };
+      autoResize();
+    }
+    renderCard() {
+      const placeholder = this.getAttribute("placeholder") ?? "Write something...";
+      this.shadowRoot.innerHTML = `
+      <style>
+        :host { display: block; }
+        .card {
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 10px;
+          padding: 16px;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+        }
+        .title-input {
+          width: 100%;
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid rgba(255,255,255,0.15);
+          outline: none;
+          color: #fff;
+          font-family: sans-serif;
+          font-size: 18px;
+          font-weight: 600;
+          padding: 0 0 8px;
+          margin-bottom: 12px;
+          box-sizing: border-box;
+        }
+        .title-input:focus { border-bottom-color: rgba(251,191,36,0.6); }
+        .body-area {
+          width: 100%;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #fff;
+          font-family: sans-serif;
+          font-size: 14px;
+          resize: none;
+          overflow: hidden;
+          min-height: 60px;
+          box-sizing: border-box;
+        }
+        ::placeholder { color: rgba(255,255,255,0.3); }
+        .tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 12px;
+          align-items: center;
+        }
+        .chip {
+          background: rgba(251,191,36,0.2);
+          border: 1px solid rgba(251,191,36,0.4);
+          border-radius: 20px;
+          padding: 2px 10px;
+          font-size: 12px;
+          color: rgba(255,255,255,0.85);
+          font-family: sans-serif;
+          cursor: pointer;
+          user-select: none;
+        }
+        .chip:hover { background: rgba(251,191,36,0.35); }
+        .tag-input {
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid rgba(255,255,255,0.2);
+          outline: none;
+          color: #fff;
+          font-family: sans-serif;
+          font-size: 12px;
+          width: 100px;
+        }
+        .tag-input:focus { border-bottom-color: rgba(251,191,36,0.6); }
+        .tag-input::placeholder { color: rgba(255,255,255,0.3); }
+      </style>
+      <div class="card">
+        <input class="title-input" placeholder="Title" type="text">
+        <textarea class="body-area"></textarea>
+        <div class="tags">
+          <input class="tag-input" placeholder="+ tag" type="text">
+        </div>
+      </div>
+    `;
+      const tags = [];
+      const tagsDiv = this.shadowRoot.querySelector(".tags");
+      const tagInput = this.shadowRoot.querySelector(".tag-input");
+      const titleInput = this.shadowRoot.querySelector(".title-input");
+      const bodyArea = this.shadowRoot.querySelector(".body-area");
+      bodyArea.placeholder = placeholder;
+      const emit = () => this.dispatchEvent(new CustomEvent("o-change", {
+        bubbles: true,
+        composed: true,
+        detail: { title: titleInput.value, body: bodyArea.value, tags: [...tags] }
+      }));
+      const addChip = (tag) => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = tag;
+        chip.title = "Click to remove";
+        chip.addEventListener("click", () => {
+          const idx = tags.indexOf(tag);
+          if (idx >= 0)
+            tags.splice(idx, 1);
+          chip.remove();
+          emit();
+        });
+        tagsDiv.insertBefore(chip, tagInput);
+      };
+      tagInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && tagInput.value.trim()) {
+          e.preventDefault();
+          const tag = tagInput.value.trim();
+          if (!tags.includes(tag)) {
+            tags.push(tag);
+            addChip(tag);
+            emit();
+          }
+          tagInput.value = "";
+        }
+      });
+      const autoResize = () => {
+        bodyArea.style.height = "auto";
+        bodyArea.style.height = bodyArea.scrollHeight + "px";
+      };
+      bodyArea.addEventListener("input", () => {
+        autoResize();
+        emit();
+      });
+      titleInput.addEventListener("input", emit);
+      autoResize();
+    }
+  }
+  customElements.define("o-note", ONote);
+
+  // src/dialog.ts
+  class ODialog extends HTMLElement {
+    static get observedAttributes() {
+      return ["open"];
+    }
+    _onKeydown = (e) => {
+      if (e.key === "Escape" && this.hasAttribute("open")) {
+        this.dispatchEvent(new CustomEvent("o-cancel", {
+          bubbles: true,
+          composed: true,
+          detail: null
+        }));
+        this.close();
+      }
+    };
+    _onOClick = (e) => {
+      const target = e.target;
+      if (target.getAttribute("type") === "submit") {
+        this.submit();
+      }
+    };
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" });
+      this.shadowRoot.innerHTML = `
+      <style>
+        :host { display: none; }
+        :host([open]) { display: block; }
+        .backdrop {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.5);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .dialog {
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-radius: 14px;
+          padding: 24px;
+          min-width: 320px;
+          max-width: 90vw;
+          color: #fff;
+          font-family: sans-serif;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          transform: scale(0.95);
+          opacity: 0;
+          transition: transform 200ms ease-out, opacity 200ms ease-out;
+        }
+        .dialog.visible { transform: scale(1); opacity: 1; }
+        .dialog-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 16px;
+        }
+        .dialog-content { margin-bottom: 20px; }
+        .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        ::slotted(label) {
+          display: block;
+          font-size: 11px;
+          opacity: 0.6;
+          margin: 10px 0 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          font-family: sans-serif;
+        }
+        ::slotted(input), ::slotted(textarea) {
+          width: 100%;
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 8px;
+          padding: 8px 12px;
+          color: #fff;
+          font-size: 14px;
+          font-family: sans-serif;
+          outline: none;
+          box-sizing: border-box;
+        }
+        ::slotted(input:focus), ::slotted(textarea:focus) {
+          border-color: rgba(251,191,36,0.6);
+        }
+      </style>
+      <div class="backdrop">
+        <div class="dialog">
+          <div class="dialog-title"><slot name="title"></slot></div>
+          <div class="dialog-content"><slot></slot></div>
+          <div class="dialog-actions"><slot name="actions"></slot></div>
+        </div>
+      </div>
+    `;
+      const backdrop = this.shadowRoot.querySelector(".backdrop");
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) {
+          this.dispatchEvent(new CustomEvent("o-cancel", {
+            bubbles: true,
+            composed: true,
+            detail: null
+          }));
+          this.close();
+        }
+      });
+    }
+    connectedCallback() {
+      document.addEventListener("keydown", this._onKeydown);
+      this.addEventListener("o-click", this._onOClick);
+    }
+    disconnectedCallback() {
+      document.removeEventListener("keydown", this._onKeydown);
+      this.removeEventListener("o-click", this._onOClick);
+    }
+    attributeChangedCallback(name, _old, next) {
+      if (name !== "open")
+        return;
+      const dialog = this.shadowRoot.querySelector(".dialog");
+      if (!dialog)
+        return;
+      if (next !== null) {
+        requestAnimationFrame(() => dialog.classList.add("visible"));
+      } else {
+        dialog.classList.remove("visible");
+      }
+    }
+    open() {
+      this.setAttribute("open", "");
+    }
+    close() {
+      this.removeAttribute("open");
+    }
+    submit() {
+      const inputs = this.querySelectorAll("[name]");
+      const data = {};
+      inputs.forEach((input) => {
+        data[input.name] = input.value;
+      });
+      this.dispatchEvent(new CustomEvent("o-submit", {
+        bubbles: true,
+        composed: true,
+        detail: data
+      }));
+      this.close();
+    }
+  }
+  customElements.define("o-dialog", ODialog);
 
   // src/toast.ts
   var ICONS = {
