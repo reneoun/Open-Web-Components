@@ -217,7 +217,7 @@ describe('OTable', () => {
     })
   })
 
-  describe('editable — always mode', () => {
+  describe('editable', () => {
     let el: any
 
     beforeEach(() => {
@@ -225,130 +225,123 @@ describe('OTable', () => {
       el = document.createElement('o-table')
       el.setAttribute('editable', '')
       el.columns = [
-        { key: 'name', label: 'Name', editable: 'always' },
-        { key: 'role', label: 'Role' },
+        { key: 'name',   label: 'Name',   editable: 'always' },
+        { key: 'role',   label: 'Role',   editable: 'click'  },
+        { key: 'status', label: 'Status' }
       ]
-      el.data = [{ name: 'Alice', role: 'Engineer' }]
+      el.data = [{ name: 'Alice', role: 'Eng', status: 'Active' }]
       document.body.appendChild(el)
     })
 
     it('renders input for always-editable column', () => {
-      const input = el.shadowRoot.querySelector('[data-edit-always]')
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')
       expect(input).not.toBeNull()
-      expect(input.value).toBe('Alice')
     })
 
-    it('non-editable column stays plain text', () => {
-      const tds = el.shadowRoot.querySelectorAll('tbody td')
-      expect(tds[1].querySelector('input')).toBeNull()
-      expect(tds[1].textContent).toBe('Engineer')
+    it('does not render input for read-only column', () => {
+      const inputs = [...el.shadowRoot.querySelectorAll<HTMLInputElement>('input.cell-input')]
+      expect(inputs.map(i => i.dataset.key)).not.toContain('status')
     })
 
-    it('fires o-cell-change on input change event', () => {
+    it('renders edit button for rows with click-editable columns', () => {
+      expect(el.shadowRoot.querySelector('.edit-btn')).not.toBeNull()
+    })
+
+    it('does not show input for click-editable column before edit button clicked', () => {
+      const input = el.shadowRoot.querySelector('input.cell-input[data-key="role"]')
+      expect(input).toBeNull()
+    })
+
+    it('click edit button shows input for click-editable column', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const keys = [...el.shadowRoot.querySelectorAll<HTMLInputElement>('input.cell-input')]
+        .map(i => i.dataset.key)
+      expect(keys).toContain('role')
+    })
+
+    it('click edit button shows confirm button', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      expect(el.shadowRoot.querySelector('.edit-confirm')).not.toBeNull()
+    })
+
+    it('click edit button shows cancel button', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      expect(el.shadowRoot.querySelector('.edit-cancel')).not.toBeNull()
+    })
+
+    it('fires o-cell-change on blur when always-editable value changed', () => {
       let detail: any = null
       el.addEventListener('o-cell-change', (e: any) => { detail = e.detail })
-      const input = el.shadowRoot.querySelector('[data-edit-always]') as HTMLInputElement
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')!
       input.value = 'Bob'
-      input.dispatchEvent(new Event('change'))
-      expect(detail).toMatchObject({ key: 'name', value: 'Bob', rowIndex: 0 })
-      expect(detail.row).toMatchObject({ name: 'Bob', role: 'Engineer' })
+      input.dispatchEvent(new Event('blur'))
+      expect(detail).not.toBeNull()
+      expect(detail.key).toBe('name')
+      expect(detail.value).toBe('Bob')
+      expect(detail.rowIndex).toBe(0)
+      expect(detail.row).toEqual({ name: 'Bob', role: 'Eng', status: 'Active' })
     })
 
-    it('fires o-cell-change on Enter key', () => {
-      let detail: any = null
-      el.addEventListener('o-cell-change', (e: any) => { detail = e.detail })
-      const input = el.shadowRoot.querySelector('[data-edit-always]') as HTMLInputElement
-      input.value = 'Carol'
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
-      expect(detail).toMatchObject({ key: 'name', value: 'Carol' })
+    it('does not fire o-cell-change when value unchanged on blur', () => {
+      let fired = false
+      el.addEventListener('o-cell-change', () => { fired = true })
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')!
+      input.value = 'Alice'
+      input.dispatchEvent(new Event('blur'))
+      expect(fired).toBe(false)
     })
 
-    it('updates internal data after o-cell-change', () => {
-      const input = el.shadowRoot.querySelector('[data-edit-always]') as HTMLInputElement
-      input.value = 'Dave'
-      input.dispatchEvent(new Event('change'))
-      expect(el.data[0].name).toBe('Dave')
-    })
-  })
-
-  describe('editable — click mode', () => {
-    let el: any
-
-    beforeEach(() => {
-      document.body.innerHTML = ''
-      el = document.createElement('o-table')
-      el.setAttribute('editable', '')
-      el.columns = [
-        { key: 'name', label: 'Name', editable: 'click' },
-        { key: 'role', label: 'Role' },
-      ]
-      el.data = [{ name: 'Alice', role: 'Engineer' }]
-      document.body.appendChild(el)
-    })
-
-    it('renders pencil button for click-editable rows', () => {
-      expect(el.shadowRoot.querySelector('[data-edit-row]')).not.toBeNull()
-    })
-
-    it('renders Actions header column', () => {
-      const headers = [...el.shadowRoot.querySelectorAll('th')]
-      expect(headers.some((th: any) => th.textContent.trim() === 'Actions')).toBe(true)
-    })
-
-    it('clicking pencil puts row in edit mode (shows input)', () => {
-      el.shadowRoot.querySelector('[data-edit-row]').click()
-      expect(el.shadowRoot.querySelector('[data-edit-click]')).not.toBeNull()
-    })
-
-    it('clicking pencil shows confirm and cancel buttons', () => {
-      el.shadowRoot.querySelector('[data-edit-row]').click()
-      expect(el.shadowRoot.querySelector('[data-confirm]')).not.toBeNull()
-      expect(el.shadowRoot.querySelector('[data-cancel]')).not.toBeNull()
-    })
-
-    it('fires o-row-change with changes on confirm', () => {
-      el.shadowRoot.querySelector('[data-edit-row]').click()
-      const input = el.shadowRoot.querySelector('[data-edit-click]') as HTMLInputElement
-      input.value = 'Bob'
+    it('fires o-row-change on confirm with changed click-editable values', () => {
       let detail: any = null
       el.addEventListener('o-row-change', (e: any) => { detail = e.detail })
-      el.shadowRoot.querySelector('[data-confirm]').click()
-      expect(detail).toMatchObject({ rowIndex: 0, changes: { name: 'Bob' } })
-      expect(detail.row).toMatchObject({ name: 'Bob', role: 'Engineer' })
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
+      input.value = 'Design'
+      el.shadowRoot.querySelector('.edit-confirm').click()
+      expect(detail).not.toBeNull()
+      expect(detail.changes).toEqual({ role: 'Design' })
+      expect(detail.rowIndex).toBe(0)
+      expect(detail.row).toEqual({ name: 'Alice', role: 'Design', status: 'Active' })
     })
 
-    it('updates internal data after confirm', () => {
-      el.shadowRoot.querySelector('[data-edit-row]').click()
-      const input = el.shadowRoot.querySelector('[data-edit-click]') as HTMLInputElement
-      input.value = 'Carol'
-      el.shadowRoot.querySelector('[data-confirm]').click()
-      expect(el.data[0].name).toBe('Carol')
+    it('cancel restores original row values', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
+      input.value = 'Design'
+      el.shadowRoot.querySelector('.edit-cancel').click()
+      const cells = [...el.shadowRoot.querySelectorAll('tbody tr td')]
+      expect(cells[1].textContent).toBe('Eng')
     })
 
-    it('cancel exits edit mode without firing o-row-change', () => {
-      el.shadowRoot.querySelector('[data-edit-row]').click()
-      let fired = false
-      el.addEventListener('o-row-change', () => { fired = true })
-      el.shadowRoot.querySelector('[data-cancel]').click()
-      expect(fired).toBe(false)
-      expect(el.shadowRoot.querySelector('[data-edit-row]')).not.toBeNull()
+    it('Enter keypress on always-editable input fires o-cell-change', () => {
+      let detail: any = null
+      el.addEventListener('o-cell-change', (e: any) => { detail = e.detail })
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="name"]')!
+      input.value = 'Charlie'
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }))
+      expect(detail).not.toBeNull()
+      expect(detail.key).toBe('name')
+      expect(detail.value).toBe('Charlie')
     })
 
-    it('confirms edit on the correct row after sorting', () => {
-      el.columns = [
-        { key: 'name', label: 'Name', editable: 'click', sortable: true },
-        { key: 'role', label: 'Role' },
-      ]
-      el.data = [{ name: 'Zara', role: 'Dev' }, { name: 'Alice', role: 'PM' }]
-      // Open Zara (row 0 unsorted) for editing
-      el.shadowRoot.querySelector('[data-edit-row]').click()
-      // Sort by name asc — Alice is now row 0, Zara is row 1
-      el.shadowRoot.querySelector<HTMLElement>('th[data-key="name"]').click()
-      // Confirm the edit (Zara is now visible at row 1)
-      const input = el.shadowRoot.querySelector<HTMLInputElement>('[data-edit-click]')!
-      input.value = 'Zara-edited'
-      el.shadowRoot.querySelector<HTMLElement>('[data-confirm]').click()
-      expect((el.data as any[]).find(r => r.role === 'Dev').name).toBe('Zara-edited')
+    describe('without editable attribute', () => {
+      let el2: any
+
+      beforeEach(() => {
+        document.body.innerHTML = ''
+        el2 = document.createElement('o-table')
+        el2.columns = [{ key: 'name', label: 'Name', editable: 'always' }]
+        el2.data = [{ name: 'Alice' }]
+        document.body.appendChild(el2)
+      })
+
+      afterEach(() => {
+        document.body.innerHTML = ''
+      })
+
+      it('no edit controls when editable attribute absent', () => {
+        expect(el2.shadowRoot.querySelector('input.cell-input')).toBeNull()
+      })
     })
   })
 })

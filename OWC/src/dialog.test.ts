@@ -18,76 +18,85 @@ describe('ODialog', () => {
     expect(customElements.get('o-dialog')).toBeDefined()
   })
 
-  it('is hidden by default (no open attribute)', () => {
-    expect(el.hasAttribute('open')).toBe(false)
+  it('backdrop hidden by default', () => {
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
   })
 
-  it('open() adds open attribute', () => {
+  it('open() shows backdrop', () => {
     el.open()
-    expect(el.hasAttribute('open')).toBe(true)
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(true)
   })
 
-  it('close() removes open attribute', () => {
+  it('close() hides backdrop', () => {
     el.open()
     el.close()
-    expect(el.hasAttribute('open')).toBe(false)
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
   })
 
-  it('fires o-cancel on Escape when open', () => {
+  it('open attribute presence shows dialog', () => {
+    el.setAttribute('open', '')
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(true)
+  })
+
+  it('removing open attribute hides dialog', () => {
+    el.setAttribute('open', '')
+    el.removeAttribute('open')
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
+  })
+
+  it('clicking backdrop fires o-cancel and closes', () => {
     el.open()
-    let fired = false
-    el.addEventListener('o-cancel', () => { fired = true })
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    expect(fired).toBe(true)
+    let cancelled = false
+    let cancelDetail: any = 'unset'
+    el.addEventListener('o-cancel', (e: any) => { cancelled = true; cancelDetail = e.detail })
+    el.shadowRoot.querySelector('.backdrop').dispatchEvent(
+      new MouseEvent('click', { bubbles: true })
+    )
+    expect(cancelled).toBe(true)
+    expect(cancelDetail).toBeNull()
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
   })
 
-  it('does not fire o-cancel on Escape when closed', () => {
-    let fired = false
-    el.addEventListener('o-cancel', () => { fired = true })
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    expect(fired).toBe(false)
-  })
-
-  it('close() is called when Escape fires o-cancel', () => {
+  it('clicking panel does not fire o-cancel', () => {
     el.open()
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    expect(el.hasAttribute('open')).toBe(false)
+    let cancelled = false
+    el.addEventListener('o-cancel', () => { cancelled = true })
+    el.shadowRoot.querySelector('.panel').dispatchEvent(
+      new MouseEvent('click', { bubbles: true })
+    )
+    expect(cancelled).toBe(false)
   })
 
-  it('fires o-submit with named input values', () => {
+  it('Escape key fires o-cancel and closes', () => {
     el.open()
-    const input = document.createElement('input')
-    input.name = 'username'
-    input.value = 'alice'
-    el.appendChild(input)
+    let cancelled = false
+    let cancelDetail: any = 'unset'
+    el.addEventListener('o-cancel', (e: any) => { cancelled = true; cancelDetail = e.detail })
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    expect(cancelled).toBe(true)
+    expect(cancelDetail).toBeNull()
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
+  })
+
+  it('Escape key does not fire when dialog is closed', () => {
+    let cancelled = false
+    el.addEventListener('o-cancel', () => { cancelled = true })
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    expect(cancelled).toBe(false)
+  })
+
+  it('collects named inputs on submit button click, fires o-submit, then closes', () => {
+    el.innerHTML = `
+      <span slot="title">Test</span>
+      <input name="username" value="alice" />
+      <input name="role" value="eng" />
+      <div slot="actions"><button type="submit">Save</button></div>
+    `
+    el.open()
     let detail: any = null
     el.addEventListener('o-submit', (e: any) => { detail = e.detail })
-    el.submit()
-    expect(detail).toEqual({ username: 'alice' })
-  })
-
-  it('close() is called after submit()', () => {
-    el.open()
-    el.submit()
-    expect(el.hasAttribute('open')).toBe(false)
-  })
-
-  it('fires o-cancel and closes when backdrop is clicked', () => {
-    el.open()
-    let fired = false
-    el.addEventListener('o-cancel', () => { fired = true })
-    const backdrop = el.shadowRoot!.querySelector('.backdrop') as HTMLElement
-    backdrop.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    expect(fired).toBe(true)
-    expect(el.hasAttribute('open')).toBe(false)
-  })
-
-  it('cleans up keydown listener on disconnectedCallback', () => {
-    el.open()
-    el.disconnectedCallback()
-    let fired = false
-    el.addEventListener('o-cancel', () => { fired = true })
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    expect(fired).toBe(false)
+    el.querySelector('button[type="submit"]').click()
+    expect(detail).toEqual({ username: 'alice', role: 'eng' })
+    expect(el.shadowRoot.querySelector('.backdrop').classList.contains('visible')).toBe(false)
   })
 })

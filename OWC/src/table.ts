@@ -11,17 +11,8 @@ export interface OTableColumn {
 export type SortDir = 'asc' | 'desc' | 'none'
 export interface OTableSortEvent { col: string; dir: SortDir }
 export interface OTableRowSelectEvent { selected: Record<string, unknown>[] }
-export interface OTableCellChangeEvent {
-  key: string
-  value: string
-  rowIndex: number
-  row: Record<string, unknown>
-}
-export interface OTableRowChangeEvent {
-  rowIndex: number
-  row: Record<string, unknown>
-  changes: Record<string, string>
-}
+export interface OTableCellChangeEvent { key: string; value: unknown; rowIndex: number; row: Record<string, unknown> }
+export interface OTableRowChangeEvent { rowIndex: number; row: Record<string, unknown>; changes: Record<string, unknown> }
 
 export class OTable extends HTMLElement {
   static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable', 'editable'] }
@@ -32,6 +23,7 @@ export class OTable extends HTMLElement {
   private _sortDir: SortDir = 'none'
   private _selectedRows: Set<Record<string, unknown>> = new Set()
   private _editingRows: Set<Record<string, unknown>> = new Set()
+  private _rowOriginals: Map<Record<string, unknown>, Record<string, unknown>> = new Map()
 
   get columns() { return this._columns }
   set columns(v: OTableColumn[]) { this._columns = v; this.render() }
@@ -41,6 +33,7 @@ export class OTable extends HTMLElement {
     this._data = v
     this._selectedRows.clear()
     this._editingRows.clear()
+    this._rowOriginals.clear()
     this.render()
   }
 
@@ -49,6 +42,7 @@ export class OTable extends HTMLElement {
   }
 
   get selectable() { return this.hasAttribute('selectable') }
+  get editable() { return this.hasAttribute('editable') }
 
   constructor() {
     super()
@@ -58,6 +52,10 @@ export class OTable extends HTMLElement {
   connectedCallback() {
     this.restoreState()
     this.render()
+  }
+
+  attributeChangedCallback() {
+    if (this.isConnected) this.render()
   }
 
   private getStorage(): Storage | null {
@@ -132,37 +130,37 @@ export class OTable extends HTMLElement {
         }
         .cell-input {
           background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 6px;
+          border: 1px solid rgba(251,191,36,0.5);
+          border-radius: 4px;
+          color: #fff;
           padding: 4px 8px;
-          color: #fff;
-          font-family: sans-serif;
           font-size: 13px;
+          width: calc(100% - 4px);
           outline: none;
-          width: calc(100% - 16px);
-          box-sizing: border-box;
-        }
-        .cell-input:focus { border-color: rgba(251,191,36,0.6); }
-        .edit-btn {
-          background: rgba(255,255,255,0.12);
-          border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 5px;
-          color: #fff;
-          cursor: pointer;
-          padding: 2px 7px;
-          font-size: 13px;
           font-family: sans-serif;
         }
-        .edit-btn:hover { background: rgba(255,255,255,0.25); }
+        .cell-input:focus { border-color: rgba(251,191,36,0.9); background: rgba(255,255,255,0.15); }
+        .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
+        .edit-btn, .edit-confirm, .edit-cancel {
+          background: none; border: none; cursor: pointer;
+          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: #fff; border-radius: 3px;
+        }
+        .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
+        .edit-confirm { color: rgba(74,222,128,0.9); }
+        .edit-cancel { color: rgba(248,113,113,0.9); }
       </style>
-      <table>
+      ${(() => {
+        const hasClickEditable = this._columns.some(c => c.editable === 'click')
+        const editTh = this.editable && hasClickEditable ? '<th style="width:72px"></th>' : ''
+        return `<table>
         <thead><tr>
           ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ''}
           ${this._columns.map(c => this.renderTh(c)).join('')}
-          ${this.hasAttribute('editable') && this._columns.some(c => c.editable === 'click') ? `<th style="width:80px">Actions</th>` : ''}
+          ${editTh}
         </tr></thead>
-        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i)).join('')}</tbody>
-      </table>
+        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i, hasClickEditable)).join('')}</tbody>
+      </table>`
+      })()}
     `
     this.attachHandlers()
   }
@@ -185,33 +183,36 @@ export class OTable extends HTMLElement {
     </th>`
   }
 
-  private renderRow(row: Record<string, unknown>, rowIndex: number): string {
+  private renderRow(row: Record<string, unknown>, rowIndex: number, hasClickEditable: boolean): string {
     const checked = this._selectedRows.has(row) ? ' checked' : ''
     const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : ''
     const checkbox = this.selectable
       ? `<td><input type="checkbox" data-select-row${checked}></td>`
       : ''
-    const hasClickEditable = this.hasAttribute('editable') && this._columns.some(c => c.editable === 'click')
+
     const isEditing = this._editingRows.has(row)
 
+    let editTd = ''
+    if (this.editable && hasClickEditable) {
+      editTd = isEditing
+        ? `<td class="edit-actions">
+            <button class="edit-confirm" data-row-index="${rowIndex}" title="Confirm">✓</button>
+            <button class="edit-cancel" data-row-index="${rowIndex}" title="Cancel">✗</button>
+           </td>`
+        : `<td class="edit-actions">
+            <button class="edit-btn" data-row-index="${rowIndex}" title="Edit">✏️</button>
+           </td>`
+    }
+
     const cells = this._columns.map(c => {
-      if (this.hasAttribute('editable') && c.editable === 'always') {
-        return `<td><input class="cell-input" data-edit-always data-key="${c.key}" data-row="${rowIndex}" value="${OTable.escapeHtml(row[c.key])}"></td>`
+      if (this.editable && c.editable && (c.editable === 'always' || isEditing)) {
+        const val = String(row[c.key] ?? '').replace(/"/g, '&quot;')
+        return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`
       }
-      if (this.hasAttribute('editable') && c.editable === 'click' && isEditing) {
-        return `<td><input class="cell-input" data-edit-click data-key="${c.key}" data-row="${rowIndex}" value="${OTable.escapeHtml(row[c.key])}"></td>`
-      }
-      return `<td>${OTable.escapeHtml(row[c.key])}</td>`
+      return `<td>${row[c.key] ?? ''}</td>`
     }).join('')
 
-    const actionCell = hasClickEditable
-      ? `<td>${isEditing
-          ? `<button class="edit-btn" data-confirm="${rowIndex}">✓</button> <button class="edit-btn" data-cancel="${rowIndex}">✗</button>`
-          : `<button class="edit-btn" data-edit-row="${rowIndex}">✎</button>`
-        }</td>`
-      : ''
-
-    return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${actionCell}</tr>`
+    return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`
   }
 
   private getSortedData(): Record<string, unknown>[] {
@@ -222,14 +223,6 @@ export class OTable extends HTMLElement {
       const cmp = av < bv ? -1 : av > bv ? 1 : 0
       return this._sortDir === 'asc' ? cmp : -cmp
     })
-  }
-
-  private static escapeHtml(v: unknown): string {
-    return String(v ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
   }
 
   private handleSort(key: string) {
@@ -344,68 +337,87 @@ export class OTable extends HTMLElement {
       }
     }
 
-    // Always-editable cell handlers
-    if (this.hasAttribute('editable')) {
-      this.shadowRoot!.querySelectorAll<HTMLInputElement>('[data-edit-always]').forEach(input => {
+    // Editable handlers
+    if (this.editable) {
+      // always-editable cells: fire o-cell-change on blur/Enter when value changed
+      this.shadowRoot!.querySelectorAll<HTMLInputElement>('input.cell-input').forEach(input => {
         const key = input.dataset.key!
-        const rowIdx = parseInt(input.dataset.row!)
+        const rowIndex = parseInt(input.dataset.rowIndex!)
+        const col = this._columns.find(c => c.key === key)
+        if (col?.editable !== 'always') return
+
         const commit = () => {
-          const value = input.value
-          const sortedData = this.getSortedData()
-          const row = sortedData[rowIdx]
+          const row = this.getSortedData()[rowIndex]
           if (!row) return
-          const updatedRow = { ...row, [key]: value }
-          this._data = this._data.map(r => r === row ? updatedRow : r)
-          this.dispatchEvent(new CustomEvent<OTableCellChangeEvent>('o-cell-change', {
-            bubbles: true, composed: true,
-            detail: { key, value, rowIndex: rowIdx, row: updatedRow }
-          }))
+          const oldVal = String(row[key] ?? '')
+          const newVal = input.value
+          if (newVal !== oldVal) {
+            row[key] = newVal
+            this.dispatchEvent(new CustomEvent<OTableCellChangeEvent>('o-cell-change', {
+              bubbles: true, composed: true,
+              detail: { key, value: newVal, rowIndex, row }
+            }))
+          }
         }
-        input.addEventListener('change', commit)
-        input.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Enter') commit() })
-        input.addEventListener('click', (e: MouseEvent) => e.stopPropagation())
+        input.addEventListener('blur', commit)
+        input.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter') { commit(); input.blur() }
+        })
       })
 
-      // Click-editable: pencil → edit mode
-      this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-edit-row]').forEach(btn => {
+      // Edit button: enter edit mode for that row
+      this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-btn').forEach(btn => {
         btn.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
-          const rowIdx = parseInt(btn.dataset.editRow!)
-          const row = this.getSortedData()[rowIdx]
-          if (!row) return
+          const rowIndex = parseInt(btn.dataset.rowIndex!)
+          const row = this.getSortedData()[rowIndex]
+          this._rowOriginals.set(row, { ...row })
           this._editingRows.add(row)
           this.render()
         })
       })
 
-      // Confirm button
-      this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-confirm]').forEach(btn => {
+      // Confirm button: commit changes, fire o-row-change
+      this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-confirm').forEach(btn => {
         btn.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
-          const rowIdx = parseInt(btn.dataset.confirm!)
-          const row = this.getSortedData()[rowIdx]
-          if (!row) return
-          const changes: Record<string, string> = {}
-          this.shadowRoot!.querySelectorAll<HTMLInputElement>(`[data-edit-click][data-row="${rowIdx}"]`)
-            .forEach(input => { changes[input.dataset.key!] = input.value })
-          const updatedRow = { ...row, ...changes }
-          this._data = this._data.map(r => r === row ? updatedRow : r)
+          const rowIndex = parseInt(btn.dataset.rowIndex!)
+          const row = this.getSortedData()[rowIndex]
+          const original = this._rowOriginals.get(row) ?? {}
+          const changes: Record<string, unknown> = {}
+
+          this.shadowRoot!.querySelectorAll<HTMLInputElement>(
+            `tr[data-row-index="${rowIndex}"] input.cell-input`
+          ).forEach(input => {
+            const k = input.dataset.key!
+            const col = this._columns.find(c => c.key === k)
+            if (col?.editable === 'click') {
+              row[k] = input.value
+              if (input.value !== String(original[k] ?? '')) changes[k] = input.value
+            }
+          })
+
           this._editingRows.delete(row)
-          this.dispatchEvent(new CustomEvent<OTableRowChangeEvent>('o-row-change', {
-            bubbles: true, composed: true,
-            detail: { rowIndex: rowIdx, row: updatedRow, changes }
-          }))
+          this._rowOriginals.delete(row)
+
+          if (Object.keys(changes).length > 0) {
+            this.dispatchEvent(new CustomEvent<OTableRowChangeEvent>('o-row-change', {
+              bubbles: true, composed: true,
+              detail: { rowIndex, row, changes }
+            }))
+          }
           this.render()
         })
       })
 
-      // Cancel button
-      this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-cancel]').forEach(btn => {
+      // Cancel button: restore original values, exit edit mode
+      this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-cancel').forEach(btn => {
         btn.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
-          const rowIdx = parseInt(btn.dataset.cancel!)
-          const row = this.getSortedData()[rowIdx]
-          if (!row) return
+          const rowIndex = parseInt(btn.dataset.rowIndex!)
+          const row = this.getSortedData()[rowIndex]
+          const original = this._rowOriginals.get(row)
+          if (original) { Object.assign(row, original); this._rowOriginals.delete(row) }
           this._editingRows.delete(row)
           this.render()
         })
