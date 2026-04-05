@@ -216,4 +216,58 @@ describe('OTable', () => {
       expect(selectedTr).not.toBeNull()
     })
   })
+
+  describe('editable — always mode', () => {
+    let el: any
+
+    beforeEach(() => {
+      document.body.innerHTML = ''
+      el = document.createElement('o-table')
+      el.setAttribute('editable', '')
+      el.columns = [
+        { key: 'name', label: 'Name', editable: 'always' },
+        { key: 'role', label: 'Role' },
+      ]
+      el.data = [{ name: 'Alice', role: 'Engineer' }]
+      document.body.appendChild(el)
+    })
+
+    it('renders input for always-editable column', () => {
+      const input = el.shadowRoot.querySelector('[data-edit-always]')
+      expect(input).not.toBeNull()
+      expect(input.value).toBe('Alice')
+    })
+
+    it('non-editable column stays plain text', () => {
+      const tds = el.shadowRoot.querySelectorAll('tbody td')
+      expect(tds[1].querySelector('input')).toBeNull()
+      expect(tds[1].textContent).toBe('Engineer')
+    })
+
+    it('fires o-cell-change on input change event', () => {
+      let detail: any = null
+      el.addEventListener('o-cell-change', (e: any) => { detail = e.detail })
+      const input = el.shadowRoot.querySelector('[data-edit-always]') as HTMLInputElement
+      input.value = 'Bob'
+      input.dispatchEvent(new Event('change'))
+      expect(detail).toMatchObject({ key: 'name', value: 'Bob', rowIndex: 0 })
+      expect(detail.row).toMatchObject({ name: 'Bob', role: 'Engineer' })
+    })
+
+    it('fires o-cell-change on Enter key', () => {
+      let detail: any = null
+      el.addEventListener('o-cell-change', (e: any) => { detail = e.detail })
+      const input = el.shadowRoot.querySelector('[data-edit-always]') as HTMLInputElement
+      input.value = 'Carol'
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      expect(detail).toMatchObject({ key: 'name', value: 'Carol' })
+    })
+
+    it('updates internal data after o-cell-change', () => {
+      const input = el.shadowRoot.querySelector('[data-edit-always]') as HTMLInputElement
+      input.value = 'Dave'
+      input.dispatchEvent(new Event('change'))
+      expect(el.data[0].name).toBe('Dave')
+    })
+  })
 })

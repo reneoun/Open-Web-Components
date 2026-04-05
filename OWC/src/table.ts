@@ -5,20 +5,33 @@ export interface OTableColumn {
   sortable?: boolean
   minWidth?: number
   maxWidth?: number
+  editable?: 'always' | 'click'
 }
 
 export type SortDir = 'asc' | 'desc' | 'none'
 export interface OTableSortEvent { col: string; dir: SortDir }
 export interface OTableRowSelectEvent { selected: Record<string, unknown>[] }
+export interface OTableCellChangeEvent {
+  key: string
+  value: string
+  rowIndex: number
+  row: Record<string, unknown>
+}
+export interface OTableRowChangeEvent {
+  rowIndex: number
+  row: Record<string, unknown>
+  changes: Record<string, string>
+}
 
 export class OTable extends HTMLElement {
-  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable'] }
+  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable', 'editable'] }
 
   private _columns: OTableColumn[] = []
   private _data: Record<string, unknown>[] = []
   private _sortCol: string | null = null
   private _sortDir: SortDir = 'none'
   private _selectedRows: Set<Record<string, unknown>> = new Set()
+  private _editingRows: Set<number> = new Set()
 
   get columns() { return this._columns }
   set columns(v: OTableColumn[]) { this._columns = v; this.render() }
@@ -27,6 +40,7 @@ export class OTable extends HTMLElement {
   set data(v: Record<string, unknown>[]) {
     this._data = v
     this._selectedRows.clear()
+    this._editingRows.clear()
     this.render()
   }
 
@@ -116,10 +130,38 @@ export class OTable extends HTMLElement {
           width: 15px; height: 15px; cursor: pointer;
           accent-color: rgba(255,255,255,0.9);
         }
+        .cell-input {
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 6px;
+          padding: 4px 8px;
+          color: #fff;
+          font-family: sans-serif;
+          font-size: 13px;
+          outline: none;
+          width: calc(100% - 16px);
+          box-sizing: border-box;
+        }
+        .cell-input:focus { border-color: rgba(251,191,36,0.6); }
+        .edit-btn {
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 5px;
+          color: #fff;
+          cursor: pointer;
+          padding: 2px 7px;
+          font-size: 13px;
+          font-family: sans-serif;
+        }
+        .edit-btn:hover { background: rgba(255,255,255,0.25); }
       </style>
       <table>
-        <thead><tr>${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ''}${this._columns.map(c => this.renderTh(c)).join('')}</tr></thead>
-        <tbody>${this.getSortedData().map(row => this.renderRow(row)).join('')}</tbody>
+        <thead><tr>
+          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ''}
+          ${this._columns.map(c => this.renderTh(c)).join('')}
+          ${this.hasAttribute('editable') && this._columns.some(c => c.editable === 'click') ? `<th style="width:80px">Actions</th>` : ''}
+        </tr></thead>
+        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i)).join('')}</tbody>
       </table>
     `
     this.attachHandlers()
@@ -143,15 +185,30 @@ export class OTable extends HTMLElement {
     </th>`
   }
 
-  private renderRow(row: Record<string, unknown>): string {
+  private renderRow(row: Record<string, unknown>, rowIndex: number): string {
     const checked = this._selectedRows.has(row) ? ' checked' : ''
     const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : ''
     const checkbox = this.selectable
       ? `<td><input type="checkbox" data-select-row${checked}></td>`
       : ''
-    return `<tr${selectedClass}>${checkbox}${this._columns.map(c =>
-      `<td>${row[c.key] ?? ''}</td>`
-    ).join('')}</tr>`
+    const hasClickEditable = this.hasAttribute('editable') && this._columns.some(c => c.editable === 'click')
+    const isEditing = this._editingRows.has(rowIndex)
+
+    const cells = this._columns.map(c => {
+      if (this.hasAttribute('editable') && c.editable === 'always') {
+        return `<td><input class="cell-input" data-edit-always data-key="${c.key}" data-row="${rowIndex}" value="${String(row[c.key] ?? '').replace(/"/g, '&quot;')}"></td>`
+      }
+      return `<td>${row[c.key] ?? ''}</td>`
+    }).join('')
+
+    const actionCell = hasClickEditable
+      ? `<td>${isEditing
+          ? `<button class="edit-btn" data-confirm="${rowIndex}">✓</button> <button class="edit-btn" data-cancel="${rowIndex}">✗</button>`
+          : `<button class="edit-btn" data-edit-row="${rowIndex}">✎</button>`
+        }</td>`
+      : ''
+
+    return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${actionCell}</tr>`
   }
 
   private getSortedData(): Record<string, unknown>[] {
@@ -274,6 +331,29 @@ export class OTable extends HTMLElement {
           this.render()
         })
       }
+    }
+
+    // Always-editable cell handlers
+    if (this.hasAttribute('editable')) {
+      this.shadowRoot!.querySelectorAll<HTMLInputElement>('[data-edit-always]').forEach(input => {
+        const key = input.dataset.key!
+        const rowIdx = parseInt(input.dataset.row!)
+        const commit = () => {
+          const value = input.value
+          const sortedData = this.getSortedData()
+          const row = sortedData[rowIdx]
+          if (!row) return
+          const updatedRow = { ...row, [key]: value }
+          this._data = this._data.map(r => r === row ? updatedRow : r)
+          this.dispatchEvent(new CustomEvent<OTableCellChangeEvent>('o-cell-change', {
+            bubbles: true, composed: true,
+            detail: { key, value, rowIndex: rowIdx, row: updatedRow }
+          }))
+        }
+        input.addEventListener('change', commit)
+        input.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Enter') commit() })
+        input.addEventListener('click', (e: MouseEvent) => e.stopPropagation())
+      })
     }
   }
 }
