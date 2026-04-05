@@ -270,4 +270,68 @@ describe('OTable', () => {
       expect(el.data[0].name).toBe('Dave')
     })
   })
+
+  describe('editable — click mode', () => {
+    let el: any
+
+    beforeEach(() => {
+      document.body.innerHTML = ''
+      el = document.createElement('o-table')
+      el.setAttribute('editable', '')
+      el.columns = [
+        { key: 'name', label: 'Name', editable: 'click' },
+        { key: 'role', label: 'Role' },
+      ]
+      el.data = [{ name: 'Alice', role: 'Engineer' }]
+      document.body.appendChild(el)
+    })
+
+    it('renders pencil button for click-editable rows', () => {
+      expect(el.shadowRoot.querySelector('[data-edit-row]')).not.toBeNull()
+    })
+
+    it('renders Actions header column', () => {
+      const headers = [...el.shadowRoot.querySelectorAll('th')]
+      expect(headers.some((th: any) => th.textContent.trim() === 'Actions')).toBe(true)
+    })
+
+    it('clicking pencil puts row in edit mode (shows input)', () => {
+      el.shadowRoot.querySelector('[data-edit-row]').click()
+      expect(el.shadowRoot.querySelector('[data-edit-click]')).not.toBeNull()
+    })
+
+    it('clicking pencil shows confirm and cancel buttons', () => {
+      el.shadowRoot.querySelector('[data-edit-row]').click()
+      expect(el.shadowRoot.querySelector('[data-confirm]')).not.toBeNull()
+      expect(el.shadowRoot.querySelector('[data-cancel]')).not.toBeNull()
+    })
+
+    it('fires o-row-change with changes on confirm', () => {
+      el.shadowRoot.querySelector('[data-edit-row]').click()
+      const input = el.shadowRoot.querySelector('[data-edit-click]') as HTMLInputElement
+      input.value = 'Bob'
+      let detail: any = null
+      el.addEventListener('o-row-change', (e: any) => { detail = e.detail })
+      el.shadowRoot.querySelector('[data-confirm]').click()
+      expect(detail).toMatchObject({ rowIndex: 0, changes: { name: 'Bob' } })
+      expect(detail.row).toMatchObject({ name: 'Bob', role: 'Engineer' })
+    })
+
+    it('updates internal data after confirm', () => {
+      el.shadowRoot.querySelector('[data-edit-row]').click()
+      const input = el.shadowRoot.querySelector('[data-edit-click]') as HTMLInputElement
+      input.value = 'Carol'
+      el.shadowRoot.querySelector('[data-confirm]').click()
+      expect(el.data[0].name).toBe('Carol')
+    })
+
+    it('cancel exits edit mode without firing o-row-change', () => {
+      el.shadowRoot.querySelector('[data-edit-row]').click()
+      let fired = false
+      el.addEventListener('o-row-change', () => { fired = true })
+      el.shadowRoot.querySelector('[data-cancel]').click()
+      expect(fired).toBe(false)
+      expect(el.shadowRoot.querySelector('[data-edit-row]')).not.toBeNull()
+    })
+  })
 })

@@ -198,6 +198,9 @@ export class OTable extends HTMLElement {
       if (this.hasAttribute('editable') && c.editable === 'always') {
         return `<td><input class="cell-input" data-edit-always data-key="${c.key}" data-row="${rowIndex}" value="${OTable.escapeHtml(row[c.key])}"></td>`
       }
+      if (this.hasAttribute('editable') && c.editable === 'click' && isEditing) {
+        return `<td><input class="cell-input" data-edit-click data-key="${c.key}" data-row="${rowIndex}" value="${OTable.escapeHtml(row[c.key])}"></td>`
+      }
       return `<td>${OTable.escapeHtml(row[c.key])}</td>`
     }).join('')
 
@@ -361,6 +364,45 @@ export class OTable extends HTMLElement {
         input.addEventListener('change', commit)
         input.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Enter') commit() })
         input.addEventListener('click', (e: MouseEvent) => e.stopPropagation())
+      })
+
+      // Click-editable: pencil → edit mode
+      this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-edit-row]').forEach(btn => {
+        btn.addEventListener('click', (e: MouseEvent) => {
+          e.stopPropagation()
+          this._editingRows.add(parseInt(btn.dataset.editRow!))
+          this.render()
+        })
+      })
+
+      // Confirm button
+      this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-confirm]').forEach(btn => {
+        btn.addEventListener('click', (e: MouseEvent) => {
+          e.stopPropagation()
+          const rowIdx = parseInt(btn.dataset.confirm!)
+          const row = this.getSortedData()[rowIdx]
+          if (!row) return
+          const changes: Record<string, string> = {}
+          this.shadowRoot!.querySelectorAll<HTMLInputElement>(`[data-edit-click][data-row="${rowIdx}"]`)
+            .forEach(input => { changes[input.dataset.key!] = input.value })
+          const updatedRow = { ...row, ...changes }
+          this._data = this._data.map(r => r === row ? updatedRow : r)
+          this._editingRows.delete(rowIdx)
+          this.dispatchEvent(new CustomEvent<OTableRowChangeEvent>('o-row-change', {
+            bubbles: true, composed: true,
+            detail: { rowIndex: rowIdx, row: updatedRow, changes }
+          }))
+          this.render()
+        })
+      })
+
+      // Cancel button
+      this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-cancel]').forEach(btn => {
+        btn.addEventListener('click', (e: MouseEvent) => {
+          e.stopPropagation()
+          this._editingRows.delete(parseInt(btn.dataset.cancel!))
+          this.render()
+        })
       })
     }
   }
