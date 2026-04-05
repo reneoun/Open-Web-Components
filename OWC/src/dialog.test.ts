@@ -62,13 +62,23 @@ describe('ODialog', () => {
     el.appendChild(input)
     let detail: any = null
     el.addEventListener('o-submit', (e: any) => { detail = e.detail })
-    el._submit()
+    el.submit()
     expect(detail).toEqual({ username: 'alice' })
   })
 
-  it('close() is called after _submit()', () => {
+  it('close() is called after submit()', () => {
     el.open()
-    el._submit()
+    el.submit()
+    expect(el.hasAttribute('open')).toBe(false)
+  })
+
+  it('fires o-cancel and closes when backdrop is clicked', () => {
+    el.open()
+    let fired = false
+    el.addEventListener('o-cancel', () => { fired = true })
+    const backdrop = el.shadowRoot!.querySelector('.backdrop') as HTMLElement
+    backdrop.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(fired).toBe(true)
     expect(el.hasAttribute('open')).toBe(false)
   })
 

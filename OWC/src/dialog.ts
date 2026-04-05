@@ -12,6 +12,13 @@ export class ODialog extends HTMLElement {
     }
   }
 
+  private _onOClick = (e: Event) => {
+    const target = e.target as HTMLElement
+    if (target.getAttribute('type') === 'submit') {
+      this.submit()
+    }
+  }
+
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
@@ -88,30 +95,25 @@ export class ODialog extends HTMLElement {
     `
 
     // Backdrop click → cancel
-    this.shadowRoot!.querySelector('.backdrop')!.addEventListener('click', (e: MouseEvent) => {
-      if (e.target === this.shadowRoot!.querySelector('.backdrop')) {
+    const backdrop = this.shadowRoot!.querySelector('.backdrop')!
+    backdrop.addEventListener('click', (e: MouseEvent) => {
+      if (e.target === backdrop) {
         this.dispatchEvent(new CustomEvent('o-cancel', {
           bubbles: true, composed: true, detail: null
         }))
         this.close()
       }
     })
-
-    // Listen for o-click from submit buttons in the actions slot
-    this.addEventListener('o-click', (e: Event) => {
-      const target = e.target as HTMLElement
-      if (target.getAttribute('type') === 'submit') {
-        this._submit()
-      }
-    })
   }
 
   connectedCallback() {
     document.addEventListener('keydown', this._onKeydown)
+    this.addEventListener('o-click', this._onOClick)
   }
 
   disconnectedCallback() {
     document.removeEventListener('keydown', this._onKeydown)
+    this.removeEventListener('o-click', this._onOClick)
   }
 
   attributeChangedCallback(name: string, _old: string | null, next: string | null) {
@@ -128,7 +130,7 @@ export class ODialog extends HTMLElement {
   open() { this.setAttribute('open', '') }
   close() { this.removeAttribute('open') }
 
-  _submit() {
+  submit() {
     const inputs = this.querySelectorAll<HTMLInputElement>('[name]')
     const data: Record<string, string> = {}
     inputs.forEach(input => { data[input.name] = input.value })
