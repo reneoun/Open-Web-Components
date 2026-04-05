@@ -31,7 +31,7 @@ export class OTable extends HTMLElement {
   private _sortCol: string | null = null
   private _sortDir: SortDir = 'none'
   private _selectedRows: Set<Record<string, unknown>> = new Set()
-  private _editingRows: Set<number> = new Set()
+  private _editingRows: Set<Record<string, unknown>> = new Set()
 
   get columns() { return this._columns }
   set columns(v: OTableColumn[]) { this._columns = v; this.render() }
@@ -192,7 +192,7 @@ export class OTable extends HTMLElement {
       ? `<td><input type="checkbox" data-select-row${checked}></td>`
       : ''
     const hasClickEditable = this.hasAttribute('editable') && this._columns.some(c => c.editable === 'click')
-    const isEditing = this._editingRows.has(rowIndex)
+    const isEditing = this._editingRows.has(row)
 
     const cells = this._columns.map(c => {
       if (this.hasAttribute('editable') && c.editable === 'always') {
@@ -370,7 +370,10 @@ export class OTable extends HTMLElement {
       this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-edit-row]').forEach(btn => {
         btn.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
-          this._editingRows.add(parseInt(btn.dataset.editRow!))
+          const rowIdx = parseInt(btn.dataset.editRow!)
+          const row = this.getSortedData()[rowIdx]
+          if (!row) return
+          this._editingRows.add(row)
           this.render()
         })
       })
@@ -387,7 +390,7 @@ export class OTable extends HTMLElement {
             .forEach(input => { changes[input.dataset.key!] = input.value })
           const updatedRow = { ...row, ...changes }
           this._data = this._data.map(r => r === row ? updatedRow : r)
-          this._editingRows.delete(rowIdx)
+          this._editingRows.delete(row)
           this.dispatchEvent(new CustomEvent<OTableRowChangeEvent>('o-row-change', {
             bubbles: true, composed: true,
             detail: { rowIndex: rowIdx, row: updatedRow, changes }
@@ -400,7 +403,10 @@ export class OTable extends HTMLElement {
       this.shadowRoot!.querySelectorAll<HTMLButtonElement>('[data-cancel]').forEach(btn => {
         btn.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
-          this._editingRows.delete(parseInt(btn.dataset.cancel!))
+          const rowIdx = parseInt(btn.dataset.cancel!)
+          const row = this.getSortedData()[rowIdx]
+          if (!row) return
+          this._editingRows.delete(row)
           this.render()
         })
       })

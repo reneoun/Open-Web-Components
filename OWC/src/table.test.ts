@@ -333,5 +333,22 @@ describe('OTable', () => {
       expect(fired).toBe(false)
       expect(el.shadowRoot.querySelector('[data-edit-row]')).not.toBeNull()
     })
+
+    it('confirms edit on the correct row after sorting', () => {
+      el.columns = [
+        { key: 'name', label: 'Name', editable: 'click', sortable: true },
+        { key: 'role', label: 'Role' },
+      ]
+      el.data = [{ name: 'Zara', role: 'Dev' }, { name: 'Alice', role: 'PM' }]
+      // Open Zara (row 0 unsorted) for editing
+      el.shadowRoot.querySelector('[data-edit-row]').click()
+      // Sort by name asc — Alice is now row 0, Zara is row 1
+      el.shadowRoot.querySelector<HTMLElement>('th[data-key="name"]').click()
+      // Confirm the edit (Zara is now visible at row 1)
+      const input = el.shadowRoot.querySelector<HTMLInputElement>('[data-edit-click]')!
+      input.value = 'Zara-edited'
+      el.shadowRoot.querySelector<HTMLElement>('[data-confirm]').click()
+      expect((el.data as any[]).find(r => r.role === 'Dev').name).toBe('Zara-edited')
+    })
   })
 })
