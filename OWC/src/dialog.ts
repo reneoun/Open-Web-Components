@@ -5,10 +5,10 @@ export class ODialog extends HTMLElement {
 
   private _onKeydown = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && this.hasAttribute('open')) {
-      this.close()
       this.dispatchEvent(new CustomEvent('o-cancel', {
         bubbles: true, composed: true, detail: null
       }))
+      this.close()
     }
   }
 
@@ -90,10 +90,10 @@ export class ODialog extends HTMLElement {
     // Backdrop click → cancel
     this.shadowRoot!.querySelector('.backdrop')!.addEventListener('click', (e: MouseEvent) => {
       if (e.target === this.shadowRoot!.querySelector('.backdrop')) {
-        this.close()
         this.dispatchEvent(new CustomEvent('o-cancel', {
           bubbles: true, composed: true, detail: null
         }))
+        this.close()
       }
     })
 
