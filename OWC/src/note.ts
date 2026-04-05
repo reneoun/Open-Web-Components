@@ -1,6 +1,6 @@
 export class ONote extends HTMLElement {
   static get observedAttributes() {
-    return ['variant', 'label', 'placeholder', 'max-length', 'value']
+    return ['variant', 'label', 'placeholder', 'max-length']
   }
 
   constructor() {
@@ -68,25 +68,46 @@ export class ONote extends HTMLElement {
         .counter.over { color: #f87171; }
       </style>
       <div class="wrap">
-        ${label ? `<label>${label}</label>` : ''}
-        <textarea placeholder="${placeholder}">${value}</textarea>
-        ${maxLength ? `<div class="counter"><span id="cur">${value.length}</span> / ${maxLength}</div>` : ''}
+        <textarea></textarea>
+        ${maxLength ? `<div class="counter"><span class="counter-cur">0</span> / <span class="counter-max"></span></div>` : ''}
       </div>
     `
+    const wrap = this.shadowRoot!.querySelector('.wrap')!
     const ta = this.shadowRoot!.querySelector('textarea')!
-    const autoResize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px' }
-    ta.addEventListener('input', () => {
-      autoResize()
-      if (maxLength) {
-        const cur = this.shadowRoot!.getElementById('cur')!
+
+    // Set dynamic values via DOM API (safe, no HTML parsing)
+    ta.placeholder = placeholder
+    ta.value = value
+
+    if (label) {
+      const labelEl = document.createElement('label')
+      labelEl.textContent = label
+      wrap.prepend(labelEl)
+    }
+
+    if (maxLength) {
+      const maxInt = parseInt(maxLength) || 0
+      this.shadowRoot!.querySelector('.counter-max')!.textContent = String(maxInt)
+      const cur = this.shadowRoot!.querySelector('.counter-cur')!
+      cur.textContent = String(ta.value.length)
+      ta.addEventListener('input', () => {
         cur.textContent = String(ta.value.length)
-        cur.parentElement!.classList.toggle('over', ta.value.length > parseInt(maxLength))
-      }
-      this.dispatchEvent(new CustomEvent('o-change', {
-        bubbles: true, composed: true,
-        detail: { value: ta.value }
-      }))
-    })
+        cur.parentElement!.classList.toggle('over', ta.value.length > maxInt)
+        autoResize()
+        this.dispatchEvent(new CustomEvent('o-change', {
+          bubbles: true, composed: true, detail: { value: ta.value }
+        }))
+      })
+    } else {
+      ta.addEventListener('input', () => {
+        autoResize()
+        this.dispatchEvent(new CustomEvent('o-change', {
+          bubbles: true, composed: true, detail: { value: ta.value }
+        }))
+      })
+    }
+
+    const autoResize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px' }
     autoResize()
   }
 
@@ -167,7 +188,7 @@ export class ONote extends HTMLElement {
       </style>
       <div class="card">
         <input class="title-input" placeholder="Title" type="text">
-        <textarea class="body-area" placeholder="${placeholder}"></textarea>
+        <textarea class="body-area"></textarea>
         <div class="tags">
           <input class="tag-input" placeholder="+ tag" type="text">
         </div>
@@ -179,6 +200,7 @@ export class ONote extends HTMLElement {
     const tagInput = this.shadowRoot!.querySelector<HTMLInputElement>('.tag-input')!
     const titleInput = this.shadowRoot!.querySelector<HTMLInputElement>('.title-input')!
     const bodyArea = this.shadowRoot!.querySelector<HTMLTextAreaElement>('.body-area')!
+    bodyArea.placeholder = placeholder
 
     const emit = () => this.dispatchEvent(new CustomEvent('o-change', {
       bubbles: true, composed: true,
@@ -203,10 +225,12 @@ export class ONote extends HTMLElement {
       if (e.key === 'Enter' && tagInput.value.trim()) {
         e.preventDefault()
         const tag = tagInput.value.trim()
-        tags.push(tag)
-        addChip(tag)
+        if (!tags.includes(tag)) {
+          tags.push(tag)
+          addChip(tag)
+          emit()
+        }
         tagInput.value = ''
-        emit()
       }
     })
 
