@@ -196,9 +196,9 @@ export class OTable extends HTMLElement {
 
     const cells = this._columns.map(c => {
       if (this.hasAttribute('editable') && c.editable === 'always') {
-        return `<td><input class="cell-input" data-edit-always data-key="${c.key}" data-row="${rowIndex}" value="${String(row[c.key] ?? '').replace(/"/g, '&quot;')}"></td>`
+        return `<td><input class="cell-input" data-edit-always data-key="${c.key}" data-row="${rowIndex}" value="${OTable.escapeHtml(row[c.key])}"></td>`
       }
-      return `<td>${row[c.key] ?? ''}</td>`
+      return `<td>${OTable.escapeHtml(row[c.key])}</td>`
     }).join('')
 
     const actionCell = hasClickEditable
@@ -219,6 +219,14 @@ export class OTable extends HTMLElement {
       const cmp = av < bv ? -1 : av > bv ? 1 : 0
       return this._sortDir === 'asc' ? cmp : -cmp
     })
+  }
+
+  private static escapeHtml(v: unknown): string {
+    return String(v ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
   }
 
   private handleSort(key: string) {
