@@ -31,11 +31,65 @@
   var exports_src = {};
   __export(exports_src, {
     toast: () => toast,
+    glassBaseStyles: () => glassBaseStyles,
     OWCToast: () => OWCToast,
+    OTooltip: () => OTooltip,
     OToggle: () => OToggle,
     OTable: () => OTable,
-    OSearch: () => OSearch
+    OSearch: () => OSearch,
+    GlassElement: () => GlassElement,
+    GLASS_TOKENS_LIGHT: () => GLASS_TOKENS_LIGHT,
+    GLASS_TOKENS: () => GLASS_TOKENS
   });
+
+  // src/glass.ts
+  var GLASS_TOKENS_LIGHT = `
+  --glass-bg: rgba(34,197,94,0.06);
+  --glass-border: rgba(34,197,94,0.15);
+  --glass-blur: 12px;
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  --accent-warm: rgba(22,163,74,0.7);
+  --glass-text: #1a2e1a;
+  --glass-text-muted: rgba(0,40,0,0.5);
+  --glass-text-dim: rgba(0,40,0,0.3);
+  --glass-hover: rgba(34,197,94,0.08);
+`;
+  var GLASS_TOKENS = `
+  --glass-bg: rgba(255,255,255,0.07);
+  --glass-border: rgba(255,255,255,0.12);
+  --glass-blur: 12px;
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  --accent-warm: rgba(251,191,36,0.6);
+  --glass-text: #fff;
+  --glass-text-muted: rgba(255,255,255,0.5);
+  --glass-text-dim: rgba(255,255,255,0.3);
+  --glass-hover: rgba(255,255,255,0.1);
+`;
+  function glassBaseStyles() {
+    return `
+    :host {
+      ${GLASS_TOKENS_LIGHT}
+    }
+    @media (prefers-color-scheme: dark) {
+      :host(:not([theme="light"])) {
+        ${GLASS_TOKENS}
+      }
+    }
+    :host([theme="dark"]) {
+      ${GLASS_TOKENS}
+    }
+    :host([theme="light"]) {
+      ${GLASS_TOKENS_LIGHT}
+    }
+  `;
+  }
+
+  class GlassElement extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" });
+    }
+  }
 
   // src/core.ts
   console.log("Open Web Components (OWC) Core Module Loaded - René Oun");
@@ -82,27 +136,27 @@
     }, 220);
   }
 
-  class OWCButton extends HTMLElement {
+  class OWCButton extends GlassElement {
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
       this.shadowRoot.innerHTML = `
             <style>
+                ${glassBaseStyles()}
                 :host { display: inline-block; }
                 button {
                     cursor: pointer;
                     padding: 8px 20px;
                     border-radius: 10px;
-                    border: 1px solid rgba(255,255,255,0.3);
-                    background: rgba(255,255,255,0.18);
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
-                    color: var(--o-button-color, #fff);
+                    border: 1px solid var(--glass-border);
+                    background: var(--glass-bg);
+                    backdrop-filter: blur(var(--glass-blur));
+                    -webkit-backdrop-filter: blur(var(--glass-blur));
+                    color: var(--o-button-color, var(--glass-text));
                     font-size: 14px;
                     font-family: sans-serif;
                     transition: background 0.2s, transform 0.1s;
                 }
-                button:hover { background: rgba(255,255,255,0.28); }
+                button:hover { background: var(--glass-hover); }
                 button:active { transform: scale(0.97); }
             </style>
             <button><slot>Button</slot></button>
@@ -113,7 +167,7 @@
     }
   }
 
-  class OWCPanel extends HTMLElement {
+  class OWCPanel extends GlassElement {
     static get observedAttributes() {
       return ["move", "snap", "resize"];
     }
@@ -122,7 +176,6 @@
     resizeStart = null;
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
       this.render();
@@ -147,52 +200,53 @@
       const savedH = prev?.style.height ?? "";
       this.shadowRoot.innerHTML = `
             <style>
+                ${glassBaseStyles()}
                 :host { display: inline-block; }
                 .panel {
-                    background: rgba(255,255,255,0.18);
-                    border: 1px solid rgba(255,255,255,0.3);
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
+                    background: var(--glass-bg);
+                    border: 1px solid var(--glass-border);
+                    backdrop-filter: blur(var(--glass-blur));
+                    -webkit-backdrop-filter: blur(var(--glass-blur));
                     padding: 16px;
                     margin: 8px;
                     border-radius: 10px;
                     min-width: 120px;
                     min-height: 40px;
                     position: relative;
-                    color: #fff;
+                    color: var(--glass-text);
                     font-family: sans-serif;
                     font-size: 14px;
                     box-sizing: border-box;
                 }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
-                    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
-                    color: #fff; border-radius: 6px; cursor: grab; font-size: 14px;
+                    background: var(--glass-hover); border: 1px solid var(--glass-border);
+                    color: var(--glass-text); border-radius: 6px; cursor: grab; font-size: 14px;
                     padding: 2px 5px; line-height: 1;
                 }
                 .resize-e {
                     position: absolute; right: 0; top: 20%; bottom: 20%;
                     width: 5px; cursor: ew-resize;
-                    background: rgba(255,255,255,0.15); border-radius: 0 10px 10px 0;
+                    background: var(--glass-hover); border-radius: 0 10px 10px 0;
                     transition: background 0.15s;
                 }
                 .resize-s {
                     position: absolute; bottom: 0; left: 20%; right: 20%;
                     height: 5px; cursor: ns-resize;
-                    background: rgba(255,255,255,0.15); border-radius: 0 0 10px 10px;
+                    background: var(--glass-hover); border-radius: 0 0 10px 10px;
                     transition: background 0.15s;
                 }
                 .resize-se {
                     position: absolute; right: 0; bottom: 0;
                     width: 14px; height: 14px; cursor: nwse-resize;
-                    border-right: 3px solid rgba(255,255,255,0.3);
-                    border-bottom: 3px solid rgba(255,255,255,0.3);
+                    border-right: 3px solid var(--glass-border);
+                    border-bottom: 3px solid var(--glass-border);
                     border-radius: 0 0 10px 0;
                 }
-                .resize-e:hover, .resize-s:hover { background: rgba(255,255,255,0.35); }
-                .resize-se:hover { border-color: rgba(255,255,255,0.6); }
+                .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
+                .resize-se:hover { border-color: var(--glass-text-muted); }
             </style>
-            <div class="panel">
+            <div class="panel" role="region">
                 ${hasDrag ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
                 <slot></slot>
                 ${hasResize ? `
@@ -281,7 +335,7 @@
   customElements.define("o-button", OWCButton);
 
   // src/table.ts
-  class OTable extends HTMLElement {
+  class OTable extends GlassElement {
     static get observedAttributes() {
       return ["storage", "storage-key", "resize-mode", "selectable", "editable"];
     }
@@ -320,7 +374,6 @@
     }
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
       this.restoreState();
@@ -365,61 +418,63 @@
         if (widths) {
           this._columns = this._columns.map((c) => widths[c.key] != null ? { ...c, width: widths[c.key] } : c);
         }
-      } catch {}
+      } catch {
+      }
     }
     render() {
       if (!this.shadowRoot)
         return;
       this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host { display: block; overflow-x: auto; }
         table {
           border-collapse: collapse;
           font-family: sans-serif; font-size: 14px;
-          background: rgba(255,255,255,0.08);
+          background: var(--glass-bg);
           border-radius: 10px; overflow: hidden;
         }
         th, td {
           padding: 10px 14px; text-align: left;
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-          color: #fff; position: relative;
+          border-bottom: 1px solid var(--glass-hover);
+          color: var(--glass-text); position: relative;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         th {
-          background: rgba(255,255,255,0.15);
+          background: var(--glass-hover);
           user-select: none;
-          backdrop-filter: blur(10px);
+          backdrop-filter: blur(var(--glass-blur));
         }
         th[data-sortable] { cursor: pointer; }
-        tbody tr:hover td { background: rgba(255,255,255,0.06); }
+        tbody tr:hover td { background: var(--glass-hover); }
         .sort-icon { float: right; opacity: 0.5; }
         .resize-handle {
           position: absolute; right: 0; top: 0; bottom: 0;
           width: 5px; cursor: col-resize;
           background: transparent;
         }
-        .resize-handle:hover { background: rgba(255,255,255,0.3); }
-        tbody tr.selected td { background: rgba(255,255,255,0.12); }
+        .resize-handle:hover { background: var(--glass-border); }
+        tbody tr.selected td { background: var(--glass-bg); }
         input[type="checkbox"] {
           width: 15px; height: 15px; cursor: pointer;
-          accent-color: rgba(255,255,255,0.9);
+          accent-color: var(--glass-text);
         }
         .cell-input {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(251,191,36,0.5);
+          background: var(--glass-hover);
+          border: 1px solid var(--accent-warm);
           border-radius: 4px;
-          color: #fff;
+          color: var(--glass-text);
           padding: 4px 8px;
           font-size: 13px;
           width: calc(100% - 4px);
           outline: none;
           font-family: sans-serif;
         }
-        .cell-input:focus { border-color: rgba(251,191,36,0.9); background: rgba(255,255,255,0.15); }
+        .cell-input:focus { border-color: var(--accent-warm); background: var(--glass-border); }
         .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
         .edit-btn, .edit-confirm, .edit-cancel {
           background: none; border: none; cursor: pointer;
-          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: #fff; border-radius: 3px;
+          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: var(--glass-text); border-radius: 3px;
         }
         .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
         .edit-confirm { color: rgba(74,222,128,0.9); }
@@ -430,7 +485,7 @@
         const editTh = this.editable && hasClickEditable ? '<th style="width:72px"></th>' : "";
         return `<table>
         <thead><tr>
-          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ""}
+          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all aria-label="Select all rows"></th>` : ""}
           ${this._columns.map((c) => this.renderTh(c)).join("")}
           ${editTh}
         </tr></thead>
@@ -454,7 +509,7 @@
     renderRow(row, rowIndex, hasClickEditable) {
       const checked = this._selectedRows.has(row) ? " checked" : "";
       const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : "";
-      const checkbox = this.selectable ? `<td><input type="checkbox" data-select-row${checked}></td>` : "";
+      const checkbox = this.selectable ? `<td><input type="checkbox" data-select-row${checked} aria-label="Select row"></td>` : "";
       const isEditing = this._editingRows.has(row);
       let editTd = "";
       if (this.editable && hasClickEditable) {
@@ -684,14 +739,13 @@
   customElements.define("o-table", OTable);
 
   // src/note.ts
-  class ONote extends HTMLElement {
+  class ONote extends GlassElement {
     static get observedAttributes() {
       return ["variant", "label", "placeholder", "max-length", "value"];
     }
     _tags = [];
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
       this.render();
@@ -717,12 +771,8 @@
       const value = this.getAttribute("value") ?? "";
       this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
-          --glass-bg: rgba(255,255,255,0.07);
-          --glass-border: rgba(255,255,255,0.12);
-          --glass-blur: 12px;
-          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          --accent-warm: rgba(251,191,36,0.6);
           display: block;
         }
         .wrap {
@@ -738,16 +788,16 @@
         .wrap:focus-within { border-color: var(--accent-warm); }
         label {
           position: absolute; top: 8px; left: 16px;
-          color: rgba(255,255,255,0.5); font-size: 11px;
+          color: var(--glass-text-muted); font-size: 11px;
           font-family: sans-serif; pointer-events: none;
         }
         textarea {
           display: block; width: 100%;
           background: none; border: none; resize: none; outline: none;
-          color: #fff; font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
           min-height: 80px; overflow: hidden;
         }
-        .counter { text-align: right; font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+        .counter { text-align: right; font-size: 11px; color: var(--glass-text-dim); margin-top: 4px; }
       </style>
       <div class="wrap">
         ${label ? `<label>${label}</label>` : ""}
@@ -760,12 +810,8 @@
       const placeholder = this.getAttribute("placeholder") ?? "Write something…";
       this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
-          --glass-bg: rgba(255,255,255,0.07);
-          --glass-border: rgba(255,255,255,0.12);
-          --glass-blur: 12px;
-          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          --accent-warm: rgba(251,191,36,0.6);
           display: block;
         }
         .card {
@@ -779,28 +825,28 @@
         }
         .title-input {
           background: none; border: none;
-          border-bottom: 1px solid rgba(255,255,255,0.15);
-          color: #fff; font-size: 18px; font-weight: 600;
+          border-bottom: 1px solid var(--glass-border);
+          color: var(--glass-text); font-size: 18px; font-weight: 600;
           font-family: sans-serif; outline: none; padding-bottom: 8px; width: 100%;
         }
         .title-input:focus { border-color: var(--accent-warm); }
-        .title-input::placeholder { color: rgba(255,255,255,0.3); }
+        .title-input::placeholder { color: var(--glass-text-dim); }
         .body-area {
           background: none; border: none; resize: none; outline: none;
-          color: #fff; font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
           min-height: 80px; overflow: hidden; width: 100%;
         }
-        .body-area::placeholder { color: rgba(255,255,255,0.3); }
+        .body-area::placeholder { color: var(--glass-text-dim); }
         .tag-area { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
         .chip {
           background: var(--accent-warm); border-radius: 999px;
           padding: 2px 10px; font-size: 12px; color: #000; cursor: pointer;
         }
         .tag-input {
-          background: none; border: none; color: #fff;
+          background: none; border: none; color: var(--glass-text);
           font-size: 12px; font-family: sans-serif; outline: none; min-width: 80px;
         }
-        .tag-input::placeholder { color: rgba(255,255,255,0.3); }
+        .tag-input::placeholder { color: var(--glass-text-dim); }
       </style>
       <div class="card">
         <input class="title-input" placeholder="Title" />
@@ -867,7 +913,7 @@
   customElements.define("o-note", ONote);
 
   // src/dialog.ts
-  class ODialog extends HTMLElement {
+  class ODialog extends GlassElement {
     static get observedAttributes() {
       return ["open"];
     }
@@ -876,7 +922,6 @@
     _rendered = false;
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
       if (!this._rendered) {
@@ -937,12 +982,8 @@
       const isOpen = this.hasAttribute("open");
       this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
-          --glass-bg: rgba(255,255,255,0.07);
-          --glass-border: rgba(255,255,255,0.12);
-          --glass-blur: 12px;
-          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          --accent-warm: rgba(251,191,36,0.6);
           display: contents;
         }
         .backdrop {
@@ -966,7 +1007,7 @@
           backdrop-filter: blur(var(--glass-blur));
           box-shadow: var(--glass-shadow);
           padding: 24px; min-width: 320px; max-width: 90vw;
-          color: #fff;
+          color: var(--glass-text);
         }
         .backdrop.visible .panel {
           animation: scaleIn 0.2s ease-out;
@@ -977,7 +1018,7 @@
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       </style>
       <div class="backdrop${isOpen ? " visible" : ""}">
-        <div class="panel">
+        <div class="panel" role="dialog" aria-modal="true">
           <div class="panel-title"><slot name="title"></slot></div>
           <div class="panel-body"><slot></slot></div>
           <div class="panel-actions"><slot name="actions"></slot></div>
@@ -1006,7 +1047,7 @@
     info: "#60a5fa"
   };
 
-  class OWCToast extends HTMLElement {
+  class OWCToast extends GlassElement {
     static get observedAttributes() {
       return ["type", "message", "duration"];
     }
@@ -1019,7 +1060,6 @@
     durationMs = 3000;
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
       this.durationMs = parseInt(this.getAttribute("duration") ?? "3000", 10);
@@ -1047,6 +1087,7 @@
       const color = COLORS[type] ?? COLORS.info;
       this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
           display: block;
           position: relative;
@@ -1054,11 +1095,11 @@
           max-width: 360px;
           padding: 10px 36px 10px 14px;
           border-radius: var(--o-toast-radius, 10px);
-          background: var(--o-toast-bg, rgba(255,255,255,0.18));
-          border: 1px solid var(--o-toast-border, rgba(255,255,255,0.3));
-          backdrop-filter: blur(var(--o-toast-blur, 10px));
-          -webkit-backdrop-filter: blur(var(--o-toast-blur, 10px));
-          color: var(--o-toast-color, #fff);
+          background: var(--o-toast-bg, var(--glass-bg));
+          border: 1px solid var(--o-toast-border, var(--glass-border));
+          backdrop-filter: blur(var(--o-toast-blur, var(--glass-blur)));
+          -webkit-backdrop-filter: blur(var(--o-toast-blur, var(--glass-blur)));
+          color: var(--o-toast-color, var(--glass-text));
           font-family: sans-serif;
           font-size: 14px;
           border-left: 4px solid var(--_accent);
@@ -1228,7 +1269,7 @@
     return input.map((o) => typeof o === "string" ? { label: o, value: o.toLowerCase() } : o);
   }
 
-  class OToggle extends HTMLElement {
+  class OToggle extends GlassElement {
     static get observedAttributes() {
       return ["options", "value"];
     }
@@ -1258,8 +1299,30 @@
     }
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
       this.shadowRoot.addEventListener("click", this.handleClick);
+      this.shadowRoot.addEventListener("keydown", (e) => {
+        const ke = e;
+        if (ke.key !== "ArrowRight" && ke.key !== "ArrowLeft")
+          return;
+        const idx = this._options.findIndex((o) => o.value === this._value);
+        if (idx === -1)
+          return;
+        const next = ke.key === "ArrowRight" ? (idx + 1) % this._options.length : (idx - 1 + this._options.length) % this._options.length;
+        const opt = this._options[next];
+        if (!opt)
+          return;
+        const prev = this._value;
+        this._value = opt.value;
+        this.setAttribute("value", opt.value);
+        this.updateSelection();
+        const tabs = this.shadowRoot.querySelectorAll('[role="tab"]');
+        tabs[next]?.focus();
+        this.dispatchEvent(new CustomEvent("o-change", {
+          bubbles: true,
+          composed: true,
+          detail: { value: opt.value, index: next, prev }
+        }));
+      });
     }
     connectedCallback() {
       if (this._options.length === 0) {
@@ -1333,13 +1396,14 @@
       const idx = this._options.findIndex((o) => o.value === this._value);
       this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host { display: inline-flex; }
         .container {
           display: inline-flex;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.2);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          backdrop-filter: blur(var(--glass-blur));
+          -webkit-backdrop-filter: blur(var(--glass-blur));
           border-radius: 999px;
           padding: 3px;
           position: relative;
@@ -1352,7 +1416,7 @@
           top: 3px; bottom: 3px;
           left: 3px;
           width: calc((100% - 6px) / var(--n));
-          background: rgba(255,255,255,0.25);
+          background: var(--glass-border);
           border-radius: 999px;
           transform: translateX(calc(var(--idx) * 100%));
           transition: transform 0.2s ease;
@@ -1364,7 +1428,7 @@
           min-width: 48px;
           padding: 6px 14px;
           text-align: center;
-          color: #fff;
+          color: var(--glass-text);
           font-size: 14px;
           font-family: sans-serif;
           cursor: pointer;
@@ -1374,9 +1438,9 @@
         }
         .segment.active { font-weight: 600; }
       </style>
-      <div class="container">
+      <div class="container" role="tablist">
         ${n > 0 ? '<div class="indicator"></div>' : ""}
-        ${this._options.map((o) => `<div class="segment${o.value === this._value ? " active" : ""}" data-value="${o.value}">${o.label}</div>`).join("")}
+        ${this._options.map((o) => `<div class="segment${o.value === this._value ? " active" : ""}" role="tab" aria-selected="${o.value === this._value}" tabindex="${o.value === this._value ? "0" : "-1"}" data-value="${o.value}">${o.label}</div>`).join("")}
       </div>
     `;
     }
@@ -1384,7 +1448,7 @@
   customElements.define("o-toggle", OToggle);
 
   // src/search.ts
-  class OSearch extends HTMLElement {
+  class OSearch extends GlassElement {
     static get observedAttributes() {
       return ["placeholder", "value-key", "no-dropdown"];
     }
@@ -1428,7 +1492,6 @@
     }
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
       this._input = document.createElement("input");
       this._input.addEventListener("input", this.handleInput);
       this.render();
@@ -1493,16 +1556,21 @@
         return;
       const query = this._input.value;
       const show = !this.noDropdown && this._renderItem !== null && query.length > 0;
+      const container = this.shadowRoot.querySelector(".container");
       if (!show) {
         dropdown.style.display = "none";
+        if (container)
+          container.setAttribute("aria-expanded", "false");
         return;
       }
       dropdown.style.display = "block";
+      if (container)
+        container.setAttribute("aria-expanded", "true");
       if (this._currentResults.length === 0) {
         dropdown.innerHTML = `<div class="item no-results">No results</div>`;
         return;
       }
-      dropdown.innerHTML = this._currentResults.map((item, i) => `<div class="item" data-index="${i}">${this._renderItem(item)}</div>`).join("");
+      dropdown.innerHTML = this._currentResults.map((item, i) => `<div class="item" role="option" data-index="${i}">${this._renderItem(item)}</div>`).join("");
     }
     handleDropdownClick = (e) => {
       const item = e.target.closest("[data-index]");
@@ -1529,39 +1597,40 @@
       const shadow = this.shadowRoot;
       shadow.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host { display: block; position: relative; }
         .container {
           display: flex; align-items: center; gap: 8px;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.2);
-          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
           border-radius: 999px; padding: 8px 16px;
         }
         .icon { opacity: 0.6; flex-shrink: 0; }
         input {
           flex: 1; background: transparent; border: none; outline: none;
-          color: #fff; font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
         }
-        input::placeholder { color: rgba(255,255,255,0.4); }
+        input::placeholder { color: var(--glass-text-muted); }
         .dropdown {
           display: none; position: absolute;
           top: calc(100% + 6px); left: 0; right: 0;
-          background: rgba(255,255,255,0.12);
-          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-          border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+          background: var(--glass-bg);
+          backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+          border-radius: 12px; border: 1px solid var(--glass-border);
           overflow: hidden; z-index: 10;
         }
         .item {
-          padding: 8px 14px; color: #fff;
+          padding: 8px 14px; color: var(--glass-text);
           font-size: 14px; font-family: sans-serif; cursor: pointer;
         }
-        .item:hover { background: rgba(255,255,255,0.1); }
+        .item:hover { background: var(--glass-hover); }
         .no-results { opacity: 0.5; cursor: default; }
       </style>
-      <div class="container">
+      <div class="container" role="combobox" aria-expanded="false" aria-haspopup="listbox">
         <span class="icon">\uD83D\uDD0D</span>
       </div>
-      <div class="dropdown"></div>
+      <div class="dropdown" role="listbox"></div>
     `;
       const container = shadow.querySelector(".container");
       this._input.placeholder = this.getAttribute("placeholder") ?? "Search…";
@@ -1570,6 +1639,364 @@
     }
   }
   customElements.define("o-search", OSearch);
+
+  // src/tooltip.ts
+  class OTooltip extends GlassElement {
+    static get observedAttributes() {
+      return ["text", "position"];
+    }
+    connectedCallback() {
+      this.render();
+    }
+    disconnectedCallback() {
+      this.removeEventListener("mouseenter", this.show);
+      this.removeEventListener("mouseleave", this.hide);
+      this.removeEventListener("focusin", this.show);
+      this.removeEventListener("focusout", this.hide);
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
+    }
+    get position() {
+      return this.getAttribute("position") ?? "top";
+    }
+    show = () => {
+      this.shadowRoot.querySelector(".tooltip")?.classList.add("visible");
+    };
+    hide = () => {
+      this.shadowRoot.querySelector(".tooltip")?.classList.remove("visible");
+    };
+    render() {
+      const text = this.getAttribute("text") ?? "";
+      const pos = this.position;
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host { position: relative; display: inline-block; }
+        .tooltip {
+          position: absolute;
+          padding: 6px 12px;
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          backdrop-filter: blur(var(--glass-blur));
+          -webkit-backdrop-filter: blur(var(--glass-blur));
+          border-radius: 8px;
+          color: var(--glass-text);
+          font-size: 12px;
+          font-family: sans-serif;
+          white-space: nowrap;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.15s ease;
+          z-index: 1000;
+        }
+        .tooltip.visible { opacity: 1; }
+        .top { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+        .bottom { top: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+        .left { right: calc(100% + 8px); top: 50%; transform: translateY(-50%); }
+        .right { left: calc(100% + 8px); top: 50%; transform: translateY(-50%); }
+      </style>
+      <slot></slot>
+      <div class="tooltip ${pos}" role="tooltip">${text}</div>
+    `;
+      this.addEventListener("mouseenter", this.show);
+      this.addEventListener("mouseleave", this.hide);
+      this.addEventListener("focusin", this.show);
+      this.addEventListener("focusout", this.hide);
+    }
+  }
+  customElements.define("o-tooltip", OTooltip);
+
+  // src/dropdown.ts
+  class ODropdown extends GlassElement {
+    _options = [];
+    _focusIndex = -1;
+    _onOutsideClick = null;
+    _onKeyDown = null;
+    _rendered = false;
+    constructor() {
+      super();
+    }
+    get options() {
+      return this._options;
+    }
+    set options(val) {
+      this._options = val;
+      this.renderMenu();
+    }
+    connectedCallback() {
+      if (!this._rendered) {
+        this.render();
+        this._rendered = true;
+      }
+      this._onOutsideClick = (e) => {
+        if (!this.contains(e.target))
+          this.close();
+      };
+      document.addEventListener("click", this._onOutsideClick);
+      this._onKeyDown = (e) => {
+        const menu = this.shadowRoot.querySelector(".menu");
+        if (!menu?.classList.contains("open"))
+          return;
+        const items = Array.from(this.shadowRoot.querySelectorAll('[role="menuitem"]'));
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          this._focusIndex = Math.min(this._focusIndex + 1, items.length - 1);
+          items[this._focusIndex]?.focus();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          this._focusIndex = Math.max(this._focusIndex - 1, 0);
+          items[this._focusIndex]?.focus();
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          if (this._focusIndex >= 0)
+            items[this._focusIndex]?.click();
+        } else if (e.key === "Escape") {
+          this.close();
+        }
+      };
+      document.addEventListener("keydown", this._onKeyDown);
+    }
+    disconnectedCallback() {
+      if (this._onOutsideClick)
+        document.removeEventListener("click", this._onOutsideClick);
+      if (this._onKeyDown)
+        document.removeEventListener("keydown", this._onKeyDown);
+    }
+    toggle() {
+      const menu = this.shadowRoot?.querySelector(".menu");
+      if (menu?.classList.contains("open"))
+        this.close();
+      else
+        this.open();
+    }
+    open() {
+      this._focusIndex = -1;
+      this.shadowRoot?.querySelector(".menu")?.classList.add("open");
+    }
+    close() {
+      this.shadowRoot?.querySelector(".menu")?.classList.remove("open");
+      this._focusIndex = -1;
+    }
+    render() {
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host {
+          display: inline-block;
+          position: relative;
+        }
+        .trigger {
+          cursor: pointer;
+        }
+        .menu {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          min-width: 160px;
+          margin-top: 4px;
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 10px;
+          backdrop-filter: blur(var(--glass-blur));
+          box-shadow: var(--glass-shadow);
+          z-index: 100;
+          padding: 4px 0;
+        }
+        .menu.open {
+          display: block;
+        }
+        .item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px;
+          color: var(--glass-text);
+          font-size: 14px;
+          font-family: sans-serif;
+          cursor: pointer;
+          outline: none;
+          border: none;
+          background: none;
+          width: 100%;
+          text-align: left;
+        }
+        .item:hover,
+        .item:focus {
+          background: var(--glass-hover);
+        }
+        .icon {
+          font-size: 16px;
+        }
+      </style>
+      <div class="trigger"><slot></slot></div>
+      <div class="menu" role="menu"></div>
+    `;
+      this.renderMenu();
+    }
+    renderMenu() {
+      const menu = this.shadowRoot?.querySelector(".menu");
+      if (!menu)
+        return;
+      menu.innerHTML = this._options.map((opt) => `
+      <button
+        class="item"
+        role="menuitem"
+        tabindex="-1"
+        data-value="${opt.value}"
+        data-label="${opt.label}"
+      >${opt.icon ? `<span class="icon">${opt.icon}</span>` : ""}<span>${opt.label}</span></button>
+    `).join("");
+      menu.querySelectorAll('[role="menuitem"]').forEach((item) => {
+        item.addEventListener("click", () => {
+          const value = item.dataset.value;
+          const label = item.dataset.label;
+          this.dispatchEvent(new CustomEvent("o-select", {
+            bubbles: true,
+            composed: true,
+            detail: { value, label }
+          }));
+          this.close();
+        });
+      });
+    }
+  }
+  customElements.define("o-dropdown", ODropdown);
+
+  // src/tabs.ts
+  class OTabs extends GlassElement {
+    _value = "";
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      this.querySelectorAll('[slot="tab"]').forEach((el) => {
+        el.style.display = "none";
+      });
+      const tabs = Array.from(this.querySelectorAll('[slot="tab"]'));
+      if (!this._value && tabs.length) {
+        this._value = tabs[0].dataset.value ?? "";
+      }
+      this.render();
+      this._updatePanels();
+    }
+    get value() {
+      return this._value;
+    }
+    set value(v) {
+      const prev = this._value;
+      if (v === prev)
+        return;
+      this._value = v;
+      this._updateTabButtons();
+      this._updatePanels();
+    }
+    render() {
+      const tabs = Array.from(this.querySelectorAll('[slot="tab"]'));
+      const buttonsHTML = tabs.map((tab) => {
+        const val = tab.dataset.value ?? "";
+        const active = val === this._value;
+        return `<button role="tab" class="tab${active ? " active" : ""}" data-value="${val}" aria-selected="${active}" tabindex="${active ? "0" : "-1"}">${tab.textContent ?? ""}</button>`;
+      }).join("");
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host { display: block; }
+        .tablist {
+          display: flex;
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 10px 10px 0 0;
+          backdrop-filter: blur(var(--glass-blur));
+          padding: 4px 4px 0;
+          gap: 2px;
+        }
+        .tab {
+          flex: 1;
+          background: none;
+          border: none;
+          border-radius: 7px 7px 0 0;
+          color: var(--glass-text-muted);
+          font-size: 14px;
+          font-family: sans-serif;
+          padding: 8px 16px;
+          cursor: pointer;
+          transition: background 0.15s, color 0.15s;
+        }
+        .tab:hover { background: var(--glass-hover); color: var(--glass-text); }
+        .tab.active {
+          background: var(--glass-hover);
+          color: var(--glass-text);
+          border-bottom: 2px solid var(--accent-warm);
+        }
+        .panel-area {
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-top: none;
+          border-radius: 0 0 10px 10px;
+          backdrop-filter: blur(var(--glass-blur));
+          padding: 16px;
+        }
+      </style>
+      <div class="tablist" role="tablist">${buttonsHTML}</div>
+      <div class="panel-area"><slot></slot></div>
+    `;
+      this.shadowRoot.querySelector(".tablist").addEventListener("click", (e) => {
+        const btn = e.target.closest('[role="tab"]');
+        if (!btn)
+          return;
+        const val = btn.dataset.value ?? "";
+        if (val === this._value)
+          return;
+        const prev = this._value;
+        this._value = val;
+        this._updateTabButtons();
+        this._updatePanels();
+        this.dispatchEvent(new CustomEvent("o-change", {
+          bubbles: true,
+          composed: true,
+          detail: { value: val, prev }
+        }));
+      });
+      this.shadowRoot.querySelector(".tablist").addEventListener("keydown", (e) => {
+        const ke = e;
+        if (ke.key !== "ArrowLeft" && ke.key !== "ArrowRight")
+          return;
+        const tabs2 = Array.from(this.querySelectorAll('[slot="tab"]'));
+        const values = tabs2.map((t) => t.dataset.value ?? "");
+        const idx = values.indexOf(this._value);
+        if (idx === -1)
+          return;
+        const next = ke.key === "ArrowRight" ? (idx + 1) % values.length : (idx - 1 + values.length) % values.length;
+        const prev = this._value;
+        this._value = values[next];
+        this._updateTabButtons();
+        this._updatePanels();
+        this.dispatchEvent(new CustomEvent("o-change", {
+          bubbles: true,
+          composed: true,
+          detail: { value: this._value, prev }
+        }));
+        this.shadowRoot.querySelectorAll('[role="tab"]')[next]?.focus();
+      });
+    }
+    _updateTabButtons() {
+      this.shadowRoot.querySelectorAll('[role="tab"]').forEach((btn) => {
+        const active = btn.dataset.value === this._value;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-selected", String(active));
+        btn.tabIndex = active ? 0 : -1;
+      });
+    }
+    _updatePanels() {
+      this.querySelectorAll("[data-tab]").forEach((panel) => {
+        panel.style.display = panel.dataset.tab === this._value ? "" : "none";
+      });
+    }
+  }
+  customElements.define("o-tabs", OTabs);
 
   // src/index.ts
   if (typeof window !== "undefined") {
