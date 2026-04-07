@@ -12,6 +12,7 @@ class ODropdown extends GlassElement {
   private _onOutsideClick: ((e: MouseEvent) => void) | null = null
   private _onKeyDown: ((e: KeyboardEvent) => void) | null = null
   private _rendered = false
+  private _skipNextOutsideClick = false
 
   constructor() {
     super()
@@ -30,6 +31,7 @@ class ODropdown extends GlassElement {
     }
 
     this._onOutsideClick = (e: MouseEvent) => {
+      if (this._skipNextOutsideClick) { this._skipNextOutsideClick = false; return }
       if (!this.contains(e.target as Node)) this.close()
     }
     document.addEventListener('click', this._onOutsideClick)
@@ -135,11 +137,13 @@ class ODropdown extends GlassElement {
     // Toggle on trigger click
     this.shadowRoot!.querySelector('.trigger')!.addEventListener('click', (e) => {
       e.stopPropagation()
+      this._skipNextOutsideClick = true
       this.toggle()
     })
     // Also handle composed custom events (e.g. o-button fires o-click, not native click)
     this.addEventListener('o-click', (e) => {
       e.stopPropagation()
+      this._skipNextOutsideClick = true
       this.toggle()
     })
     this.renderMenu()

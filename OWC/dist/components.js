@@ -1715,6 +1715,7 @@
     _onOutsideClick = null;
     _onKeyDown = null;
     _rendered = false;
+    _skipNextOutsideClick = false;
     constructor() {
       super();
     }
@@ -1731,6 +1732,10 @@
         this._rendered = true;
       }
       this._onOutsideClick = (e) => {
+        if (this._skipNextOutsideClick) {
+          this._skipNextOutsideClick = false;
+          return;
+        }
         if (!this.contains(e.target))
           this.close();
       };
@@ -1836,10 +1841,12 @@
     `;
       this.shadowRoot.querySelector(".trigger").addEventListener("click", (e) => {
         e.stopPropagation();
+        this._skipNextOutsideClick = true;
         this.toggle();
       });
       this.addEventListener("o-click", (e) => {
         e.stopPropagation();
+        this._skipNextOutsideClick = true;
         this.toggle();
       });
       this.renderMenu();
