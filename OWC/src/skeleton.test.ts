@@ -59,4 +59,30 @@ describe('OSkeleton', () => {
     el.setAttribute('variant', 'panel')
     expect(el.shadowRoot.querySelectorAll('.line').length).toBe(2)
   })
+
+  it('block variant applies radius attribute as CSS custom property', () => {
+    el.setAttribute('radius', '12px')
+    const skel = el.shadowRoot.querySelector('.skel')
+    expect(skel.style.getPropertyValue('--skel-r')).toBe('12px')
+  })
+
+  it('panel variant second .line has .short class', () => {
+    el.setAttribute('variant', 'panel')
+    const lines = el.shadowRoot.querySelectorAll('.line')
+    expect(lines[1].classList.contains('short')).toBe(true)
+  })
+
+  it('table variant clamps rows to minimum 1 when rows="0"', () => {
+    el.setAttribute('variant', 'table')
+    el.setAttribute('rows', '0')
+    const rows = el.shadowRoot.querySelectorAll('.row:not(.header)')
+    expect(rows.length).toBe(1)
+  })
+
+  it('unknown variant falls back to block variant', () => {
+    el.setAttribute('variant', 'unknown')
+    expect(el.shadowRoot.querySelector('.skel')).not.toBeNull()
+    expect(el.shadowRoot.querySelector('.header')).toBeNull()
+    expect(el.shadowRoot.querySelector('.panel')).toBeNull()
+  })
 })
