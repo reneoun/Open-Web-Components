@@ -39,8 +39,6 @@ export class ODropdown extends GlassElement {
   }
 
   private handleOutsideMousedown = (e: Event) => {
-    const target = e.composedPath()[0] as Node
-    // Check if click originated inside this element or its shadow trees
     if (e.composedPath().includes(this)) return
     if (this._open) this.close()
   }
@@ -136,19 +134,18 @@ export class ODropdown extends GlassElement {
       <div class="trigger"><slot></slot></div>
       <div class="menu" role="menu"></div>
     `
-    // Listen for o-click (from o-button) on the host
-    this.addEventListener('o-click', () => this.toggle())
-    // Also native click on the trigger div (for non-o-button triggers)
-    this.shadowRoot!.querySelector('.trigger')!.addEventListener('click', (e) => {
-      // Only toggle if the click wasn't already handled by o-click
-      // (o-button swallows native click internally, so this only fires for plain HTML triggers)
-      if ((e.target as HTMLElement).closest('slot')) {
-        // Check if slotted content is an o-button — if so, o-click already handled it
-        const slotted = this.shadowRoot!.querySelector('slot')?.assignedElements() ?? []
-        if (slotted.some(el => el.tagName === 'O-BUTTON')) return
-      }
+    // Single click handler on the host — catches both native click and o-click bubbling up
+    // Use a flag to prevent double-toggle from both events firing on same user action
+    let toggling = false
+    const doToggle = () => {
+      if (toggling) return
+      toggling = true
       this.toggle()
-    })
+      requestAnimationFrame(() => { toggling = false })
+    }
+    this.addEventListener('click', doToggle)
+    this.addEventListener('o-click', doToggle)
+
     this.renderMenu()
   }
 

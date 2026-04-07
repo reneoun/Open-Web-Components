@@ -35,6 +35,7 @@
     OWCToast: () => OWCToast,
     OTooltip: () => OTooltip,
     OToggle: () => OToggle,
+    OTabs: () => OTabs,
     OTable: () => OTable,
     OSearch: () => OSearch,
     ODropdown: () => ODropdown,
@@ -1738,7 +1739,6 @@
       document.removeEventListener("keydown", this.handleKeyDown);
     }
     handleOutsideMousedown = (e) => {
-      const target = e.composedPath()[0];
       if (e.composedPath().includes(this))
         return;
       if (this._open)
@@ -1835,15 +1835,18 @@
       <div class="trigger"><slot></slot></div>
       <div class="menu" role="menu"></div>
     `;
-      this.addEventListener("o-click", () => this.toggle());
-      this.shadowRoot.querySelector(".trigger").addEventListener("click", (e) => {
-        if (e.target.closest("slot")) {
-          const slotted = this.shadowRoot.querySelector("slot")?.assignedElements() ?? [];
-          if (slotted.some((el) => el.tagName === "O-BUTTON"))
-            return;
-        }
+      let toggling = false;
+      const doToggle = () => {
+        if (toggling)
+          return;
+        toggling = true;
         this.toggle();
-      });
+        requestAnimationFrame(() => {
+          toggling = false;
+        });
+      };
+      this.addEventListener("click", doToggle);
+      this.addEventListener("o-click", doToggle);
       this.renderMenu();
     }
     renderMenu() {
@@ -1879,10 +1882,33 @@
   // src/tabs.ts
   class OTabs extends GlassElement {
     _value = "";
+    _initialized = false;
     constructor() {
       super();
     }
     connectedCallback() {
+      if (this.children.length > 0) {
+        this.init();
+      } else {
+        const observer = new MutationObserver(() => {
+          if (this.querySelectorAll('[slot="tab"]').length > 0) {
+            observer.disconnect();
+            this.init();
+          }
+        });
+        observer.observe(this, { childList: true });
+        requestAnimationFrame(() => {
+          if (!this._initialized) {
+            observer.disconnect();
+            this.init();
+          }
+        });
+      }
+    }
+    init() {
+      if (this._initialized)
+        return;
+      this._initialized = true;
       this.querySelectorAll('[slot="tab"]').forEach((el) => {
         el.style.display = "none";
       });

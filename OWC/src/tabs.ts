@@ -1,13 +1,42 @@
 import { GlassElement, glassBaseStyles } from './glass'
 
-class OTabs extends GlassElement {
+export interface OTabsChangeEvent { value: string; prev: string | null }
+
+export class OTabs extends GlassElement {
   private _value: string = ''
+  private _initialized = false
 
   constructor() {
     super()
   }
 
   connectedCallback() {
+    // Defer init until children are parsed (IIFE in <head> = children not yet available)
+    if (this.children.length > 0) {
+      this.init()
+    } else {
+      // Wait for children to be parsed
+      const observer = new MutationObserver(() => {
+        if (this.querySelectorAll('[slot="tab"]').length > 0) {
+          observer.disconnect()
+          this.init()
+        }
+      })
+      observer.observe(this, { childList: true })
+      // Fallback: also try on next frame (covers most cases)
+      requestAnimationFrame(() => {
+        if (!this._initialized) {
+          observer.disconnect()
+          this.init()
+        }
+      })
+    }
+  }
+
+  private init() {
+    if (this._initialized) return
+    this._initialized = true
+
     // Hide slot="tab" light-DOM children
     this.querySelectorAll<HTMLElement>('[slot="tab"]').forEach(el => {
       el.style.display = 'none'
@@ -94,7 +123,7 @@ class OTabs extends GlassElement {
       this._value = val
       this._updateTabButtons()
       this._updatePanels()
-      this.dispatchEvent(new CustomEvent('o-change', {
+      this.dispatchEvent(new CustomEvent<OTabsChangeEvent>('o-change', {
         bubbles: true, composed: true, detail: { value: val, prev }
       }))
     })
@@ -113,7 +142,7 @@ class OTabs extends GlassElement {
       this._value = values[next]
       this._updateTabButtons()
       this._updatePanels()
-      this.dispatchEvent(new CustomEvent('o-change', {
+      this.dispatchEvent(new CustomEvent<OTabsChangeEvent>('o-change', {
         bubbles: true, composed: true, detail: { value: this._value, prev }
       }))
       this.shadowRoot!.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus()
