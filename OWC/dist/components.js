@@ -1838,6 +1838,10 @@
         e.stopPropagation();
         this.toggle();
       });
+      this.addEventListener("o-click", (e) => {
+        e.stopPropagation();
+        this.toggle();
+      });
       this.renderMenu();
     }
     renderMenu() {

@@ -13,6 +13,20 @@
         padding: 2rem;
         font-family: sans-serif;
         color: #fff;
+        color-scheme: dark;
+      }
+      /* Force dark glass theme on all OWC components for dark demo bg */
+      o-button, o-panel, o-table, o-toggle, o-search, o-toast,
+      o-note, o-dialog, o-tooltip, o-dropdown, o-tabs {
+        --glass-bg: rgba(255,255,255,0.07);
+        --glass-border: rgba(255,255,255,0.12);
+        --glass-blur: 12px;
+        --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        --accent-warm: rgba(251,191,36,0.6);
+        --glass-text: #fff;
+        --glass-text-muted: rgba(255,255,255,0.5);
+        --glass-text-dim: rgba(255,255,255,0.3);
+        --glass-hover: rgba(255,255,255,0.1);
       }
       h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
       h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }

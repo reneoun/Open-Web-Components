@@ -132,8 +132,13 @@ class ODropdown extends GlassElement {
       <div class="trigger"><slot></slot></div>
       <div class="menu" role="menu"></div>
     `
-    // Toggle on trigger click (use capture to catch composed o-click events)
+    // Toggle on trigger click
     this.shadowRoot!.querySelector('.trigger')!.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.toggle()
+    })
+    // Also handle composed custom events (e.g. o-button fires o-click, not native click)
+    this.addEventListener('o-click', (e) => {
       e.stopPropagation()
       this.toggle()
     })
