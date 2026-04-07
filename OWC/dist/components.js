@@ -37,6 +37,7 @@
     OToggle: () => OToggle,
     OTable: () => OTable,
     OSearch: () => OSearch,
+    ODropdown: () => ODropdown,
     GlassElement: () => GlassElement,
     GLASS_TOKENS_LIGHT: () => GLASS_TOKENS_LIGHT,
     GLASS_TOKENS: () => GLASS_TOKENS
@@ -1712,10 +1713,8 @@
   class ODropdown extends GlassElement {
     _options = [];
     _focusIndex = -1;
-    _onOutsideClick = null;
-    _onKeyDown = null;
     _rendered = false;
-    _skipNextOutsideClick = false;
+    _open = false;
     constructor() {
       super();
     }
@@ -1731,58 +1730,55 @@
         this.render();
         this._rendered = true;
       }
-      this._onOutsideClick = (e) => {
-        if (this._skipNextOutsideClick) {
-          this._skipNextOutsideClick = false;
-          return;
-        }
-        if (!this.contains(e.target))
-          this.close();
-      };
-      document.addEventListener("click", this._onOutsideClick);
-      this._onKeyDown = (e) => {
-        const menu = this.shadowRoot.querySelector(".menu");
-        if (!menu?.classList.contains("open"))
-          return;
-        const items = Array.from(this.shadowRoot.querySelectorAll('[role="menuitem"]'));
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          this._focusIndex = Math.min(this._focusIndex + 1, items.length - 1);
-          items[this._focusIndex]?.focus();
-        } else if (e.key === "ArrowUp") {
-          e.preventDefault();
-          this._focusIndex = Math.max(this._focusIndex - 1, 0);
-          items[this._focusIndex]?.focus();
-        } else if (e.key === "Enter") {
-          e.preventDefault();
-          if (this._focusIndex >= 0)
-            items[this._focusIndex]?.click();
-        } else if (e.key === "Escape") {
-          this.close();
-        }
-      };
-      document.addEventListener("keydown", this._onKeyDown);
+      document.addEventListener("mousedown", this.handleOutsideMousedown);
+      document.addEventListener("keydown", this.handleKeyDown);
     }
     disconnectedCallback() {
-      if (this._onOutsideClick)
-        document.removeEventListener("click", this._onOutsideClick);
-      if (this._onKeyDown)
-        document.removeEventListener("keydown", this._onKeyDown);
+      document.removeEventListener("mousedown", this.handleOutsideMousedown);
+      document.removeEventListener("keydown", this.handleKeyDown);
     }
+    handleOutsideMousedown = (e) => {
+      const target = e.composedPath()[0];
+      if (e.composedPath().includes(this))
+        return;
+      if (this._open)
+        this.close();
+    };
+    handleKeyDown = (e) => {
+      if (!this._open)
+        return;
+      const items = Array.from(this.shadowRoot.querySelectorAll('[role="menuitem"]'));
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        this._focusIndex = Math.min(this._focusIndex + 1, items.length - 1);
+        items[this._focusIndex]?.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        this._focusIndex = Math.max(this._focusIndex - 1, 0);
+        items[this._focusIndex]?.focus();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (this._focusIndex >= 0)
+          items[this._focusIndex]?.click();
+      } else if (e.key === "Escape") {
+        this.close();
+      }
+    };
     toggle() {
-      const menu = this.shadowRoot?.querySelector(".menu");
-      if (menu?.classList.contains("open"))
+      if (this._open)
         this.close();
       else
         this.open();
     }
     open() {
+      this._open = true;
       this._focusIndex = -1;
       this.shadowRoot?.querySelector(".menu")?.classList.add("open");
     }
     close() {
-      this.shadowRoot?.querySelector(".menu")?.classList.remove("open");
+      this._open = false;
       this._focusIndex = -1;
+      this.shadowRoot?.querySelector(".menu")?.classList.remove("open");
     }
     render() {
       this.shadowRoot.innerHTML = `
@@ -1839,14 +1835,13 @@
       <div class="trigger"><slot></slot></div>
       <div class="menu" role="menu"></div>
     `;
+      this.addEventListener("o-click", () => this.toggle());
       this.shadowRoot.querySelector(".trigger").addEventListener("click", (e) => {
-        e.stopPropagation();
-        this._skipNextOutsideClick = true;
-        this.toggle();
-      });
-      this.addEventListener("o-click", (e) => {
-        e.stopPropagation();
-        this._skipNextOutsideClick = true;
+        if (e.target.closest("slot")) {
+          const slotted = this.shadowRoot.querySelector("slot")?.assignedElements() ?? [];
+          if (slotted.some((el) => el.tagName === "O-BUTTON"))
+            return;
+        }
         this.toggle();
       });
       this.renderMenu();
@@ -1865,7 +1860,8 @@
       >${opt.icon ? `<span class="icon">${opt.icon}</span>` : ""}<span>${opt.label}</span></button>
     `).join("");
       menu.querySelectorAll('[role="menuitem"]').forEach((item) => {
-        item.addEventListener("click", () => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
           const value = item.dataset.value;
           const label = item.dataset.label;
           this.dispatchEvent(new CustomEvent("o-select", {

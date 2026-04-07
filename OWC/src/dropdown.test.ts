@@ -84,9 +84,9 @@ describe('ODropdown', () => {
     expect(el.shadowRoot.querySelector('.menu').classList.contains('open')).toBe(false)
   })
 
-  it('outside click closes open menu', () => {
+  it('outside mousedown closes open menu', () => {
     el.toggle()
-    document.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    document.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
     expect(el.shadowRoot.querySelector('.menu').classList.contains('open')).toBe(false)
   })
 })

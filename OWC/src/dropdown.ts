@@ -1,18 +1,18 @@
 import { GlassElement, glassBaseStyles } from './glass'
 
-interface DropdownOption {
+export interface DropdownOption {
   label: string
   value: string
   icon?: string
 }
 
-class ODropdown extends GlassElement {
+export interface ODropdownSelectEvent { value: string; label: string }
+
+export class ODropdown extends GlassElement {
   private _options: DropdownOption[] = []
   private _focusIndex = -1
-  private _onOutsideClick: ((e: MouseEvent) => void) | null = null
-  private _onKeyDown: ((e: KeyboardEvent) => void) | null = null
   private _rendered = false
-  private _skipNextOutsideClick = false
+  private _open = false
 
   constructor() {
     super()
@@ -29,54 +29,56 @@ class ODropdown extends GlassElement {
       this.render()
       this._rendered = true
     }
-
-    this._onOutsideClick = (e: MouseEvent) => {
-      if (this._skipNextOutsideClick) { this._skipNextOutsideClick = false; return }
-      if (!this.contains(e.target as Node)) this.close()
-    }
-    document.addEventListener('click', this._onOutsideClick)
-
-    this._onKeyDown = (e: KeyboardEvent) => {
-      const menu = this.shadowRoot!.querySelector<HTMLElement>('.menu')
-      if (!menu?.classList.contains('open')) return
-      const items = Array.from(this.shadowRoot!.querySelectorAll<HTMLElement>('[role="menuitem"]'))
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        this._focusIndex = Math.min(this._focusIndex + 1, items.length - 1)
-        items[this._focusIndex]?.focus()
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        this._focusIndex = Math.max(this._focusIndex - 1, 0)
-        items[this._focusIndex]?.focus()
-      } else if (e.key === 'Enter') {
-        e.preventDefault()
-        if (this._focusIndex >= 0) items[this._focusIndex]?.click()
-      } else if (e.key === 'Escape') {
-        this.close()
-      }
-    }
-    document.addEventListener('keydown', this._onKeyDown)
+    document.addEventListener('mousedown', this.handleOutsideMousedown)
+    document.addEventListener('keydown', this.handleKeyDown)
   }
 
   disconnectedCallback() {
-    if (this._onOutsideClick) document.removeEventListener('click', this._onOutsideClick)
-    if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown)
+    document.removeEventListener('mousedown', this.handleOutsideMousedown)
+    document.removeEventListener('keydown', this.handleKeyDown)
+  }
+
+  private handleOutsideMousedown = (e: Event) => {
+    const target = e.composedPath()[0] as Node
+    // Check if click originated inside this element or its shadow trees
+    if (e.composedPath().includes(this)) return
+    if (this._open) this.close()
+  }
+
+  private handleKeyDown = (e: KeyboardEvent) => {
+    if (!this._open) return
+    const items = Array.from(this.shadowRoot!.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      this._focusIndex = Math.min(this._focusIndex + 1, items.length - 1)
+      items[this._focusIndex]?.focus()
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      this._focusIndex = Math.max(this._focusIndex - 1, 0)
+      items[this._focusIndex]?.focus()
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (this._focusIndex >= 0) items[this._focusIndex]?.click()
+    } else if (e.key === 'Escape') {
+      this.close()
+    }
   }
 
   toggle() {
-    const menu = this.shadowRoot?.querySelector('.menu')
-    if (menu?.classList.contains('open')) this.close()
+    if (this._open) this.close()
     else this.open()
   }
 
-  private open() {
+  open() {
+    this._open = true
     this._focusIndex = -1
     this.shadowRoot?.querySelector('.menu')?.classList.add('open')
   }
 
   close() {
-    this.shadowRoot?.querySelector('.menu')?.classList.remove('open')
+    this._open = false
     this._focusIndex = -1
+    this.shadowRoot?.querySelector('.menu')?.classList.remove('open')
   }
 
   private render() {
@@ -134,16 +136,17 @@ class ODropdown extends GlassElement {
       <div class="trigger"><slot></slot></div>
       <div class="menu" role="menu"></div>
     `
-    // Toggle on trigger click
+    // Listen for o-click (from o-button) on the host
+    this.addEventListener('o-click', () => this.toggle())
+    // Also native click on the trigger div (for non-o-button triggers)
     this.shadowRoot!.querySelector('.trigger')!.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this._skipNextOutsideClick = true
-      this.toggle()
-    })
-    // Also handle composed custom events (e.g. o-button fires o-click, not native click)
-    this.addEventListener('o-click', (e) => {
-      e.stopPropagation()
-      this._skipNextOutsideClick = true
+      // Only toggle if the click wasn't already handled by o-click
+      // (o-button swallows native click internally, so this only fires for plain HTML triggers)
+      if ((e.target as HTMLElement).closest('slot')) {
+        // Check if slotted content is an o-button — if so, o-click already handled it
+        const slotted = this.shadowRoot!.querySelector('slot')?.assignedElements() ?? []
+        if (slotted.some(el => el.tagName === 'O-BUTTON')) return
+      }
       this.toggle()
     })
     this.renderMenu()
@@ -163,10 +166,11 @@ class ODropdown extends GlassElement {
     `).join('')
 
     menu.querySelectorAll<HTMLElement>('[role="menuitem"]').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation()
         const value = item.dataset.value!
         const label = item.dataset.label!
-        this.dispatchEvent(new CustomEvent('o-select', {
+        this.dispatchEvent(new CustomEvent<ODropdownSelectEvent>('o-select', {
           bubbles: true, composed: true, detail: { value, label }
         }))
         this.close()
