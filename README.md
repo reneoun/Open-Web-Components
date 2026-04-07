@@ -5,10 +5,10 @@ Glassmorphism web components — drop a single script tag and use them anywhere.
 ## Quick Start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.1.0/OWC/dist/components.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.1/OWC/dist/components.js"></script>
 ```
 
-[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.1.0` pins the version so updates never break your page.
+[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.2.1` pins the version so updates never break your page. **11 components** included.
 
 To always get the latest (not recommended for production):
 ```html
@@ -512,7 +512,7 @@ Tab panel with glass styling. Define tabs via `slot="tab"`, content via `data-ta
 <!doctype html>
 <html>
 <head>
-  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.1.0/OWC/dist/components.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.1/OWC/dist/components.js"></script>
 </head>
 <body style="background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 2rem;">
 
@@ -592,7 +592,9 @@ All components use CSS custom properties (`--glass-bg`, `--glass-border`, `--gla
 ```bash
 bun install
 bun dev            # dev server at localhost:5173
-bun test           # run tests
+bun run test       # run tests (use 'bun run test', not 'bun test')
 bun run build:cdn  # rebuild dist/components.js
 bun run build:lib  # rebuild npm library bundle
 ```
+
+> **Note:** Use `bun run test` (not `bun test`) — the latter uses bun's built-in runner which lacks the happy-dom environment.

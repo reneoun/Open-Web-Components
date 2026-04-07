@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1] - 2026-04-08
+
+### Fixed
+- `o-tabs` now works with IIFE bundles loaded in `<head>` (deferred child parsing)
+- `o-dropdown` no longer double-toggles when used with `o-button`
+- Demo page visibility on dark backgrounds (dark theme token overrides)
+
 ## [1.2.0] - 2026-04-07
 
 ### Added
