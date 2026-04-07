@@ -967,6 +967,9 @@
       this.querySelectorAll("input[name],select[name],textarea[name]").forEach((input) => {
         detail[input.name] = input.value;
       });
+      this.querySelectorAll("o-input[name]").forEach((el) => {
+        detail[el.getAttribute("name")] = el.value ?? "";
+      });
       this.dispatchEvent(new CustomEvent("o-submit", { bubbles: true, composed: true, detail }));
       this.close();
     }
