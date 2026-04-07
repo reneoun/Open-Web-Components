@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Web Components</title>
-    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.1.0/OWC/dist/components.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.0/OWC/dist/components.js"></script>
     <style>
       * { box-sizing: border-box; }
       body {
@@ -36,7 +36,7 @@
 
     <h1>Open Web Components</h1>
     <p style="opacity:0.7;margin:0 0 0.25rem">Glassmorphism web component library</p>
-    <div class="code" style="margin:12px 0 0;display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.1.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+    <div class="code" style="margin:12px 0 0;display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
 
     <!-- o-button -->
     <h2>o-button</h2>
@@ -390,6 +390,93 @@ dialog.addEventListener('o-cancel', () =&gt; console.log('cancelled'))</div>
       })
       dialog.addEventListener('o-cancel', () => {
         dialogLog.textContent = 'o-cancel fired'
+      })
+    </script>
+
+    <!-- o-tooltip -->
+    <h2>o-tooltip</h2>
+    <p class="desc">Wrap any element to show a glass tooltip on hover / focus. Supports <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code> positioning.</p>
+    <div class="row">
+      <o-tooltip text="Top tooltip (default)">
+        <o-button>Hover me (top)</o-button>
+      </o-tooltip>
+      <o-tooltip text="Bottom tooltip" position="bottom">
+        <o-button>Hover me (bottom)</o-button>
+      </o-tooltip>
+      <o-tooltip text="Left tooltip" position="left">
+        <o-button>Hover me (left)</o-button>
+      </o-tooltip>
+      <o-tooltip text="Right tooltip" position="right">
+        <o-button>Hover me (right)</o-button>
+      </o-tooltip>
+    </div>
+    <div class="code">&lt;o-tooltip text="Save your work" position="top"&gt;
+  &lt;o-button&gt;Save&lt;/o-button&gt;
+&lt;/o-tooltip&gt;
+
+// Positions: top (default), bottom, left, right</div>
+
+    <!-- o-dropdown -->
+    <h2>o-dropdown</h2>
+    <p class="desc">Dropdown menu. Set options via JS, fires <code>o-select</code>. Supports keyboard nav (arrows, Enter, Escape).</p>
+    <div class="row">
+      <o-dropdown id="demo-dropdown">
+        <o-button>Actions ▾</o-button>
+      </o-dropdown>
+    </div>
+    <div id="dropdown-log" style="margin-top:10px;font-size:12px;opacity:0.7;min-height:20px"></div>
+    <div class="code">&lt;o-dropdown id="menu"&gt;
+  &lt;o-button&gt;Actions ▾&lt;/o-button&gt;
+&lt;/o-dropdown&gt;
+
+menu.options = [
+  { label: 'Edit', value: 'edit' },
+  { label: 'Delete', value: 'delete' },
+]
+menu.addEventListener('o-select', e =&gt; console.log(e.detail))</div>
+    <script>
+      const dropdown = document.getElementById('demo-dropdown')
+      const dropdownLog = document.getElementById('dropdown-log')
+      dropdown.options = [
+        { label: '✏️ Edit', value: 'edit' },
+        { label: '📋 Duplicate', value: 'duplicate' },
+        { label: '📁 Archive', value: 'archive' },
+        { label: '🗑️ Delete', value: 'delete' },
+      ]
+      dropdown.addEventListener('o-select', e => {
+        dropdownLog.textContent = 'o-select: ' + JSON.stringify(e.detail)
+      })
+    </script>
+
+    <!-- o-tabs -->
+    <h2>o-tabs</h2>
+    <p class="desc">Tab panel with glass styling. Define tabs via <code>slot="tab"</code>, content via <code>data-tab</code>. Fires <code>o-change</code>.</p>
+    <o-tabs id="demo-tabs" style="max-width:500px">
+      <div slot="tab" data-value="overview">Overview</div>
+      <div slot="tab" data-value="details">Details</div>
+      <div slot="tab" data-value="settings">Settings</div>
+      <div data-tab="overview" style="color:var(--glass-text,#fff)">
+        <p>This is the <strong>overview</strong> panel. Tabs switch content automatically.</p>
+      </div>
+      <div data-tab="details" style="color:var(--glass-text,#fff)">
+        <p>Here are the <strong>details</strong>. Each panel can contain any HTML.</p>
+      </div>
+      <div data-tab="settings" style="color:var(--glass-text,#fff)">
+        <p><strong>Settings</strong> panel. Supports keyboard navigation (← →).</p>
+      </div>
+    </o-tabs>
+    <div id="tabs-log" style="margin-top:10px;font-size:12px;opacity:0.7;min-height:20px"></div>
+    <div class="code">&lt;o-tabs&gt;
+  &lt;div slot="tab" data-value="a"&gt;Tab A&lt;/div&gt;
+  &lt;div slot="tab" data-value="b"&gt;Tab B&lt;/div&gt;
+  &lt;div data-tab="a"&gt;Content A&lt;/div&gt;
+  &lt;div data-tab="b"&gt;Content B&lt;/div&gt;
+&lt;/o-tabs&gt;
+
+tabs.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value, prev }</div>
+    <script>
+      document.getElementById('demo-tabs').addEventListener('o-change', e => {
+        document.getElementById('tabs-log').textContent = 'o-change: ' + JSON.stringify(e.detail)
       })
     </script>
 
