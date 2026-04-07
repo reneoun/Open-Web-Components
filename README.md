@@ -15,6 +15,16 @@ To always get the latest (not recommended for production):
 <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@main/OWC/dist/components.js"></script>
 ```
 
+### npm / bundler
+
+```bash
+npm install @owc/components
+```
+
+```js
+import '@owc/components'
+```
+
 ---
 
 ## Components
@@ -27,6 +37,9 @@ To always get the latest (not recommended for production):
 - [`o-toggle`](#o-toggle) — Segmented toggle / tab switcher
 - [`o-search`](#o-search) — Search input with live dropdown
 - [`o-toast`](#o-toast) — Toast notifications
+- [`o-tooltip`](#o-tooltip) — Glassmorphic tooltip
+- [`o-dropdown`](#o-dropdown) — Dropdown menu
+- [`o-tabs`](#o-tabs) — Tab panel switcher
 
 ---
 
@@ -413,6 +426,86 @@ Toasts appear **top-right** on desktop and **bottom-center** on mobile. Hover to
 
 ---
 
+### `o-tooltip`
+
+Wrap any element to show a glass tooltip on hover / focus.
+
+```html
+<o-tooltip text="Save your work" position="top">
+  <o-button>Save</o-button>
+</o-tooltip>
+```
+
+| Attribute | Values | Default |
+|---|---|---|
+| `text` | string | — |
+| `position` | `top` `bottom` `left` `right` | `top` |
+
+---
+
+### `o-dropdown`
+
+Dropdown menu. Set options via JS, fires `o-select`.
+
+```html
+<o-dropdown id="menu">
+  <o-button>Actions ▾</o-button>
+</o-dropdown>
+
+<script>
+  const menu = document.getElementById('menu')
+  menu.options = [
+    { label: 'Edit', value: 'edit' },
+    { label: 'Delete', value: 'delete' },
+  ]
+  menu.addEventListener('o-select', e => console.log(e.detail))
+</script>
+```
+
+| Property | Type | Description |
+|---|---|---|
+| `options` | `{ label, value, icon? }[]` | Menu items |
+
+| Method | Description |
+|---|---|
+| `toggle()` | Open / close menu |
+| `close()` | Close menu |
+
+| Event | `detail` |
+|---|---|
+| `o-select` | `{ value, label }` |
+
+---
+
+### `o-tabs`
+
+Tab panel with glass styling. Define tabs via `slot="tab"`, content via `data-tab`.
+
+```html
+<o-tabs>
+  <div slot="tab" data-value="overview">Overview</div>
+  <div slot="tab" data-value="details">Details</div>
+  <div data-tab="overview">Overview content here</div>
+  <div data-tab="details">Details content here</div>
+</o-tabs>
+
+<script>
+  document.querySelector('o-tabs').addEventListener('o-change', e => {
+    console.log(e.detail) // { value, prev }
+  })
+</script>
+```
+
+| Property | Type | Description |
+|---|---|---|
+| `value` | `string` | Active tab value |
+
+| Event | `detail` |
+|---|---|
+| `o-change` | `{ value, prev }` |
+
+---
+
 ## Full Example
 
 ```html
@@ -481,6 +574,19 @@ Toasts appear **top-right** on desktop and **bottom-center** on mobile. Hover to
 
 ---
 
+## Theming
+
+Components default to a **light greenish** theme and auto-switch to dark glass via `prefers-color-scheme`. Override per-element:
+
+```html
+<o-panel theme="light">Always light</o-panel>
+<o-panel theme="dark">Always dark (classic glass)</o-panel>
+```
+
+All components use CSS custom properties (`--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-shadow`, `--accent-warm`, `--glass-text`) that you can override globally or per-component.
+
+---
+
 ## Development
 
 ```bash
@@ -488,4 +594,5 @@ bun install
 bun dev            # dev server at localhost:5173
 bun test           # run tests
 bun run build:cdn  # rebuild dist/components.js
+bun run build:lib  # rebuild npm library bundle
 ```
