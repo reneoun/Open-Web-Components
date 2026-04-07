@@ -160,7 +160,7 @@ class OWCPanel extends GlassElement {
                 .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
                 .resize-se:hover { border-color: var(--glass-text-muted); }
             </style>
-            <div class="panel">
+            <div class="panel" role="region">
                 ${hasDrag   ? '<button class="move-handle" title="Drag to move">⠿</button>' : ''}
                 <slot></slot>
                 ${hasResize ? `

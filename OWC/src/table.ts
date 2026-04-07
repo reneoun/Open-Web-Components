@@ -156,7 +156,7 @@ export class OTable extends GlassElement {
         const editTh = this.editable && hasClickEditable ? '<th style="width:72px"></th>' : ''
         return `<table>
         <thead><tr>
-          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all></th>` : ''}
+          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all aria-label="Select all rows"></th>` : ''}
           ${this._columns.map(c => this.renderTh(c)).join('')}
           ${editTh}
         </tr></thead>
@@ -189,7 +189,7 @@ export class OTable extends GlassElement {
     const checked = this._selectedRows.has(row) ? ' checked' : ''
     const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : ''
     const checkbox = this.selectable
-      ? `<td><input type="checkbox" data-select-row${checked}></td>`
+      ? `<td><input type="checkbox" data-select-row${checked} aria-label="Select row"></td>`
       : ''
 
     const isEditing = this._editingRows.has(row)

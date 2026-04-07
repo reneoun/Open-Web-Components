@@ -106,7 +106,7 @@ class ODialog extends GlassElement {
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       </style>
       <div class="backdrop${isOpen ? ' visible' : ''}">
-        <div class="panel">
+        <div class="panel" role="dialog" aria-modal="true">
           <div class="panel-title"><slot name="title"></slot></div>
           <div class="panel-body"><slot></slot></div>
           <div class="panel-actions"><slot name="actions"></slot></div>

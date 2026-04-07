@@ -38,6 +38,27 @@ export class OToggle extends GlassElement {
   constructor() {
     super()
     this.shadowRoot!.addEventListener('click', this.handleClick)
+    this.shadowRoot!.addEventListener('keydown', (e: Event) => {
+      const ke = e as KeyboardEvent
+      if (ke.key !== 'ArrowRight' && ke.key !== 'ArrowLeft') return
+      const idx = this._options.findIndex(o => o.value === this._value)
+      if (idx === -1) return
+      const next = ke.key === 'ArrowRight'
+        ? (idx + 1) % this._options.length
+        : (idx - 1 + this._options.length) % this._options.length
+      const opt = this._options[next]
+      if (!opt) return
+      const prev = this._value
+      this._value = opt.value
+      this.setAttribute('value', opt.value)
+      this.updateSelection()
+      const tabs = this.shadowRoot!.querySelectorAll<HTMLElement>('[role="tab"]')
+      tabs[next]?.focus()
+      this.dispatchEvent(new CustomEvent('o-change', {
+        bubbles: true, composed: true,
+        detail: { value: opt.value, index: next, prev }
+      }))
+    })
   }
 
   connectedCallback() {
@@ -153,10 +174,10 @@ export class OToggle extends GlassElement {
         }
         .segment.active { font-weight: 600; }
       </style>
-      <div class="container">
+      <div class="container" role="tablist">
         ${n > 0 ? '<div class="indicator"></div>' : ''}
         ${this._options.map((o) =>
-          `<div class="segment${o.value === this._value ? ' active' : ''}" data-value="${o.value}">${o.label}</div>`
+          `<div class="segment${o.value === this._value ? ' active' : ''}" role="tab" aria-selected="${o.value === this._value}" tabindex="${o.value === this._value ? '0' : '-1'}" data-value="${o.value}">${o.label}</div>`
         ).join('')}
       </div>
     `

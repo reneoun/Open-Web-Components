@@ -98,14 +98,20 @@ export class OSearch extends GlassElement {
     if (!dropdown) return
     const query = this._input.value
     const show = !this.noDropdown && this._renderItem !== null && query.length > 0
-    if (!show) { dropdown.style.display = 'none'; return }
+    const container = this.shadowRoot!.querySelector('.container')
+    if (!show) {
+      dropdown.style.display = 'none'
+      if (container) container.setAttribute('aria-expanded', 'false')
+      return
+    }
     dropdown.style.display = 'block'
+    if (container) container.setAttribute('aria-expanded', 'true')
     if (this._currentResults.length === 0) {
       dropdown.innerHTML = `<div class="item no-results">No results</div>`
       return
     }
     dropdown.innerHTML = this._currentResults.map((item, i) =>
-      `<div class="item" data-index="${i}">${this._renderItem!(item)}</div>`
+      `<div class="item" role="option" data-index="${i}">${this._renderItem!(item)}</div>`
     ).join('')
   }
 
@@ -160,10 +166,10 @@ export class OSearch extends GlassElement {
         .item:hover { background: var(--glass-hover); }
         .no-results { opacity: 0.5; cursor: default; }
       </style>
-      <div class="container">
+      <div class="container" role="combobox" aria-expanded="false" aria-haspopup="listbox">
         <span class="icon">🔍</span>
       </div>
-      <div class="dropdown"></div>
+      <div class="dropdown" role="listbox"></div>
     `
     const container = shadow.querySelector('.container')!
     this._input.placeholder = this.getAttribute('placeholder') ?? 'Search…'
