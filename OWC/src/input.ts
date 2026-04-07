@@ -2,13 +2,17 @@ import { GlassElement, glassBaseStyles } from './glass'
 
 export class OInput extends GlassElement {
   static get observedAttributes() {
-    return ['label', 'placeholder', 'type', 'name', 'value', 'disabled', 'error', 'success']
+    return ['label', 'placeholder', 'type', 'name', 'disabled', 'error', 'success']
   }
 
   connectedCallback() { this.render() }
 
   attributeChangedCallback() {
     if (this.isConnected) this.render()
+  }
+
+  disconnectedCallback() {
+    // No host-level listeners currently; present for pattern consistency
   }
 
   get value(): string {
@@ -20,7 +24,6 @@ export class OInput extends GlassElement {
   set value(v: string) {
     const input = this.shadowRoot!.querySelector<HTMLInputElement>('input')
     if (input) input.value = v
-    this.setAttribute('value', v)
   }
 
   private render() {
@@ -78,28 +81,33 @@ export class OInput extends GlassElement {
         }
       </style>
       <div class="wrap">
-        ${label ? `<label>${label}</label>` : ''}
+        ${label ? '<label></label>' : ''}
         <input
           type="${type}"
-          placeholder="${placeholder}"
           name="${name}"
-          value="${value.replace(/"/g, '&quot;')}"
           ${disabled ? 'disabled' : ''}
         />
-        ${error ? `<span class="error-msg">${error}</span>` : ''}
+        ${error ? '<span class="error-msg"></span>' : ''}
       </div>
     `
 
-    const input = this.shadowRoot!.querySelector<HTMLInputElement>('input')!
-    if (error || success) input.style.borderColor = borderColor
-    input.addEventListener('input', () => {
+    const inputEl = this.shadowRoot!.querySelector<HTMLInputElement>('input')!
+
+    // Set via DOM API to avoid XSS
+    if (label) this.shadowRoot!.querySelector('label')!.textContent = label
+    if (error) this.shadowRoot!.querySelector('.error-msg')!.textContent = error
+    inputEl.placeholder = placeholder
+    inputEl.value = value
+    inputEl.style.borderColor = borderColor
+
+    inputEl.addEventListener('input', () => {
       this.dispatchEvent(new CustomEvent('o-input', {
-        bubbles: true, composed: true, detail: { value: input.value }
+        bubbles: true, composed: true, detail: { value: inputEl.value }
       }))
     })
-    input.addEventListener('blur', () => {
+    inputEl.addEventListener('blur', () => {
       this.dispatchEvent(new CustomEvent('o-change', {
-        bubbles: true, composed: true, detail: { value: input.value }
+        bubbles: true, composed: true, detail: { value: inputEl.value }
       }))
     })
   }
