@@ -4,6 +4,7 @@ export class OProgress extends GlassElement {
   private _value = 0
   private _timer: ReturnType<typeof setInterval> | null = null
   private _hideTimer: ReturnType<typeof setTimeout> | null = null
+  private _resetTimer: ReturnType<typeof setTimeout> | null = null
 
   static get observedAttributes() { return ['value'] }
 
@@ -17,6 +18,8 @@ export class OProgress extends GlassElement {
 
   disconnectedCallback() {
     this._stopAuto()
+    if (this._hideTimer)  { clearTimeout(this._hideTimer);  this._hideTimer  = null }
+    if (this._resetTimer) { clearTimeout(this._resetTimer); this._resetTimer = null }
   }
 
   private render() {
@@ -32,6 +35,7 @@ export class OProgress extends GlassElement {
         }
         .bar {
           height: 3px;
+          width: 0%;
           background: rgba(74,222,128,0.85);
           box-shadow: 0 0 8px rgba(74,222,128,0.5);
           transition: width 0.2s ease, opacity 0.3s ease;
@@ -47,16 +51,23 @@ export class OProgress extends GlassElement {
   }
 
   private _setValue(v: number) {
+    // Cancel any pending hide/reset from a previous done() call
+    if (this._hideTimer)  { clearTimeout(this._hideTimer);  this._hideTimer  = null }
+    if (this._resetTimer) { clearTimeout(this._resetTimer); this._resetTimer = null }
+
     this._value = v
     const bar = this._bar()
     if (!bar) return
     bar.style.opacity = '1'
     bar.style.width = `${v}%`
+
     if (v >= 100) {
-      if (this._hideTimer) clearTimeout(this._hideTimer)
       this._hideTimer = setTimeout(() => {
         bar.style.opacity = '0'
-        setTimeout(() => { bar.style.width = '0%'; this._value = 0 }, 300)
+        this._resetTimer = setTimeout(() => {
+          bar.style.width = '0%'
+          this._value = 0
+        }, 300)
       }, 400)
     }
   }

@@ -60,4 +60,27 @@ describe('OProgress', () => {
     expect(() => OProgress.start()).not.toThrow()
     OProgress.done()
   })
+
+  it('OProgress.set() clamps below 0 to 0%', () => {
+    OProgress.set(-50)
+    const bar = document.querySelector('o-progress')!.shadowRoot!.querySelector('.bar') as HTMLElement
+    expect(bar.style.width).toBe('0%')
+  })
+
+  it('OProgress.start() is safe to call multiple times (continues from current position)', () => {
+    OProgress.set(30)
+    OProgress.start()
+    OProgress.start() // second call should not throw or reset
+    const bar = document.querySelector('o-progress')!.shadowRoot!.querySelector('.bar') as HTMLElement
+    expect(bar.style.width).toBe('30%')
+    OProgress.done()
+  })
+
+  it('_getInstance() creates o-progress element when none exists in DOM', () => {
+    document.body.innerHTML = '' // remove the element set up in beforeEach
+    OProgress.set(50)
+    const el = document.querySelector('o-progress')
+    expect(el).not.toBeNull()
+    expect((el!.shadowRoot!.querySelector('.bar') as HTMLElement).style.width).toBe('50%')
+  })
 })
