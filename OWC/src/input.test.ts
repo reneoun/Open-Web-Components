@@ -49,7 +49,7 @@ describe('OInput', () => {
     el.addEventListener('o-change', (e: any) => { detail = e.detail })
     const input = el.shadowRoot.querySelector('input')
     input.value = 'world'
-    input.dispatchEvent(new Event('change'))
+    input.dispatchEvent(new Event('blur'))
     expect(detail).toMatchObject({ value: 'world' })
   })
 
@@ -78,5 +78,27 @@ describe('OInput', () => {
   it('disabled attribute disables the input', () => {
     el.setAttribute('disabled', '')
     expect(el.shadowRoot.querySelector('input').disabled).toBe(true)
+  })
+
+  it('reflects placeholder attribute on inner input', () => {
+    el.setAttribute('placeholder', 'Enter text...')
+    expect(el.shadowRoot.querySelector('input').placeholder).toBe('Enter text...')
+  })
+
+  it('reflects name attribute on inner input', () => {
+    el.setAttribute('name', 'username')
+    expect(el.shadowRoot.querySelector('input').name).toBe('username')
+  })
+
+  it('success attribute applies green border style', () => {
+    el.setAttribute('success', '')
+    const input = el.shadowRoot.querySelector('input')
+    expect(input.style.borderColor).not.toBe('')
+  })
+
+  it('error attribute applies red border style', () => {
+    el.setAttribute('error', 'Bad input')
+    const input = el.shadowRoot.querySelector('input')
+    expect(input.style.borderColor).not.toBe('')
   })
 })

@@ -91,12 +91,13 @@ export class OInput extends GlassElement {
     `
 
     const input = this.shadowRoot!.querySelector<HTMLInputElement>('input')!
+    if (error || success) input.style.borderColor = borderColor
     input.addEventListener('input', () => {
       this.dispatchEvent(new CustomEvent('o-input', {
         bubbles: true, composed: true, detail: { value: input.value }
       }))
     })
-    input.addEventListener('change', () => {
+    input.addEventListener('blur', () => {
       this.dispatchEvent(new CustomEvent('o-change', {
         bubbles: true, composed: true, detail: { value: input.value }
       }))
