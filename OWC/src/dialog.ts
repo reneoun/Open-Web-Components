@@ -1,4 +1,6 @@
-class ODialog extends HTMLElement {
+import { GlassElement, glassBaseStyles } from './glass'
+
+class ODialog extends GlassElement {
   static get observedAttributes() { return ['open'] }
 
   private _onKeyDown: ((e: KeyboardEvent) => void) | null = null
@@ -7,7 +9,6 @@ class ODialog extends HTMLElement {
 
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
   }
 
   connectedCallback() {
@@ -69,12 +70,8 @@ class ODialog extends HTMLElement {
     const isOpen = this.hasAttribute('open')
     this.shadowRoot!.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
-          --glass-bg: rgba(255,255,255,0.07);
-          --glass-border: rgba(255,255,255,0.12);
-          --glass-blur: 12px;
-          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          --accent-warm: rgba(251,191,36,0.6);
           display: contents;
         }
         .backdrop {
@@ -98,7 +95,7 @@ class ODialog extends HTMLElement {
           backdrop-filter: blur(var(--glass-blur));
           box-shadow: var(--glass-shadow);
           padding: 24px; min-width: 320px; max-width: 90vw;
-          color: #fff;
+          color: var(--glass-text);
         }
         .backdrop.visible .panel {
           animation: scaleIn 0.2s ease-out;

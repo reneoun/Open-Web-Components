@@ -6,6 +6,7 @@ import { toast } from './toast'
 import './toggle'
 import './search'
 
+export * from './glass'
 export * from './core'
 export * from './toast'
 export * from './table'

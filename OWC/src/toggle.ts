@@ -1,3 +1,5 @@
+import { GlassElement, glassBaseStyles } from './glass'
+
 export interface OToggleOption { label: string; value: string }
 export interface OToggleChangeEvent { value: string; index: number; prev: string | null }
 
@@ -7,7 +9,7 @@ function toOptions(input: (string | OToggleOption)[]): OToggleOption[] {
   )
 }
 
-export class OToggle extends HTMLElement {
+export class OToggle extends GlassElement {
   static get observedAttributes() { return ['options', 'value'] }
 
   private _options: OToggleOption[] = []
@@ -35,7 +37,6 @@ export class OToggle extends HTMLElement {
 
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
     this.shadowRoot!.addEventListener('click', this.handleClick)
   }
 
@@ -110,13 +111,14 @@ export class OToggle extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host { display: inline-flex; }
         .container {
           display: inline-flex;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.2);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          backdrop-filter: blur(var(--glass-blur));
+          -webkit-backdrop-filter: blur(var(--glass-blur));
           border-radius: 999px;
           padding: 3px;
           position: relative;
@@ -129,7 +131,7 @@ export class OToggle extends HTMLElement {
           top: 3px; bottom: 3px;
           left: 3px;
           width: calc((100% - 6px) / var(--n));
-          background: rgba(255,255,255,0.25);
+          background: var(--glass-border);
           border-radius: 999px;
           transform: translateX(calc(var(--idx) * 100%));
           transition: transform 0.2s ease;
@@ -141,7 +143,7 @@ export class OToggle extends HTMLElement {
           min-width: 48px;
           padding: 6px 14px;
           text-align: center;
-          color: #fff;
+          color: var(--glass-text);
           font-size: 14px;
           font-family: sans-serif;
           cursor: pointer;

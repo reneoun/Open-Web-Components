@@ -1,8 +1,10 @@
+import { GlassElement, glassBaseStyles } from './glass'
+
 export interface OSearchInputEvent   { query: string }
 export interface OSearchResultsEvent { query: string; results: unknown[] }
 export interface OSearchSelectEvent  { item: unknown; query: string }
 
-export class OSearch extends HTMLElement {
+export class OSearch extends GlassElement {
   static get observedAttributes() { return ['placeholder', 'value-key', 'no-dropdown'] }
 
   private _input: HTMLInputElement
@@ -29,7 +31,6 @@ export class OSearch extends HTMLElement {
 
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
     this._input = document.createElement('input')
     this._input.addEventListener('input', this.handleInput)
     this.render()
@@ -129,33 +130,34 @@ export class OSearch extends HTMLElement {
     const shadow = this.shadowRoot!
     shadow.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host { display: block; position: relative; }
         .container {
           display: flex; align-items: center; gap: 8px;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.2);
-          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
           border-radius: 999px; padding: 8px 16px;
         }
         .icon { opacity: 0.6; flex-shrink: 0; }
         input {
           flex: 1; background: transparent; border: none; outline: none;
-          color: #fff; font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
         }
-        input::placeholder { color: rgba(255,255,255,0.4); }
+        input::placeholder { color: var(--glass-text-muted); }
         .dropdown {
           display: none; position: absolute;
           top: calc(100% + 6px); left: 0; right: 0;
-          background: rgba(255,255,255,0.12);
-          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-          border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+          background: var(--glass-bg);
+          backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+          border-radius: 12px; border: 1px solid var(--glass-border);
           overflow: hidden; z-index: 10;
         }
         .item {
-          padding: 8px 14px; color: #fff;
+          padding: 8px 14px; color: var(--glass-text);
           font-size: 14px; font-family: sans-serif; cursor: pointer;
         }
-        .item:hover { background: rgba(255,255,255,0.1); }
+        .item:hover { background: var(--glass-hover); }
         .no-results { opacity: 0.5; cursor: default; }
       </style>
       <div class="container">

@@ -1,3 +1,5 @@
+import { GlassElement, glassBaseStyles } from './glass'
+
 console.log('Open Web Components (OWC) Core Module Loaded - René Oun');
 
 export type Coordinates = { x: number, y: number };
@@ -40,27 +42,27 @@ function hideSnapGrid() {
     }, 220);
 }
 
-class OWCButton extends HTMLElement {
+class OWCButton extends GlassElement {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
         this.shadowRoot!.innerHTML = `
             <style>
+                ${glassBaseStyles()}
                 :host { display: inline-block; }
                 button {
                     cursor: pointer;
                     padding: 8px 20px;
                     border-radius: 10px;
-                    border: 1px solid rgba(255,255,255,0.3);
-                    background: rgba(255,255,255,0.18);
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
-                    color: var(--o-button-color, #fff);
+                    border: 1px solid var(--glass-border);
+                    background: var(--glass-bg);
+                    backdrop-filter: blur(var(--glass-blur));
+                    -webkit-backdrop-filter: blur(var(--glass-blur));
+                    color: var(--o-button-color, var(--glass-text));
                     font-size: 14px;
                     font-family: sans-serif;
                     transition: background 0.2s, transform 0.1s;
                 }
-                button:hover { background: rgba(255,255,255,0.28); }
+                button:hover { background: var(--glass-hover); }
                 button:active { transform: scale(0.97); }
             </style>
             <button><slot>Button</slot></button>
@@ -71,7 +73,7 @@ class OWCButton extends HTMLElement {
     }
 }
 
-class OWCPanel extends HTMLElement {
+class OWCPanel extends GlassElement {
     static get observedAttributes() { return ['move', 'snap', 'resize'] }
 
     private dragStart: Coordinates | null = null;
@@ -80,7 +82,6 @@ class OWCPanel extends HTMLElement {
 
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
         // Do NOT render here — attributes are not yet set for parser-created elements
     }
 
@@ -113,50 +114,51 @@ class OWCPanel extends HTMLElement {
 
         this.shadowRoot!.innerHTML = `
             <style>
+                ${glassBaseStyles()}
                 :host { display: inline-block; }
                 .panel {
-                    background: rgba(255,255,255,0.18);
-                    border: 1px solid rgba(255,255,255,0.3);
-                    backdrop-filter: blur(10px);
-                    -webkit-backdrop-filter: blur(10px);
+                    background: var(--glass-bg);
+                    border: 1px solid var(--glass-border);
+                    backdrop-filter: blur(var(--glass-blur));
+                    -webkit-backdrop-filter: blur(var(--glass-blur));
                     padding: 16px;
                     margin: 8px;
                     border-radius: 10px;
                     min-width: 120px;
                     min-height: 40px;
                     position: relative;
-                    color: #fff;
+                    color: var(--glass-text);
                     font-family: sans-serif;
                     font-size: 14px;
                     box-sizing: border-box;
                 }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
-                    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
-                    color: #fff; border-radius: 6px; cursor: grab; font-size: 14px;
+                    background: var(--glass-hover); border: 1px solid var(--glass-border);
+                    color: var(--glass-text); border-radius: 6px; cursor: grab; font-size: 14px;
                     padding: 2px 5px; line-height: 1;
                 }
                 .resize-e {
                     position: absolute; right: 0; top: 20%; bottom: 20%;
                     width: 5px; cursor: ew-resize;
-                    background: rgba(255,255,255,0.15); border-radius: 0 10px 10px 0;
+                    background: var(--glass-hover); border-radius: 0 10px 10px 0;
                     transition: background 0.15s;
                 }
                 .resize-s {
                     position: absolute; bottom: 0; left: 20%; right: 20%;
                     height: 5px; cursor: ns-resize;
-                    background: rgba(255,255,255,0.15); border-radius: 0 0 10px 10px;
+                    background: var(--glass-hover); border-radius: 0 0 10px 10px;
                     transition: background 0.15s;
                 }
                 .resize-se {
                     position: absolute; right: 0; bottom: 0;
                     width: 14px; height: 14px; cursor: nwse-resize;
-                    border-right: 3px solid rgba(255,255,255,0.3);
-                    border-bottom: 3px solid rgba(255,255,255,0.3);
+                    border-right: 3px solid var(--glass-border);
+                    border-bottom: 3px solid var(--glass-border);
                     border-radius: 0 0 10px 0;
                 }
-                .resize-e:hover, .resize-s:hover { background: rgba(255,255,255,0.35); }
-                .resize-se:hover { border-color: rgba(255,255,255,0.6); }
+                .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
+                .resize-se:hover { border-color: var(--glass-text-muted); }
             </style>
             <div class="panel">
                 ${hasDrag   ? '<button class="move-handle" title="Drag to move">⠿</button>' : ''}

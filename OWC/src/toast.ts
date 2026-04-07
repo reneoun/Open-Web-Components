@@ -1,3 +1,5 @@
+import { GlassElement, glassBaseStyles } from './glass'
+
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 const ICONS: Record<ToastType, string> = {
@@ -14,7 +16,7 @@ const COLORS: Record<ToastType, string> = {
   info: '#60a5fa',
 }
 
-export class OWCToast extends HTMLElement {
+export class OWCToast extends GlassElement {
   static get observedAttributes() {
     return ['type', 'message', 'duration']
   }
@@ -29,7 +31,6 @@ export class OWCToast extends HTMLElement {
 
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
   }
 
   connectedCallback() {
@@ -59,6 +60,7 @@ export class OWCToast extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
           display: block;
           position: relative;
@@ -66,11 +68,11 @@ export class OWCToast extends HTMLElement {
           max-width: 360px;
           padding: 10px 36px 10px 14px;
           border-radius: var(--o-toast-radius, 10px);
-          background: var(--o-toast-bg, rgba(255,255,255,0.18));
-          border: 1px solid var(--o-toast-border, rgba(255,255,255,0.3));
-          backdrop-filter: blur(var(--o-toast-blur, 10px));
-          -webkit-backdrop-filter: blur(var(--o-toast-blur, 10px));
-          color: var(--o-toast-color, #fff);
+          background: var(--o-toast-bg, var(--glass-bg));
+          border: 1px solid var(--o-toast-border, var(--glass-border));
+          backdrop-filter: blur(var(--o-toast-blur, var(--glass-blur)));
+          -webkit-backdrop-filter: blur(var(--o-toast-blur, var(--glass-blur)));
+          color: var(--o-toast-color, var(--glass-text));
           font-family: sans-serif;
           font-size: 14px;
           border-left: 4px solid var(--_accent);

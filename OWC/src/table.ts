@@ -1,3 +1,5 @@
+import { GlassElement, glassBaseStyles } from './glass'
+
 export interface OTableColumn {
   key: string
   label: string
@@ -14,7 +16,7 @@ export interface OTableRowSelectEvent { selected: Record<string, unknown>[] }
 export interface OTableCellChangeEvent { key: string; value: unknown; rowIndex: number; row: Record<string, unknown> }
 export interface OTableRowChangeEvent { rowIndex: number; row: Record<string, unknown>; changes: Record<string, unknown> }
 
-export class OTable extends HTMLElement {
+export class OTable extends GlassElement {
   static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable', 'editable'] }
 
   private _columns: OTableColumn[] = []
@@ -46,7 +48,6 @@ export class OTable extends HTMLElement {
 
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
   }
 
   connectedCallback() {
@@ -96,54 +97,55 @@ export class OTable extends HTMLElement {
     if (!this.shadowRoot) return
     this.shadowRoot.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host { display: block; overflow-x: auto; }
         table {
           border-collapse: collapse;
           font-family: sans-serif; font-size: 14px;
-          background: rgba(255,255,255,0.08);
+          background: var(--glass-bg);
           border-radius: 10px; overflow: hidden;
         }
         th, td {
           padding: 10px 14px; text-align: left;
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-          color: #fff; position: relative;
+          border-bottom: 1px solid var(--glass-hover);
+          color: var(--glass-text); position: relative;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         th {
-          background: rgba(255,255,255,0.15);
+          background: var(--glass-hover);
           user-select: none;
-          backdrop-filter: blur(10px);
+          backdrop-filter: blur(var(--glass-blur));
         }
         th[data-sortable] { cursor: pointer; }
-        tbody tr:hover td { background: rgba(255,255,255,0.06); }
+        tbody tr:hover td { background: var(--glass-hover); }
         .sort-icon { float: right; opacity: 0.5; }
         .resize-handle {
           position: absolute; right: 0; top: 0; bottom: 0;
           width: 5px; cursor: col-resize;
           background: transparent;
         }
-        .resize-handle:hover { background: rgba(255,255,255,0.3); }
-        tbody tr.selected td { background: rgba(255,255,255,0.12); }
+        .resize-handle:hover { background: var(--glass-border); }
+        tbody tr.selected td { background: var(--glass-bg); }
         input[type="checkbox"] {
           width: 15px; height: 15px; cursor: pointer;
-          accent-color: rgba(255,255,255,0.9);
+          accent-color: var(--glass-text);
         }
         .cell-input {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(251,191,36,0.5);
+          background: var(--glass-hover);
+          border: 1px solid var(--accent-warm);
           border-radius: 4px;
-          color: #fff;
+          color: var(--glass-text);
           padding: 4px 8px;
           font-size: 13px;
           width: calc(100% - 4px);
           outline: none;
           font-family: sans-serif;
         }
-        .cell-input:focus { border-color: rgba(251,191,36,0.9); background: rgba(255,255,255,0.15); }
+        .cell-input:focus { border-color: var(--accent-warm); background: var(--glass-border); }
         .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
         .edit-btn, .edit-confirm, .edit-cancel {
           background: none; border: none; cursor: pointer;
-          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: #fff; border-radius: 3px;
+          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: var(--glass-text); border-radius: 3px;
         }
         .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
         .edit-confirm { color: rgba(74,222,128,0.9); }

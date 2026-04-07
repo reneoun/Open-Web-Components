@@ -1,4 +1,6 @@
-class ONote extends HTMLElement {
+import { GlassElement, glassBaseStyles } from './glass'
+
+class ONote extends GlassElement {
   static get observedAttributes() {
     return ['variant', 'label', 'placeholder', 'max-length', 'value']
   }
@@ -7,7 +9,6 @@ class ONote extends HTMLElement {
 
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
   }
 
   connectedCallback() { this.render() }
@@ -32,12 +33,8 @@ class ONote extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
-          --glass-bg: rgba(255,255,255,0.07);
-          --glass-border: rgba(255,255,255,0.12);
-          --glass-blur: 12px;
-          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          --accent-warm: rgba(251,191,36,0.6);
           display: block;
         }
         .wrap {
@@ -53,16 +50,16 @@ class ONote extends HTMLElement {
         .wrap:focus-within { border-color: var(--accent-warm); }
         label {
           position: absolute; top: 8px; left: 16px;
-          color: rgba(255,255,255,0.5); font-size: 11px;
+          color: var(--glass-text-muted); font-size: 11px;
           font-family: sans-serif; pointer-events: none;
         }
         textarea {
           display: block; width: 100%;
           background: none; border: none; resize: none; outline: none;
-          color: #fff; font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
           min-height: 80px; overflow: hidden;
         }
-        .counter { text-align: right; font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+        .counter { text-align: right; font-size: 11px; color: var(--glass-text-dim); margin-top: 4px; }
       </style>
       <div class="wrap">
         ${label ? `<label>${label}</label>` : ''}
@@ -77,12 +74,8 @@ class ONote extends HTMLElement {
 
     this.shadowRoot!.innerHTML = `
       <style>
+        ${glassBaseStyles()}
         :host {
-          --glass-bg: rgba(255,255,255,0.07);
-          --glass-border: rgba(255,255,255,0.12);
-          --glass-blur: 12px;
-          --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          --accent-warm: rgba(251,191,36,0.6);
           display: block;
         }
         .card {
@@ -96,28 +89,28 @@ class ONote extends HTMLElement {
         }
         .title-input {
           background: none; border: none;
-          border-bottom: 1px solid rgba(255,255,255,0.15);
-          color: #fff; font-size: 18px; font-weight: 600;
+          border-bottom: 1px solid var(--glass-border);
+          color: var(--glass-text); font-size: 18px; font-weight: 600;
           font-family: sans-serif; outline: none; padding-bottom: 8px; width: 100%;
         }
         .title-input:focus { border-color: var(--accent-warm); }
-        .title-input::placeholder { color: rgba(255,255,255,0.3); }
+        .title-input::placeholder { color: var(--glass-text-dim); }
         .body-area {
           background: none; border: none; resize: none; outline: none;
-          color: #fff; font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
           min-height: 80px; overflow: hidden; width: 100%;
         }
-        .body-area::placeholder { color: rgba(255,255,255,0.3); }
+        .body-area::placeholder { color: var(--glass-text-dim); }
         .tag-area { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
         .chip {
           background: var(--accent-warm); border-radius: 999px;
           padding: 2px 10px; font-size: 12px; color: #000; cursor: pointer;
         }
         .tag-input {
-          background: none; border: none; color: #fff;
+          background: none; border: none; color: var(--glass-text);
           font-size: 12px; font-family: sans-serif; outline: none; min-width: 80px;
         }
-        .tag-input::placeholder { color: rgba(255,255,255,0.3); }
+        .tag-input::placeholder { color: var(--glass-text-dim); }
       </style>
       <div class="card">
         <input class="title-input" placeholder="Title" />
