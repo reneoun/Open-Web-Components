@@ -37,7 +37,10 @@
     OToggle: () => OToggle,
     OTabs: () => OTabs,
     OTable: () => OTable,
+    OSkeleton: () => OSkeleton,
     OSearch: () => OSearch,
+    OProgress: () => OProgress,
+    OInput: () => OInput,
     ODropdown: () => ODropdown,
     GlassElement: () => GlassElement,
     GLASS_TOKENS_LIGHT: () => GLASS_TOKENS_LIGHT,
@@ -420,8 +423,7 @@
         if (widths) {
           this._columns = this._columns.map((c) => widths[c.key] != null ? { ...c, width: widths[c.key] } : c);
         }
-      } catch {
-      }
+      } catch {}
     }
     render() {
       if (!this.shadowRoot)
@@ -2035,8 +2037,336 @@
   }
   customElements.define("o-tabs", OTabs);
 
+  // src/input.ts
+  class OInput extends GlassElement {
+    static get observedAttributes() {
+      return ["label", "placeholder", "type", "name", "disabled", "error", "success"];
+    }
+    connectedCallback() {
+      this.render();
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
+    }
+    disconnectedCallback() {}
+    get value() {
+      return this.shadowRoot.querySelector("input")?.value ?? this.getAttribute("value") ?? "";
+    }
+    set value(v) {
+      const input = this.shadowRoot.querySelector("input");
+      if (input)
+        input.value = v;
+    }
+    render() {
+      const label = this.getAttribute("label") ?? "";
+      const placeholder = this.getAttribute("placeholder") ?? "";
+      const type = this.getAttribute("type") ?? "text";
+      const name = this.getAttribute("name") ?? "";
+      const value = this.getAttribute("value") ?? "";
+      const disabled = this.hasAttribute("disabled");
+      const error = this.getAttribute("error") ?? "";
+      const success = this.hasAttribute("success");
+      const borderColor = error ? "rgba(239,68,68,0.7)" : success ? "rgba(74,222,128,0.7)" : "var(--glass-border)";
+      const focusBorder = error ? "rgba(239,68,68,0.9)" : "var(--accent-warm)";
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host { display: block; }
+        .wrap { display: flex; flex-direction: column; gap: 4px; }
+        label {
+          font-size: 11px;
+          font-family: sans-serif;
+          color: var(--glass-text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+        }
+        input {
+          background: var(--glass-bg);
+          border: 1px solid ${borderColor};
+          border-radius: 10px;
+          padding: 8px 14px;
+          color: var(--glass-text);
+          font-size: 14px;
+          font-family: sans-serif;
+          outline: none;
+          width: 100%;
+          box-sizing: border-box;
+          backdrop-filter: blur(var(--glass-blur));
+          transition: border-color 0.15s;
+          opacity: ${disabled ? "0.5" : "1"};
+          cursor: ${disabled ? "not-allowed" : "text"};
+        }
+        input:focus { border-color: ${focusBorder}; }
+        input::placeholder { color: var(--glass-text-dim); }
+        .error-msg {
+          font-size: 11px;
+          color: rgba(239,68,68,0.9);
+          font-family: sans-serif;
+        }
+      </style>
+      <div class="wrap">
+        ${label ? "<label></label>" : ""}
+        <input
+          type="${type}"
+          name="${name}"
+          ${disabled ? "disabled" : ""}
+        />
+        ${error ? '<span class="error-msg"></span>' : ""}
+      </div>
+    `;
+      const inputEl = this.shadowRoot.querySelector("input");
+      if (label)
+        this.shadowRoot.querySelector("label").textContent = label;
+      if (error)
+        this.shadowRoot.querySelector(".error-msg").textContent = error;
+      inputEl.placeholder = placeholder;
+      inputEl.value = value;
+      inputEl.style.borderColor = borderColor;
+      inputEl.addEventListener("input", () => {
+        this.dispatchEvent(new CustomEvent("o-input", {
+          bubbles: true,
+          composed: true,
+          detail: { value: inputEl.value }
+        }));
+      });
+      inputEl.addEventListener("blur", () => {
+        this.dispatchEvent(new CustomEvent("o-change", {
+          bubbles: true,
+          composed: true,
+          detail: { value: inputEl.value }
+        }));
+      });
+    }
+  }
+  customElements.define("o-input", OInput);
+
+  // src/skeleton.ts
+  class OSkeleton extends GlassElement {
+    static get observedAttributes() {
+      return ["variant", "width", "height", "radius", "rows"];
+    }
+    connectedCallback() {
+      this.render();
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
+    }
+    disconnectedCallback() {}
+    get variant() {
+      return this.getAttribute("variant") ?? "block";
+    }
+    pulseCSS() {
+      return `
+      @keyframes o-pulse {
+        0%, 100% { opacity: 0.4; }
+        50%       { opacity: 0.9; }
+      }
+      .skel {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--skel-r, 6px);
+        animation: o-pulse 1.4s ease-in-out infinite;
+        backdrop-filter: blur(var(--glass-blur));
+      }
+    `;
+    }
+    render() {
+      const v = this.variant;
+      if (v === "table")
+        this.renderTable();
+      else if (v === "panel")
+        this.renderPanel();
+      else
+        this.renderBlock();
+    }
+    renderBlock() {
+      const w = this.getAttribute("width") ?? "100%";
+      const h = this.getAttribute("height") ?? "1em";
+      const r = this.getAttribute("radius") ?? "6px";
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host { display: block; }
+        ${this.pulseCSS()}
+      </style>
+      <div class="skel" style="width:${w};height:${h};--skel-r:${r}"></div>
+    `;
+    }
+    renderTable() {
+      const rows = Math.max(1, parseInt(this.getAttribute("rows") ?? "5"));
+      const colWidths = ["25%", "30%", "20%", "15%"];
+      const headerCells = colWidths.map((w) => `<div class="skel cell" style="width:${w}"></div>`).join("");
+      const bodyRows = Array.from({ length: rows }, () => colWidths.map((w) => `<div class="skel cell" style="width:${w}"></div>`).join("")).map((cells) => `<div class="row">${cells}</div>`).join("");
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host { display: block; }
+        ${this.pulseCSS()}
+        .table { display: flex; flex-direction: column; gap: 8px; }
+        .row {
+          display: flex; gap: 12px; align-items: center;
+          padding: 6px 0;
+          border-bottom: 1px solid var(--glass-border);
+        }
+        .header .cell { height: 12px; }
+        .cell { height: 14px; }
+      </style>
+      <div class="table">
+        <div class="row header">${headerCells}</div>
+        ${bodyRows}
+      </div>
+    `;
+    }
+    renderPanel() {
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host { display: block; }
+        ${this.pulseCSS()}
+        .panel {
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 10px;
+          backdrop-filter: blur(var(--glass-blur));
+          padding: 16px;
+          display: flex; flex-direction: column; gap: 10px;
+        }
+        .title { height: 18px; width: 55%; }
+        .line  { height: 13px; }
+        .short { width: 70%; }
+      </style>
+      <div class="panel">
+        <div class="skel title"></div>
+        <div class="skel line"></div>
+        <div class="skel line short"></div>
+      </div>
+    `;
+    }
+  }
+  customElements.define("o-skeleton", OSkeleton);
+
+  // src/progress.ts
+  class OProgress extends GlassElement {
+    _value = 0;
+    _timer = null;
+    _hideTimer = null;
+    _resetTimer = null;
+    static get observedAttributes() {
+      return ["value"];
+    }
+    connectedCallback() {
+      this.render();
+    }
+    attributeChangedCallback(name, _old, next) {
+      if (name === "value" && this.isConnected) {
+        this._setValue(Math.min(100, Math.max(0, parseFloat(next) || 0)));
+      }
+    }
+    disconnectedCallback() {
+      this._stopAuto();
+      if (this._hideTimer) {
+        clearTimeout(this._hideTimer);
+        this._hideTimer = null;
+      }
+      if (this._resetTimer) {
+        clearTimeout(this._resetTimer);
+        this._resetTimer = null;
+      }
+    }
+    render() {
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host {
+          position: fixed;
+          top: 0; left: 0; right: 0;
+          z-index: 9999;
+          display: block;
+          pointer-events: none;
+        }
+        .bar {
+          height: 3px;
+          width: 0%;
+          background: rgba(74,222,128,0.85);
+          box-shadow: 0 0 8px rgba(74,222,128,0.5);
+          transition: width 0.2s ease, opacity 0.3s ease;
+          opacity: 1;
+        }
+      </style>
+      <div class="bar" style="width:0%"></div>
+    `;
+    }
+    _bar() {
+      return this.shadowRoot?.querySelector(".bar") ?? null;
+    }
+    _setValue(v) {
+      if (this._hideTimer) {
+        clearTimeout(this._hideTimer);
+        this._hideTimer = null;
+      }
+      if (this._resetTimer) {
+        clearTimeout(this._resetTimer);
+        this._resetTimer = null;
+      }
+      this._value = v;
+      const bar = this._bar();
+      if (!bar)
+        return;
+      bar.style.opacity = "1";
+      bar.style.width = `${v}%`;
+      if (v >= 100) {
+        this._hideTimer = setTimeout(() => {
+          bar.style.opacity = "0";
+          this._resetTimer = setTimeout(() => {
+            bar.style.width = "0%";
+            this._value = 0;
+          }, 300);
+        }, 400);
+      }
+    }
+    _stopAuto() {
+      if (this._timer) {
+        clearInterval(this._timer);
+        this._timer = null;
+      }
+    }
+    static start() {
+      const el = OProgress._getInstance();
+      el._stopAuto();
+      el._timer = setInterval(() => {
+        const remaining = 90 - el._value;
+        if (remaining <= 0) {
+          el._stopAuto();
+          return;
+        }
+        const step = Math.random() * Math.min(remaining * 0.1, 5) + 0.5;
+        el._setValue(Math.min(89, el._value + step));
+      }, 300);
+    }
+    static set(v) {
+      OProgress._getInstance()._setValue(Math.min(100, Math.max(0, v)));
+    }
+    static done() {
+      const el = OProgress._getInstance();
+      el._stopAuto();
+      el._setValue(100);
+    }
+    static _getInstance() {
+      let el = document.querySelector("o-progress");
+      if (!el) {
+        el = document.createElement("o-progress");
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+  }
+  customElements.define("o-progress", OProgress);
+
   // src/index.ts
   if (typeof window !== "undefined") {
     window.toast = toast;
+    window.OProgress = OProgress;
   }
 })();
