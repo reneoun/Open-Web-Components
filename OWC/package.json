@@ -1,12 +1,20 @@
 {
-  "name": "owc",
-  "private": true,
-  "version": "1.1.0",
+  "name": "@owc/components",
+  "version": "1.2.0",
   "type": "module",
+  "main": "dist/owc.js",
+  "module": "dist/owc.js",
+  "exports": {
+    ".": {
+      "import": "./dist/owc.js"
+    }
+  },
+  "files": ["dist", "src"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "build:cdn": "bun build src/index.ts --outfile dist/components.js --target browser --format=iife",
+    "build:lib": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
