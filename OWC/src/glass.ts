@@ -27,11 +27,11 @@ export const GLASS_TOKENS = `
 export function glassBaseStyles(): string {
   return `
     :host {
-      ${GLASS_TOKENS_LIGHT}
+      ${GLASS_TOKENS}
     }
-    @media (prefers-color-scheme: dark) {
-      :host(:not([theme="light"])) {
-        ${GLASS_TOKENS}
+    @media (prefers-color-scheme: light) {
+      :host(:not([theme="dark"])) {
+        ${GLASS_TOKENS_LIGHT}
       }
     }
     :host([theme="dark"]) {
