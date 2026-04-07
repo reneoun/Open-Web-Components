@@ -5,6 +5,9 @@ import './dialog'
 import { toast } from './toast'
 import './toggle'
 import './search'
+import './tooltip'
+import './dropdown'
+import './tabs'
 
 export * from './glass'
 export * from './core'
@@ -14,6 +17,9 @@ export * from './toggle'
 export * from './search'
 export * from './note'
 export * from './dialog'
+export * from './tooltip'
+export * from './dropdown'
+export * from './tabs'
 
 // Expose toast() as a global for plain <script> usage
 if (typeof window !== 'undefined') {
