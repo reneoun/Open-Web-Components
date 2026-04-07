@@ -75,14 +75,6 @@
     :host {
       ${GLASS_TOKENS}
     }
-    @media (prefers-color-scheme: light) {
-      :host(:not([theme="dark"])) {
-        ${GLASS_TOKENS_LIGHT}
-      }
-    }
-    :host([theme="dark"]) {
-      ${GLASS_TOKENS}
-    }
     :host([theme="light"]) {
       ${GLASS_TOKENS_LIGHT}
     }
