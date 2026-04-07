@@ -1834,6 +1834,10 @@
       <div class="trigger"><slot></slot></div>
       <div class="menu" role="menu"></div>
     `;
+      this.shadowRoot.querySelector(".trigger").addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.toggle();
+      });
       this.renderMenu();
     }
     renderMenu() {
