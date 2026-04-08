@@ -1,55 +1,4 @@
-(() => {
-  var __defProp = Object.defineProperty;
-  var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-  var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __moduleCache = /* @__PURE__ */ new WeakMap;
-  var __toCommonJS = (from) => {
-    var entry = __moduleCache.get(from), desc;
-    if (entry)
-      return entry;
-    entry = __defProp({}, "__esModule", { value: true });
-    if (from && typeof from === "object" || typeof from === "function")
-      __getOwnPropNames(from).map((key) => !__hasOwnProp.call(entry, key) && __defProp(entry, key, {
-        get: () => from[key],
-        enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
-      }));
-    __moduleCache.set(from, entry);
-    return entry;
-  };
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, {
-        get: all[name],
-        enumerable: true,
-        configurable: true,
-        set: (newValue) => all[name] = () => newValue
-      });
-  };
-
-  // src/index.ts
-  var exports_src = {};
-  __export(exports_src, {
-    toast: () => toast,
-    glassBaseStyles: () => glassBaseStyles,
-    asyncPlus: () => asyncPlus,
-    OWCToast: () => OWCToast,
-    OTooltip: () => OTooltip,
-    OToggle: () => OToggle,
-    OTabs: () => OTabs,
-    OTable: () => OTable,
-    OSkeleton: () => OSkeleton,
-    OSearch: () => OSearch,
-    OProgress: () => OProgress,
-    OInput: () => OInput,
-    ODropdown: () => ODropdown,
-    GlassElement: () => GlassElement,
-    GLASS_TOKENS_LIGHT: () => GLASS_TOKENS_LIGHT,
-    GLASS_TOKENS: () => GLASS_TOKENS
-  });
-
-  // src/glass.ts
-  var GLASS_TOKENS_LIGHT = `
+var OWC=function(c){"use strict";var Q=Object.defineProperty;var Z=(c,f,y)=>f in c?Q(c,f,{enumerable:!0,configurable:!0,writable:!0,value:y}):c[f]=y;var a=(c,f,y)=>Z(c,typeof f!="symbol"?f+"":f,y);const f=`
   --glass-bg: rgba(34,197,94,0.06);
   --glass-border: rgba(34,197,94,0.15);
   --glass-blur: 12px;
@@ -59,8 +8,7 @@
   --glass-text-muted: rgba(0,40,0,0.5);
   --glass-text-dim: rgba(0,40,0,0.3);
   --glass-hover: rgba(34,197,94,0.08);
-`;
-  var GLASS_TOKENS = `
+`,y=`
   --glass-bg: rgba(255,255,255,0.07);
   --glass-border: rgba(255,255,255,0.12);
   --glass-blur: 12px;
@@ -70,76 +18,34 @@
   --glass-text-muted: rgba(255,255,255,0.5);
   --glass-text-dim: rgba(255,255,255,0.3);
   --glass-hover: rgba(255,255,255,0.1);
-`;
-  function glassBaseStyles() {
-    return `
+`;function p(){return`
     :host {
-      ${GLASS_TOKENS}
+      ${y}
     }
     :host([theme="light"]) {
-      ${GLASS_TOKENS_LIGHT}
+      ${f}
     }
-  `;
-  }
-
-  class GlassElement extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({ mode: "open" });
+  `}function k(l=":host"){return`
+    /* Firefox */
+    ${l} {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
     }
-  }
-
-  // src/core.ts
-  console.log("Open Web Components (OWC) Core Module Loaded - René Oun");
-  var _gridEl = null;
-  var _gridFadeOut = null;
-  function showSnapGrid(snap, offsetX = 0, offsetY = 0) {
-    if (snap < 8)
-      return;
-    if (_gridFadeOut) {
-      clearTimeout(_gridFadeOut);
-      _gridFadeOut = null;
+    /* Webkit (Chrome, Safari, Edge) */
+    ${l}::-webkit-scrollbar { width: 6px; height: 6px; }
+    ${l}::-webkit-scrollbar-track { background: transparent; }
+    ${l}::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px;
+      transition: background 0.2s;
     }
-    if (!_gridEl) {
-      _gridEl = document.createElement("div");
-      Object.assign(_gridEl.style, {
-        position: "fixed",
-        inset: "0",
-        pointerEvents: "none",
-        zIndex: "9998",
-        transition: "opacity 200ms ease",
-        opacity: "0"
-      });
-      document.body.appendChild(_gridEl);
+    ${l}::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.3);
     }
-    _gridEl.style.backgroundImage = [
-      `linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)`,
-      `linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)`
-    ].join(",");
-    _gridEl.style.backgroundSize = `${snap}px ${snap}px`;
-    _gridEl.style.backgroundPosition = `${offsetX % snap}px ${offsetY % snap}px`;
-    _gridEl.offsetHeight;
-    _gridEl.style.opacity = "1";
-  }
-  function hideSnapGrid() {
-    if (!_gridEl)
-      return;
-    _gridEl.style.opacity = "0";
-    const el = _gridEl;
-    _gridFadeOut = setTimeout(() => {
-      el.remove();
-      if (_gridEl === el)
-        _gridEl = null;
-      _gridFadeOut = null;
-    }, 220);
-  }
-
-  class OWCButton extends GlassElement {
-    constructor() {
-      super();
-      this.shadowRoot.innerHTML = `
+    ${l}::-webkit-scrollbar-corner { background: transparent; }
+  `}class g extends HTMLElement{constructor(){super(),this.attachShadow({mode:"open"})}}console.log("Open Web Components (OWC) Core Module Loaded - René Oun");let v=null,E=null;function T(l,n=0,t=0){l<8||(E&&(clearTimeout(E),E=null),v||(v=document.createElement("div"),Object.assign(v.style,{position:"fixed",inset:"0",pointerEvents:"none",zIndex:"9998",transition:"opacity 200ms ease",opacity:"0"}),document.body.appendChild(v)),v.style.backgroundImage=["linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)","linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)"].join(","),v.style.backgroundSize=`${l}px ${l}px`,v.style.backgroundPosition=`${n%l}px ${t%l}px`,v.offsetHeight,v.style.opacity="1")}function z(){if(!v)return;v.style.opacity="0";const l=v;E=setTimeout(()=>{l.remove(),v===l&&(v=null),E=null},220)}class Y extends g{constructor(){super(),this.shadowRoot.innerHTML=`
             <style>
-                ${glassBaseStyles()}
+                ${p()}
                 :host { display: inline-block; }
                 button {
                     cursor: pointer;
@@ -158,47 +64,9 @@
                 button:active { transform: scale(0.97); }
             </style>
             <button><slot>Button</slot></button>
-        `;
-      this.shadowRoot.querySelector("button").addEventListener("click", () => {
-        this.dispatchEvent(new CustomEvent("o-click", { bubbles: true, composed: true }));
-      });
-    }
-  }
-
-  class OWCPanel extends GlassElement {
-    static get observedAttributes() {
-      return ["move", "snap", "resize"];
-    }
-    dragStart = null;
-    dragOffset = { x: 0, y: 0 };
-    resizeStart = null;
-    constructor() {
-      super();
-    }
-    connectedCallback() {
-      this.render();
-    }
-    attributeChangedCallback() {
-      if (this.isConnected)
-        this.render();
-    }
-    get snapSize() {
-      const v = parseInt(this.getAttribute("snap") ?? "1");
-      return isNaN(v) || v < 1 ? 1 : v;
-    }
-    snapTo(v) {
-      const s = this.snapSize;
-      return Math.round(v / s) * s;
-    }
-    render() {
-      const hasDrag = this.hasAttribute("move");
-      const hasResize = this.hasAttribute("resize");
-      const prev = this.shadowRoot.querySelector(".panel");
-      const savedW = prev?.style.width ?? "";
-      const savedH = prev?.style.height ?? "";
-      this.shadowRoot.innerHTML = `
+        `,this.shadowRoot.querySelector("button").addEventListener("click",()=>{this.dispatchEvent(new CustomEvent("o-click",{bubbles:!0,composed:!0}))})}}class G extends g{constructor(){super();a(this,"dragStart",null);a(this,"dragOffset",{x:0,y:0});a(this,"resizeStart",null);a(this,"onDragStart",t=>{t.preventDefault(),t.currentTarget.style.cursor="grabbing",this.dragStart={x:t.screenX-this.dragOffset.x,y:t.screenY-this.dragOffset.y};const e=this.shadowRoot.querySelector(".panel").getBoundingClientRect();T(this.snapSize,e.left,e.top),document.addEventListener("mousemove",this.onDragMove),document.addEventListener("mouseup",this.onDragEnd)});a(this,"onDragMove",t=>{if(!this.dragStart)return;const e=this.snapTo(t.screenX-this.dragStart.x),s=this.snapTo(t.screenY-this.dragStart.y);this.dragOffset={x:e,y:s},this.style.transform=`translate(${e}px, ${s}px)`});a(this,"onDragEnd",()=>{this.dragStart=null;const t=this.shadowRoot.querySelector(".move-handle");t&&(t.style.cursor="grab"),z(),document.removeEventListener("mousemove",this.onDragMove),document.removeEventListener("mouseup",this.onDragEnd)});a(this,"onResizeStart",t=>{t.preventDefault(),t.stopPropagation();const e=this.shadowRoot.querySelector(".panel");this.resizeStart={x:t.screenX,y:t.screenY,w:e.offsetWidth,h:e.offsetHeight,edge:t.currentTarget.dataset.edge};const s=this.shadowRoot.querySelector(".panel").getBoundingClientRect();T(this.snapSize,s.left,s.top),document.addEventListener("mousemove",this.onResizeMove),document.addEventListener("mouseup",this.onResizeEnd)});a(this,"onResizeMove",t=>{if(!this.resizeStart)return;const e=this.shadowRoot.querySelector(".panel"),s=t.screenX-this.resizeStart.x,o=t.screenY-this.resizeStart.y,{edge:i,w:r,h:d}=this.resizeStart;(i==="e"||i==="se")&&(e.style.width=`${Math.max(120,this.snapTo(r+s))}px`),(i==="s"||i==="se")&&(e.style.height=`${Math.max(40,this.snapTo(d+o))}px`)});a(this,"onResizeEnd",()=>{this.resizeStart=null,z(),document.removeEventListener("mousemove",this.onResizeMove),document.removeEventListener("mouseup",this.onResizeEnd)})}static get observedAttributes(){return["move","snap","resize"]}connectedCallback(){this.render()}attributeChangedCallback(){this.isConnected&&this.render()}get snapSize(){const t=parseInt(this.getAttribute("snap")??"1");return isNaN(t)||t<1?1:t}snapTo(t){const e=this.snapSize;return Math.round(t/e)*e}render(){const t=this.hasAttribute("move"),e=this.hasAttribute("resize"),s=this.shadowRoot.querySelector(".panel"),o=(s==null?void 0:s.style.width)??"",i=(s==null?void 0:s.style.height)??"";this.shadowRoot.innerHTML=`
             <style>
-                ${glassBaseStyles()}
+                ${p()}
                 :host { display: inline-block; }
                 .panel {
                     background: var(--glass-bg);
@@ -215,6 +83,7 @@
                     font-family: sans-serif;
                     font-size: 14px;
                     box-sizing: border-box;
+                    overflow: auto;
                 }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
@@ -243,188 +112,22 @@
                 }
                 .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
                 .resize-se:hover { border-color: var(--glass-text-muted); }
+                ${k(".panel")}
             </style>
             <div class="panel" role="region">
-                ${hasDrag ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
+                ${t?'<button class="move-handle" title="Drag to move">⠿</button>':""}
                 <slot></slot>
-                ${hasResize ? `
+                ${e?`
                     <div class="resize-e"  data-edge="e"></div>
                     <div class="resize-s"  data-edge="s"></div>
                     <div class="resize-se" data-edge="se"></div>
-                ` : ""}
+                `:""}
             </div>
-        `;
-      const panel = this.shadowRoot.querySelector(".panel");
-      if (savedW)
-        panel.style.width = savedW;
-      if (savedH)
-        panel.style.height = savedH;
-      if (this.dragOffset.x || this.dragOffset.y)
-        this.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
-      if (hasDrag) {
-        this.shadowRoot.querySelector(".move-handle").addEventListener("mousedown", this.onDragStart);
-      }
-      if (hasResize) {
-        this.shadowRoot.querySelectorAll("[data-edge]").forEach((el) => el.addEventListener("mousedown", this.onResizeStart));
-      }
-    }
-    onDragStart = (e) => {
-      e.preventDefault();
-      e.currentTarget.style.cursor = "grabbing";
-      this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
-      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
-      showSnapGrid(this.snapSize, r.left, r.top);
-      document.addEventListener("mousemove", this.onDragMove);
-      document.addEventListener("mouseup", this.onDragEnd);
-    };
-    onDragMove = (e) => {
-      if (!this.dragStart)
-        return;
-      const x = this.snapTo(e.screenX - this.dragStart.x);
-      const y = this.snapTo(e.screenY - this.dragStart.y);
-      this.dragOffset = { x, y };
-      this.style.transform = `translate(${x}px, ${y}px)`;
-    };
-    onDragEnd = () => {
-      this.dragStart = null;
-      const handle = this.shadowRoot.querySelector(".move-handle");
-      if (handle)
-        handle.style.cursor = "grab";
-      hideSnapGrid();
-      document.removeEventListener("mousemove", this.onDragMove);
-      document.removeEventListener("mouseup", this.onDragEnd);
-    };
-    onResizeStart = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const panel = this.shadowRoot.querySelector(".panel");
-      this.resizeStart = {
-        x: e.screenX,
-        y: e.screenY,
-        w: panel.offsetWidth,
-        h: panel.offsetHeight,
-        edge: e.currentTarget.dataset.edge
-      };
-      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
-      showSnapGrid(this.snapSize, r.left, r.top);
-      document.addEventListener("mousemove", this.onResizeMove);
-      document.addEventListener("mouseup", this.onResizeEnd);
-    };
-    onResizeMove = (e) => {
-      if (!this.resizeStart)
-        return;
-      const panel = this.shadowRoot.querySelector(".panel");
-      const dx = e.screenX - this.resizeStart.x;
-      const dy = e.screenY - this.resizeStart.y;
-      const { edge, w, h } = this.resizeStart;
-      if (edge === "e" || edge === "se")
-        panel.style.width = `${Math.max(120, this.snapTo(w + dx))}px`;
-      if (edge === "s" || edge === "se")
-        panel.style.height = `${Math.max(40, this.snapTo(h + dy))}px`;
-    };
-    onResizeEnd = () => {
-      this.resizeStart = null;
-      hideSnapGrid();
-      document.removeEventListener("mousemove", this.onResizeMove);
-      document.removeEventListener("mouseup", this.onResizeEnd);
-    };
-  }
-  customElements.define("o-panel", OWCPanel);
-  customElements.define("o-button", OWCButton);
-
-  // src/table.ts
-  class OTable extends GlassElement {
-    static get observedAttributes() {
-      return ["storage", "storage-key", "resize-mode", "selectable", "editable"];
-    }
-    _columns = [];
-    _data = [];
-    _sortCol = null;
-    _sortDir = "none";
-    _selectedRows = new Set;
-    _editingRows = new Set;
-    _rowOriginals = new Map;
-    get columns() {
-      return this._columns;
-    }
-    set columns(v) {
-      this._columns = v;
-      this.render();
-    }
-    get data() {
-      return this._data;
-    }
-    set data(v) {
-      this._data = v;
-      this._selectedRows.clear();
-      this._editingRows.clear();
-      this._rowOriginals.clear();
-      this.render();
-    }
-    get selected() {
-      return this._data.filter((row) => this._selectedRows.has(row));
-    }
-    get selectable() {
-      return this.hasAttribute("selectable");
-    }
-    get editable() {
-      return this.hasAttribute("editable");
-    }
-    constructor() {
-      super();
-    }
-    connectedCallback() {
-      this.restoreState();
-      this.render();
-    }
-    attributeChangedCallback() {
-      if (this.isConnected)
-        this.render();
-    }
-    getStorage() {
-      const s = this.getAttribute("storage");
-      if (s === "local")
-        return localStorage;
-      if (s === "session")
-        return sessionStorage;
-      return null;
-    }
-    persistState() {
-      const store = this.getStorage();
-      const key = this.getAttribute("storage-key");
-      if (!store || !key)
-        return;
-      const widths = {};
-      this._columns.forEach((c) => {
-        if (c.width)
-          widths[c.key] = c.width;
-      });
-      store.setItem(key, JSON.stringify({ sortCol: this._sortCol, sortDir: this._sortDir, widths }));
-    }
-    restoreState() {
-      const store = this.getStorage();
-      const key = this.getAttribute("storage-key");
-      if (!store || !key)
-        return;
-      const raw = store.getItem(key);
-      if (!raw)
-        return;
-      try {
-        const { sortCol, sortDir, widths } = JSON.parse(raw);
-        this._sortCol = sortCol ?? null;
-        this._sortDir = sortDir ?? "none";
-        if (widths) {
-          this._columns = this._columns.map((c) => widths[c.key] != null ? { ...c, width: widths[c.key] } : c);
-        }
-      } catch {}
-    }
-    render() {
-      if (!this.shadowRoot)
-        return;
-      this.shadowRoot.innerHTML = `
+        `;const r=this.shadowRoot.querySelector(".panel");o&&(r.style.width=o),i&&(r.style.height=i),(this.dragOffset.x||this.dragOffset.y)&&(this.style.transform=`translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`),t&&this.shadowRoot.querySelector(".move-handle").addEventListener("mousedown",this.onDragStart),e&&this.shadowRoot.querySelectorAll("[data-edge]").forEach(d=>d.addEventListener("mousedown",this.onResizeStart))}}customElements.define("o-panel",G),customElements.define("o-button",Y);class q extends g{constructor(){super();a(this,"_columns",[]);a(this,"_data",[]);a(this,"_sortCol",null);a(this,"_sortDir","none");a(this,"_selectedRows",new Set);a(this,"_editingRows",new Set);a(this,"_rowOriginals",new Map)}static get observedAttributes(){return["storage","storage-key","resize-mode","selectable","editable"]}get columns(){return this._columns}set columns(t){this._columns=t,this.render()}get data(){return this._data}set data(t){this._data=t,this._selectedRows.clear(),this._editingRows.clear(),this._rowOriginals.clear(),this.render()}get selected(){return this._data.filter(t=>this._selectedRows.has(t))}get selectable(){return this.hasAttribute("selectable")}get editable(){return this.hasAttribute("editable")}connectedCallback(){this.restoreState(),this.render()}attributeChangedCallback(){this.isConnected&&this.render()}getStorage(){const t=this.getAttribute("storage");return t==="local"?localStorage:t==="session"?sessionStorage:null}persistState(){const t=this.getStorage(),e=this.getAttribute("storage-key");if(!t||!e)return;const s={};this._columns.forEach(o=>{o.width&&(s[o.key]=o.width)}),t.setItem(e,JSON.stringify({sortCol:this._sortCol,sortDir:this._sortDir,widths:s}))}restoreState(){const t=this.getStorage(),e=this.getAttribute("storage-key");if(!t||!e)return;const s=t.getItem(e);if(s)try{const{sortCol:o,sortDir:i,widths:r}=JSON.parse(s);this._sortCol=o??null,this._sortDir=i??"none",r&&(this._columns=this._columns.map(d=>r[d.key]!=null?{...d,width:r[d.key]}:d))}catch{}}render(){this.shadowRoot&&(this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: block; overflow-x: auto; }
+        ${k(":host")}
         table {
           border-collapse: collapse;
           font-family: sans-serif; font-size: 14px;
@@ -477,298 +180,25 @@
         .edit-confirm { color: rgba(74,222,128,0.9); }
         .edit-cancel { color: rgba(248,113,113,0.9); }
       </style>
-      ${(() => {
-        const hasClickEditable = this._columns.some((c) => c.editable === "click");
-        const editTh = this.editable && hasClickEditable ? '<th style="width:72px"></th>' : "";
-        return `<table>
+      ${(()=>{const t=this._columns.some(s=>s.editable==="click"),e=this.editable&&t?'<th style="width:72px"></th>':"";return`<table>
         <thead><tr>
-          ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all aria-label="Select all rows"></th>` : ""}
-          ${this._columns.map((c) => this.renderTh(c)).join("")}
-          ${editTh}
+          ${this.selectable?'<th style="width:36px"><input type="checkbox" data-select-all aria-label="Select all rows"></th>':""}
+          ${this._columns.map(s=>this.renderTh(s)).join("")}
+          ${e}
         </tr></thead>
-        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i, hasClickEditable)).join("")}</tbody>
-      </table>`;
-      })()}
-    `;
-      this.attachHandlers();
-    }
-    renderTh(col) {
-      const w = col.width ? `${col.width}px` : "fit-content";
-      const minW = col.minWidth ? `min-width:${col.minWidth}px;` : "";
-      const maxW = col.maxWidth ? `max-width:${col.maxWidth}px;` : "";
-      const sortable = col.sortable ? " data-sortable" : "";
-      const icon = col.sortable ? `<span class="sort-icon">${this._sortCol === col.key && this._sortDir === "asc" ? "↑" : this._sortCol === col.key && this._sortDir === "desc" ? "↓" : "↕"}</span>` : "";
-      return `<th data-key="${col.key}"${sortable} style="width:${w};${minW}${maxW}">
-      ${col.label}${icon}
-      <div class="resize-handle" data-resize="${col.key}"></div>
-    </th>`;
-    }
-    renderRow(row, rowIndex, hasClickEditable) {
-      const checked = this._selectedRows.has(row) ? " checked" : "";
-      const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : "";
-      const checkbox = this.selectable ? `<td><input type="checkbox" data-select-row${checked} aria-label="Select row"></td>` : "";
-      const isEditing = this._editingRows.has(row);
-      let editTd = "";
-      if (this.editable && hasClickEditable) {
-        editTd = isEditing ? `<td class="edit-actions">
-            <button class="edit-confirm" data-row-index="${rowIndex}" title="Confirm">✓</button>
-            <button class="edit-cancel" data-row-index="${rowIndex}" title="Cancel">✗</button>
-           </td>` : `<td class="edit-actions">
-            <button class="edit-btn" data-row-index="${rowIndex}" title="Edit">✏️</button>
-           </td>`;
-      }
-      const cells = this._columns.map((c) => {
-        if (this.editable && c.editable && (c.editable === "always" || isEditing)) {
-          const val = String(row[c.key] ?? "").replace(/"/g, "&quot;");
-          return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`;
-        }
-        return `<td>${row[c.key] ?? ""}</td>`;
-      }).join("");
-      return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`;
-    }
-    getSortedData() {
-      if (!this._sortCol || this._sortDir === "none")
-        return this._data;
-      return [...this._data].sort((a, b) => {
-        const av = a[this._sortCol];
-        const bv = b[this._sortCol];
-        if (av == null)
-          return 1;
-        if (bv == null)
-          return -1;
-        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
-        return this._sortDir === "asc" ? cmp : -cmp;
-      });
-    }
-    handleSort(key) {
-      const col = this._columns.find((c) => c.key === key);
-      if (!col?.sortable)
-        return;
-      if (this._sortCol !== key) {
-        this._sortCol = key;
-        this._sortDir = "asc";
-      } else if (this._sortDir === "asc")
-        this._sortDir = "desc";
-      else {
-        this._sortCol = null;
-        this._sortDir = "none";
-      }
-      this.dispatchEvent(new CustomEvent("o-sort", {
-        bubbles: true,
-        composed: true,
-        detail: { col: key, dir: this._sortDir }
-      }));
-      this.persistState();
-      this.render();
-    }
-    attachHandlers() {
-      const mode = this.getAttribute("resize-mode") ?? "single";
-      this.shadowRoot.querySelectorAll("th[data-key]").forEach((th) => {
-        const key = th.dataset.key;
-        th.addEventListener("click", () => this.handleSort(key));
-      });
-      this.shadowRoot.querySelectorAll(".resize-handle").forEach((handle) => {
-        const key = handle.dataset.resize;
-        const colIdx = this._columns.findIndex((c) => c.key === key);
-        const col = this._columns[colIdx];
-        handle.addEventListener("click", (e) => e.stopPropagation());
-        handle.addEventListener("mousedown", (e) => {
-          e.preventDefault();
-          const startX = e.screenX;
-          const th = handle.closest("th");
-          const startW = th.offsetWidth || col.width || 100;
-          const nextTh = mode === "adjacent" ? th.nextElementSibling : null;
-          const nextStartW = nextTh?.offsetWidth ?? 0;
-          const onMove = (ev) => {
-            const delta = ev.screenX - startX;
-            let newW = Math.max(col.minWidth ?? 20, startW + delta);
-            if (col.maxWidth)
-              newW = Math.min(col.maxWidth, newW);
-            th.style.width = `${newW}px`;
-            if (mode === "adjacent" && nextTh) {
-              const nextCol = this._columns[colIdx + 1];
-              let nextW = Math.max(nextCol?.minWidth ?? 20, nextStartW - delta);
-              if (nextCol?.maxWidth)
-                nextW = Math.min(nextCol.maxWidth, nextW);
-              nextTh.style.width = `${nextW}px`;
-            }
-          };
-          const onUp = () => {
-            document.removeEventListener("mousemove", onMove);
-            document.removeEventListener("mouseup", onUp);
-            const offset = this.selectable ? 1 : 0;
-            this.shadowRoot.querySelectorAll("th").forEach((t, i) => {
-              const colIdx2 = i - offset;
-              if (colIdx2 < 0 || colIdx2 >= this._columns.length)
-                return;
-              const w = parseInt(t.style.width) || t.offsetWidth;
-              if (w)
-                this._columns[colIdx2] = { ...this._columns[colIdx2], width: w };
-            });
-            this.persistState();
-          };
-          document.addEventListener("mousemove", onMove);
-          document.addEventListener("mouseup", onUp);
-        });
-      });
-      if (this.selectable) {
-        this.shadowRoot.querySelectorAll("tbody [data-select-row]").forEach((cb, i) => {
-          const row = this.getSortedData()[i];
-          cb.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (this._selectedRows.has(row)) {
-              this._selectedRows.delete(row);
-            } else {
-              this._selectedRows.add(row);
-            }
-            this.dispatchEvent(new CustomEvent("o-row-select", {
-              bubbles: true,
-              composed: true,
-              detail: { selected: this.selected }
-            }));
-            this.render();
-          });
-        });
-        const headerCb = this.shadowRoot.querySelector("[data-select-all]");
-        if (headerCb) {
-          headerCb.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const allSelected = this.getSortedData().every((row) => this._selectedRows.has(row));
-            if (allSelected) {
-              this._selectedRows.clear();
-            } else {
-              this.getSortedData().forEach((row) => this._selectedRows.add(row));
-            }
-            this.dispatchEvent(new CustomEvent("o-row-select", {
-              bubbles: true,
-              composed: true,
-              detail: { selected: this.selected }
-            }));
-            this.render();
-          });
-        }
-      }
-      if (this.editable) {
-        this.shadowRoot.querySelectorAll("input.cell-input").forEach((input) => {
-          const key = input.dataset.key;
-          const rowIndex = parseInt(input.dataset.rowIndex);
-          const col = this._columns.find((c) => c.key === key);
-          if (col?.editable !== "always")
-            return;
-          const commit = () => {
-            const row = this.getSortedData()[rowIndex];
-            if (!row)
-              return;
-            const oldVal = String(row[key] ?? "");
-            const newVal = input.value;
-            if (newVal !== oldVal) {
-              row[key] = newVal;
-              this.dispatchEvent(new CustomEvent("o-cell-change", {
-                bubbles: true,
-                composed: true,
-                detail: { key, value: newVal, rowIndex, row }
-              }));
-            }
-          };
-          input.addEventListener("blur", commit);
-          input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-              commit();
-              input.blur();
-            }
-          });
-        });
-        this.shadowRoot.querySelectorAll(".edit-btn").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const rowIndex = parseInt(btn.dataset.rowIndex);
-            const row = this.getSortedData()[rowIndex];
-            this._rowOriginals.set(row, { ...row });
-            this._editingRows.add(row);
-            this.render();
-          });
-        });
-        this.shadowRoot.querySelectorAll(".edit-confirm").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const rowIndex = parseInt(btn.dataset.rowIndex);
-            const row = this.getSortedData()[rowIndex];
-            const original = this._rowOriginals.get(row) ?? {};
-            const changes = {};
-            this.shadowRoot.querySelectorAll(`tr[data-row-index="${rowIndex}"] input.cell-input`).forEach((input) => {
-              const k = input.dataset.key;
-              const col = this._columns.find((c) => c.key === k);
-              if (col?.editable === "click") {
-                row[k] = input.value;
-                if (input.value !== String(original[k] ?? ""))
-                  changes[k] = input.value;
-              }
-            });
-            this._editingRows.delete(row);
-            this._rowOriginals.delete(row);
-            if (Object.keys(changes).length > 0) {
-              this.dispatchEvent(new CustomEvent("o-row-change", {
-                bubbles: true,
-                composed: true,
-                detail: { rowIndex, row, changes }
-              }));
-            }
-            this.render();
-          });
-        });
-        this.shadowRoot.querySelectorAll(".edit-cancel").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const rowIndex = parseInt(btn.dataset.rowIndex);
-            const row = this.getSortedData()[rowIndex];
-            const original = this._rowOriginals.get(row);
-            if (original) {
-              Object.assign(row, original);
-              this._rowOriginals.delete(row);
-            }
-            this._editingRows.delete(row);
-            this.render();
-          });
-        });
-      }
-    }
-  }
-  customElements.define("o-table", OTable);
-
-  // src/note.ts
-  class ONote extends GlassElement {
-    static get observedAttributes() {
-      return ["variant", "label", "placeholder", "max-length", "value"];
-    }
-    _tags = [];
-    constructor() {
-      super();
-    }
-    connectedCallback() {
-      this.render();
-    }
-    attributeChangedCallback() {
-      if (this.isConnected)
-        this.render();
-    }
-    get variant() {
-      return this.getAttribute("variant") ?? "textarea";
-    }
-    render() {
-      if (this.variant === "card")
-        this.renderCard();
-      else
-        this.renderTextarea();
-      this.attachNoteHandlers();
-    }
-    renderTextarea() {
-      const label = this.getAttribute("label") ?? "";
-      const placeholder = this.getAttribute("placeholder") ?? " ";
-      const maxLen = this.getAttribute("max-length");
-      const value = this.getAttribute("value") ?? "";
-      this.shadowRoot.innerHTML = `
+        <tbody>${this.getSortedData().map((s,o)=>this.renderRow(s,o,t)).join("")}</tbody>
+      </table>`})()}
+    `,this.attachHandlers())}renderTh(t){const e=t.width?`${t.width}px`:"fit-content",s=t.minWidth?`min-width:${t.minWidth}px;`:"",o=t.maxWidth?`max-width:${t.maxWidth}px;`:"",i=t.sortable?" data-sortable":"",r=t.sortable?`<span class="sort-icon">${this._sortCol===t.key&&this._sortDir==="asc"?"↑":this._sortCol===t.key&&this._sortDir==="desc"?"↓":"↕"}</span>`:"";return`<th data-key="${t.key}"${i} style="width:${e};${s}${o}">
+      ${t.label}${r}
+      <div class="resize-handle" data-resize="${t.key}"></div>
+    </th>`}renderRow(t,e,s){const o=this._selectedRows.has(t)?" checked":"",i=this._selectedRows.has(t)?' class="selected"':"",r=this.selectable?`<td><input type="checkbox" data-select-row${o} aria-label="Select row"></td>`:"",d=this._editingRows.has(t);let u="";this.editable&&s&&(u=d?`<td class="edit-actions">
+            <button class="edit-confirm" data-row-index="${e}" title="Confirm">✓</button>
+            <button class="edit-cancel" data-row-index="${e}" title="Cancel">✗</button>
+           </td>`:`<td class="edit-actions">
+            <button class="edit-btn" data-row-index="${e}" title="Edit">✏️</button>
+           </td>`);const b=this._columns.map(h=>{if(this.editable&&h.editable&&(h.editable==="always"||d)){const w=String(t[h.key]??"").replace(/"/g,"&quot;");return`<td><input class="cell-input" data-key="${h.key}" data-row-index="${e}" value="${w}" /></td>`}return`<td>${t[h.key]??""}</td>`}).join("");return`<tr${i} data-row-index="${e}">${r}${b}${u}</tr>`}getSortedData(){return!this._sortCol||this._sortDir==="none"?this._data:[...this._data].sort((t,e)=>{const s=t[this._sortCol],o=e[this._sortCol];if(s==null)return 1;if(o==null)return-1;const i=s<o?-1:s>o?1:0;return this._sortDir==="asc"?i:-i})}handleSort(t){const e=this._columns.find(s=>s.key===t);e!=null&&e.sortable&&(this._sortCol!==t?(this._sortCol=t,this._sortDir="asc"):this._sortDir==="asc"?this._sortDir="desc":(this._sortCol=null,this._sortDir="none"),this.dispatchEvent(new CustomEvent("o-sort",{bubbles:!0,composed:!0,detail:{col:t,dir:this._sortDir}})),this.persistState(),this.render())}attachHandlers(){const t=this.getAttribute("resize-mode")??"single";if(this.shadowRoot.querySelectorAll("th[data-key]").forEach(e=>{const s=e.dataset.key;e.addEventListener("click",()=>this.handleSort(s))}),this.shadowRoot.querySelectorAll(".resize-handle").forEach(e=>{const s=e.dataset.resize,o=this._columns.findIndex(r=>r.key===s),i=this._columns[o];e.addEventListener("click",r=>r.stopPropagation()),e.addEventListener("mousedown",r=>{r.preventDefault();const d=r.screenX,u=e.closest("th"),b=u.offsetWidth||i.width||100,h=t==="adjacent"?u.nextElementSibling:null,w=(h==null?void 0:h.offsetWidth)??0,N=L=>{const S=L.screenX-d;let C=Math.max(i.minWidth??20,b+S);if(i.maxWidth&&(C=Math.min(i.maxWidth,C)),u.style.width=`${C}px`,t==="adjacent"&&h){const m=this._columns[o+1];let _=Math.max((m==null?void 0:m.minWidth)??20,w-S);m!=null&&m.maxWidth&&(_=Math.min(m.maxWidth,_)),h.style.width=`${_}px`}},F=()=>{document.removeEventListener("mousemove",N),document.removeEventListener("mouseup",F);const L=this.selectable?1:0;this.shadowRoot.querySelectorAll("th").forEach((S,C)=>{const m=C-L;if(m<0||m>=this._columns.length)return;const _=parseInt(S.style.width)||S.offsetWidth;_&&(this._columns[m]={...this._columns[m],width:_})}),this.persistState()};document.addEventListener("mousemove",N),document.addEventListener("mouseup",F)})}),this.selectable){this.shadowRoot.querySelectorAll("tbody [data-select-row]").forEach((s,o)=>{const i=this.getSortedData()[o];s.addEventListener("click",r=>{r.stopPropagation(),this._selectedRows.has(i)?this._selectedRows.delete(i):this._selectedRows.add(i),this.dispatchEvent(new CustomEvent("o-row-select",{bubbles:!0,composed:!0,detail:{selected:this.selected}})),this.render()})});const e=this.shadowRoot.querySelector("[data-select-all]");e&&e.addEventListener("click",s=>{s.stopPropagation(),this.getSortedData().every(i=>this._selectedRows.has(i))?this._selectedRows.clear():this.getSortedData().forEach(i=>this._selectedRows.add(i)),this.dispatchEvent(new CustomEvent("o-row-select",{bubbles:!0,composed:!0,detail:{selected:this.selected}})),this.render()})}this.editable&&(this.shadowRoot.querySelectorAll("input.cell-input").forEach(e=>{const s=e.dataset.key,o=parseInt(e.dataset.rowIndex),i=this._columns.find(d=>d.key===s);if((i==null?void 0:i.editable)!=="always")return;const r=()=>{const d=this.getSortedData()[o];if(!d)return;const u=String(d[s]??""),b=e.value;b!==u&&(d[s]=b,this.dispatchEvent(new CustomEvent("o-cell-change",{bubbles:!0,composed:!0,detail:{key:s,value:b,rowIndex:o,row:d}})))};e.addEventListener("blur",r),e.addEventListener("keydown",d=>{d.key==="Enter"&&(r(),e.blur())})}),this.shadowRoot.querySelectorAll(".edit-btn").forEach(e=>{e.addEventListener("click",s=>{s.stopPropagation();const o=parseInt(e.dataset.rowIndex),i=this.getSortedData()[o];this._rowOriginals.set(i,{...i}),this._editingRows.add(i),this.render()})}),this.shadowRoot.querySelectorAll(".edit-confirm").forEach(e=>{e.addEventListener("click",s=>{s.stopPropagation();const o=parseInt(e.dataset.rowIndex),i=this.getSortedData()[o],r=this._rowOriginals.get(i)??{},d={};this.shadowRoot.querySelectorAll(`tr[data-row-index="${o}"] input.cell-input`).forEach(u=>{const b=u.dataset.key,h=this._columns.find(w=>w.key===b);(h==null?void 0:h.editable)==="click"&&(i[b]=u.value,u.value!==String(r[b]??"")&&(d[b]=u.value))}),this._editingRows.delete(i),this._rowOriginals.delete(i),Object.keys(d).length>0&&this.dispatchEvent(new CustomEvent("o-row-change",{bubbles:!0,composed:!0,detail:{rowIndex:o,row:i,changes:d}})),this.render()})}),this.shadowRoot.querySelectorAll(".edit-cancel").forEach(e=>{e.addEventListener("click",s=>{s.stopPropagation();const o=parseInt(e.dataset.rowIndex),i=this.getSortedData()[o],r=this._rowOriginals.get(i);r&&(Object.assign(i,r),this._rowOriginals.delete(i)),this._editingRows.delete(i),this.render()})}))}}customElements.define("o-table",q);class V extends g{constructor(){super();a(this,"_tags",[])}static get observedAttributes(){return["variant","label","placeholder","max-length","value"]}connectedCallback(){this.render()}attributeChangedCallback(){this.isConnected&&this.render()}get variant(){return this.getAttribute("variant")??"textarea"}render(){this.variant==="card"?this.renderCard():this.renderTextarea(),this.attachNoteHandlers()}renderTextarea(){const t=this.getAttribute("label")??"",e=this.getAttribute("placeholder")??" ",s=this.getAttribute("max-length"),o=this.getAttribute("value")??"";this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host {
           display: block;
         }
@@ -779,7 +209,7 @@
           border-radius: 12px;
           backdrop-filter: blur(var(--glass-blur));
           box-shadow: var(--glass-shadow);
-          padding: ${label ? "24px 16px 12px" : "12px 16px"};
+          padding: ${t?"24px 16px 12px":"12px 16px"};
           transition: border-color 0.15s;
         }
         .wrap:focus-within { border-color: var(--accent-warm); }
@@ -795,19 +225,16 @@
           min-height: 80px; overflow: hidden;
         }
         .counter { text-align: right; font-size: 11px; color: var(--glass-text-dim); margin-top: 4px; }
+        ${k("textarea")}
       </style>
       <div class="wrap">
-        ${label ? `<label>${label}</label>` : ""}
-        <textarea placeholder="${placeholder}"${maxLen ? ` maxlength="${maxLen}"` : ""}>${value}</textarea>
+        ${t?`<label>${t}</label>`:""}
+        <textarea placeholder="${e}"${s?` maxlength="${s}"`:""}>${o}</textarea>
       </div>
-      ${maxLen ? `<div class="counter"><span class="count">${value.length}</span> / ${maxLen}</div>` : ""}
-    `;
-    }
-    renderCard() {
-      const placeholder = this.getAttribute("placeholder") ?? "Write something…";
-      this.shadowRoot.innerHTML = `
+      ${s?`<div class="counter"><span class="count">${o.length}</span> / ${s}</div>`:""}
+    `}renderCard(){const t=this.getAttribute("placeholder")??"Write something…";this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host {
           display: block;
         }
@@ -844,145 +271,19 @@
           font-size: 12px; font-family: sans-serif; outline: none; min-width: 80px;
         }
         .tag-input::placeholder { color: var(--glass-text-dim); }
+        ${k(".body-area")}
       </style>
       <div class="card">
         <input class="title-input" placeholder="Title" />
-        <textarea class="body-area" placeholder="${placeholder}"></textarea>
+        <textarea class="body-area" placeholder="${t}"></textarea>
         <div class="tag-area">
-          ${this._tags.map((t, i) => `<span class="chip" data-tag-index="${i}">${t} ×</span>`).join("")}
+          ${this._tags.map((e,s)=>`<span class="chip" data-tag-index="${s}">${e} ×</span>`).join("")}
           <input class="tag-input" placeholder="Add tag…" />
         </div>
       </div>
-    `;
-    }
-    attachNoteHandlers() {
-      if (this.variant !== "card") {
-        const ta = this.shadowRoot.querySelector("textarea");
-        const count = this.shadowRoot.querySelector(".count");
-        ta?.addEventListener("input", () => {
-          ta.style.height = "auto";
-          ta.style.height = ta.scrollHeight + "px";
-          if (count)
-            count.textContent = String(ta.value.length);
-          this.dispatchEvent(new CustomEvent("o-change", {
-            bubbles: true,
-            composed: true,
-            detail: { value: ta.value }
-          }));
-        });
-        return;
-      }
-      const titleInput = this.shadowRoot.querySelector(".title-input");
-      const bodyArea = this.shadowRoot.querySelector(".body-area");
-      const tagInput = this.shadowRoot.querySelector(".tag-input");
-      const fireChange = () => {
-        const title = this.shadowRoot.querySelector(".title-input")?.value ?? "";
-        const body = this.shadowRoot.querySelector(".body-area")?.value ?? "";
-        this.dispatchEvent(new CustomEvent("o-change", {
-          bubbles: true,
-          composed: true,
-          detail: { title, body, tags: [...this._tags] }
-        }));
-      };
-      titleInput?.addEventListener("input", fireChange);
-      bodyArea?.addEventListener("input", () => {
-        bodyArea.style.height = "auto";
-        bodyArea.style.height = bodyArea.scrollHeight + "px";
-        fireChange();
-      });
-      tagInput?.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && tagInput.value.trim()) {
-          this._tags.push(tagInput.value.trim());
-          tagInput.value = "";
-          this.render();
-          fireChange();
-        }
-      });
-      this.shadowRoot.querySelectorAll(".chip").forEach((chip) => {
-        chip.addEventListener("click", () => {
-          this._tags.splice(parseInt(chip.dataset.tagIndex), 1);
-          this.render();
-          fireChange();
-        });
-      });
-    }
-  }
-  customElements.define("o-note", ONote);
-
-  // src/dialog.ts
-  class ODialog extends GlassElement {
-    static get observedAttributes() {
-      return ["open"];
-    }
-    _onKeyDown = null;
-    _onClick = null;
-    _rendered = false;
-    constructor() {
-      super();
-    }
-    connectedCallback() {
-      if (!this._rendered) {
-        this.render();
-        this._rendered = true;
-      }
-      this._onKeyDown = (e) => {
-        if (e.key === "Escape" && this.hasAttribute("open")) {
-          this.handleCancel();
-        }
-      };
-      document.addEventListener("keydown", this._onKeyDown);
-      this._onClick = (e) => {
-        const target = e.target;
-        if (target.getAttribute("type") === "submit" || target.closest('[type="submit"]')) {
-          e.preventDefault();
-          this.handleSubmit();
-        }
-      };
-      this.addEventListener("click", this._onClick);
-    }
-    disconnectedCallback() {
-      if (this._onKeyDown)
-        document.removeEventListener("keydown", this._onKeyDown);
-      if (this._onClick)
-        this.removeEventListener("click", this._onClick);
-    }
-    attributeChangedCallback(name, _old, _new) {
-      if (name !== "open")
-        return;
-      const backdrop = this.shadowRoot?.querySelector(".backdrop");
-      if (!backdrop)
-        return;
-      if (_new !== null)
-        backdrop.classList.add("visible");
-      else
-        backdrop.classList.remove("visible");
-    }
-    open() {
-      this.setAttribute("open", "");
-    }
-    close() {
-      this.removeAttribute("open");
-    }
-    handleSubmit() {
-      const detail = {};
-      this.querySelectorAll("input[name],select[name],textarea[name]").forEach((input) => {
-        detail[input.name] = input.value;
-      });
-      this.querySelectorAll("o-input[name]").forEach((el) => {
-        detail[el.getAttribute("name")] = el.value ?? "";
-      });
-      this.dispatchEvent(new CustomEvent("o-submit", { bubbles: true, composed: true, detail }));
-      this.close();
-    }
-    handleCancel() {
-      this.close();
-      this.dispatchEvent(new CustomEvent("o-cancel", { bubbles: true, composed: true, detail: null }));
-    }
-    render() {
-      const isOpen = this.hasAttribute("open");
-      this.shadowRoot.innerHTML = `
+    `}attachNoteHandlers(){if(this.variant!=="card"){const i=this.shadowRoot.querySelector("textarea"),r=this.shadowRoot.querySelector(".count");i==null||i.addEventListener("input",()=>{i.style.height="auto",i.style.height=i.scrollHeight+"px",r&&(r.textContent=String(i.value.length)),this.dispatchEvent(new CustomEvent("o-change",{bubbles:!0,composed:!0,detail:{value:i.value}}))});return}const t=this.shadowRoot.querySelector(".title-input"),e=this.shadowRoot.querySelector(".body-area"),s=this.shadowRoot.querySelector(".tag-input"),o=()=>{var d,u;const i=((d=this.shadowRoot.querySelector(".title-input"))==null?void 0:d.value)??"",r=((u=this.shadowRoot.querySelector(".body-area"))==null?void 0:u.value)??"";this.dispatchEvent(new CustomEvent("o-change",{bubbles:!0,composed:!0,detail:{title:i,body:r,tags:[...this._tags]}}))};t==null||t.addEventListener("input",o),e==null||e.addEventListener("input",()=>{e.style.height="auto",e.style.height=e.scrollHeight+"px",o()}),s==null||s.addEventListener("keydown",i=>{i.key==="Enter"&&s.value.trim()&&(this._tags.push(s.value.trim()),s.value="",this.render(),o())}),this.shadowRoot.querySelectorAll(".chip").forEach(i=>{i.addEventListener("click",()=>{this._tags.splice(parseInt(i.dataset.tagIndex),1),this.render(),o()})})}}customElements.define("o-note",V);class U extends g{constructor(){super();a(this,"_onKeyDown",null);a(this,"_onClick",null);a(this,"_rendered",!1)}static get observedAttributes(){return["open"]}connectedCallback(){this._rendered||(this.render(),this._rendered=!0),this._onKeyDown=t=>{t.key==="Escape"&&this.hasAttribute("open")&&this.handleCancel()},document.addEventListener("keydown",this._onKeyDown),this._onClick=t=>{const e=t.target;(e.getAttribute("type")==="submit"||e.closest('[type="submit"]'))&&(t.preventDefault(),this.handleSubmit())},this.addEventListener("click",this._onClick)}disconnectedCallback(){this._onKeyDown&&document.removeEventListener("keydown",this._onKeyDown),this._onClick&&this.removeEventListener("click",this._onClick)}attributeChangedCallback(t,e,s){var i;if(t!=="open")return;const o=(i=this.shadowRoot)==null?void 0:i.querySelector(".backdrop");o&&(s!==null?o.classList.add("visible"):o.classList.remove("visible"))}open(){this.setAttribute("open","")}close(){this.removeAttribute("open")}handleSubmit(){const t={};this.querySelectorAll("input[name],select[name],textarea[name]").forEach(e=>{t[e.name]=e.value}),this.querySelectorAll("o-input[name]").forEach(e=>{t[e.getAttribute("name")]=e.value??""}),this.dispatchEvent(new CustomEvent("o-submit",{bubbles:!0,composed:!0,detail:t})),this.close()}handleCancel(){this.close(),this.dispatchEvent(new CustomEvent("o-cancel",{bubbles:!0,composed:!0,detail:null}))}render(){const t=this.hasAttribute("open");this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host {
           display: contents;
         }
@@ -1017,77 +318,16 @@
         .panel-actions { display: flex; justify-content: flex-end; gap: 8px; }
         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       </style>
-      <div class="backdrop${isOpen ? " visible" : ""}">
+      <div class="backdrop${t?" visible":""}">
         <div class="panel" role="dialog" aria-modal="true">
           <div class="panel-title"><slot name="title"></slot></div>
           <div class="panel-body"><slot></slot></div>
           <div class="panel-actions"><slot name="actions"></slot></div>
         </div>
       </div>
-    `;
-      this.shadowRoot.querySelector(".backdrop").addEventListener("click", (e) => {
-        if (e.target === e.currentTarget)
-          this.handleCancel();
-      });
-    }
-  }
-  customElements.define("o-dialog", ODialog);
-
-  // src/toast.ts
-  var ICONS = {
-    success: "✓",
-    error: "✕",
-    warning: "⚠",
-    info: "ℹ"
-  };
-  var COLORS = {
-    success: "#4ade80",
-    error: "#f87171",
-    warning: "#fbbf24",
-    info: "#60a5fa"
-  };
-
-  class OWCToast extends GlassElement {
-    static get observedAttributes() {
-      return ["type", "message", "duration"];
-    }
-    msgEl;
-    slotEl;
-    timer = null;
-    fallbackTimer = null;
-    startedAt = 0;
-    elapsed = 0;
-    durationMs = 3000;
-    constructor() {
-      super();
-    }
-    connectedCallback() {
-      this.durationMs = parseInt(this.getAttribute("duration") ?? "3000", 10);
-      this.render();
-      this.updateSlotOrFallback();
-      this.startTimer();
-      this.addEventListener("mouseenter", this.onMouseEnter);
-      this.addEventListener("mouseleave", this.onMouseLeave);
-    }
-    disconnectedCallback() {
-      this.clearTimer();
-      this.removeEventListener("mouseenter", this.onMouseEnter);
-      this.removeEventListener("mouseleave", this.onMouseLeave);
-    }
-    attributeChangedCallback(name, _old, _val) {
-      if (!this.shadowRoot.firstChild)
-        return;
-      if (name === "type")
-        this.updateAccent();
-      if (name === "message")
-        this.updateSlotOrFallback();
-    }
-    render() {
-      const type = this.getAttribute("type") ?? "info";
-      const color = COLORS[type] ?? COLORS.info;
-      this.shadowRoot.innerHTML = `
+    `,this.shadowRoot.querySelector(".backdrop").addEventListener("click",e=>{e.target===e.currentTarget&&this.handleCancel()})}}customElements.define("o-dialog",U);const $={success:"✓",error:"✕",warning:"⚠",info:"ℹ"},A={success:"#4ade80",error:"#f87171",warning:"#fbbf24",info:"#60a5fa"};class D extends g{constructor(){super();a(this,"msgEl");a(this,"slotEl");a(this,"timer",null);a(this,"fallbackTimer",null);a(this,"startedAt",0);a(this,"elapsed",0);a(this,"durationMs",3e3);a(this,"onMouseEnter",()=>{var t,e;this.elapsed+=Date.now()-this.startedAt,this.clearTimer(),(e=(t=this.shadowRoot)==null?void 0:t.querySelector(".progress"))==null||e.classList.add("paused")});a(this,"onMouseLeave",()=>{var t,e;this.startedAt=Date.now(),this.startTimer(Math.max(0,this.durationMs-this.elapsed)),(e=(t=this.shadowRoot)==null?void 0:t.querySelector(".progress"))==null||e.classList.remove("paused")})}static get observedAttributes(){return["type","message","duration"]}connectedCallback(){this.durationMs=parseInt(this.getAttribute("duration")??"3000",10),this.render(),this.updateSlotOrFallback(),this.startTimer(),this.addEventListener("mouseenter",this.onMouseEnter),this.addEventListener("mouseleave",this.onMouseLeave)}disconnectedCallback(){this.clearTimer(),this.removeEventListener("mouseenter",this.onMouseEnter),this.removeEventListener("mouseleave",this.onMouseLeave)}attributeChangedCallback(t,e,s){this.shadowRoot.firstChild&&(t==="type"&&this.updateAccent(),t==="message"&&this.updateSlotOrFallback())}render(){const t=this.getAttribute("type")??"info",e=A[t]??A.info;this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host {
           display: block;
           position: relative;
@@ -1150,82 +390,12 @@
           to   { transform: scaleX(0); }
         }
       </style>
-      <span class="icon">${ICONS[type] ?? ICONS.info}</span>
+      <span class="icon">${$[t]??$.info}</span>
       <span id="msg"></span>
       <slot></slot>
       <button class="close" aria-label="Close">✕</button>
       <div class="progress"></div>
-    `;
-      this.msgEl = this.shadowRoot.querySelector("#msg");
-      this.slotEl = this.shadowRoot.querySelector("slot");
-      const bar = this.shadowRoot.querySelector(".progress");
-      if (bar)
-        bar.style.setProperty("--_dur", `${this.durationMs}ms`);
-      this.slotEl.addEventListener("slotchange", () => this.updateSlotOrFallback());
-      this.shadowRoot.querySelector(".close").addEventListener("click", () => this.dismiss());
-      this.style.setProperty("--_accent", color);
-    }
-    updateSlotOrFallback() {
-      if (!this.msgEl || !this.slotEl)
-        return;
-      const hasSlot = this.slotEl.assignedNodes({ flatten: true }).length > 0;
-      if (hasSlot) {
-        this.msgEl.style.display = "none";
-      } else {
-        this.msgEl.style.display = "";
-        this.msgEl.textContent = this.getAttribute("message") ?? "";
-      }
-    }
-    updateAccent() {
-      const type = this.getAttribute("type") ?? "info";
-      const color = COLORS[type] ?? COLORS.info;
-      this.style.setProperty("--_accent", color);
-      const iconEl = this.shadowRoot.querySelector(".icon");
-      if (iconEl)
-        iconEl.textContent = ICONS[type] ?? ICONS.info;
-    }
-    startTimer(remaining) {
-      this.startedAt = Date.now();
-      const ms = remaining ?? this.durationMs - this.elapsed;
-      this.timer = setTimeout(() => this.dismiss(), ms);
-      this.fallbackTimer = setTimeout(() => {
-        if (this.isConnected)
-          this.remove();
-      }, ms + 600);
-    }
-    clearTimer() {
-      if (this.timer !== null) {
-        clearTimeout(this.timer);
-        this.timer = null;
-      }
-      if (this.fallbackTimer !== null) {
-        clearTimeout(this.fallbackTimer);
-        this.fallbackTimer = null;
-      }
-    }
-    onMouseEnter = () => {
-      this.elapsed += Date.now() - this.startedAt;
-      this.clearTimer();
-      this.shadowRoot?.querySelector(".progress")?.classList.add("paused");
-    };
-    onMouseLeave = () => {
-      this.startedAt = Date.now();
-      this.startTimer(Math.max(0, this.durationMs - this.elapsed));
-      this.shadowRoot?.querySelector(".progress")?.classList.remove("paused");
-    };
-    dismiss() {
-      this.clearTimer();
-      this.classList.add("exiting");
-      this.addEventListener("animationend", () => this.remove(), { once: true });
-      setTimeout(() => this.remove(), 400);
-    }
-  }
-  customElements.define("o-toast", OWCToast);
-  function ensureContainer() {
-    if (!document.getElementById("o-toast-container")) {
-      const style = document.createElement("style");
-      style.setAttribute("data-owc-toast", "");
-      style.textContent = `
+    `,this.msgEl=this.shadowRoot.querySelector("#msg"),this.slotEl=this.shadowRoot.querySelector("slot");const s=this.shadowRoot.querySelector(".progress");s&&s.style.setProperty("--_dur",`${this.durationMs}ms`),this.slotEl.addEventListener("slotchange",()=>this.updateSlotOrFallback()),this.shadowRoot.querySelector(".close").addEventListener("click",()=>this.dismiss()),this.style.setProperty("--_accent",e)}updateSlotOrFallback(){if(!this.msgEl||!this.slotEl)return;this.slotEl.assignedNodes({flatten:!0}).length>0?this.msgEl.style.display="none":(this.msgEl.style.display="",this.msgEl.textContent=this.getAttribute("message")??"")}updateAccent(){const t=this.getAttribute("type")??"info",e=A[t]??A.info;this.style.setProperty("--_accent",e);const s=this.shadowRoot.querySelector(".icon");s&&(s.textContent=$[t]??$.info)}startTimer(t){this.startedAt=Date.now();const e=t??this.durationMs-this.elapsed;this.timer=setTimeout(()=>this.dismiss(),e),this.fallbackTimer=setTimeout(()=>{this.isConnected&&this.remove()},e+600)}clearTimer(){this.timer!==null&&(clearTimeout(this.timer),this.timer=null),this.fallbackTimer!==null&&(clearTimeout(this.fallbackTimer),this.fallbackTimer=null)}dismiss(){this.clearTimer(),this.classList.add("exiting"),this.addEventListener("animationend",()=>this.remove(),{once:!0}),setTimeout(()=>this.remove(),400)}}customElements.define("o-toast",D);function J(){if(!document.getElementById("o-toast-container")){const l=document.createElement("style");l.setAttribute("data-owc-toast",""),l.textContent=`
       #o-toast-container {
         position: fixed;
         display: flex;
@@ -1245,57 +415,9 @@
           align-items: center;
         }
       }
-    `;
-      document.head.appendChild(style);
-      const container = document.createElement("div");
-      container.id = "o-toast-container";
-      document.body.appendChild(container);
-    }
-    return document.getElementById("o-toast-container");
-  }
-  function toast(content, type, options) {
-    const container = ensureContainer();
-    const el = document.createElement("o-toast");
-    el.setAttribute("type", type);
-    if (options?.duration !== undefined) {
-      el.setAttribute("duration", String(options.duration));
-    }
-    el.innerHTML = content;
-    container.appendChild(el);
-  }
-
-  // src/progress.ts
-  class OProgress extends GlassElement {
-    _value = 0;
-    _timer = null;
-    _hideTimer = null;
-    _resetTimer = null;
-    static get observedAttributes() {
-      return ["value"];
-    }
-    connectedCallback() {
-      this.render();
-    }
-    attributeChangedCallback(name, _old, next) {
-      if (name === "value" && this.isConnected) {
-        this._setValue(Math.min(100, Math.max(0, parseFloat(next) || 0)));
-      }
-    }
-    disconnectedCallback() {
-      this._stopAuto();
-      if (this._hideTimer) {
-        clearTimeout(this._hideTimer);
-        this._hideTimer = null;
-      }
-      if (this._resetTimer) {
-        clearTimeout(this._resetTimer);
-        this._resetTimer = null;
-      }
-    }
-    render() {
-      this.shadowRoot.innerHTML = `
+    `,document.head.appendChild(l);const n=document.createElement("div");n.id="o-toast-container",document.body.appendChild(n)}return document.getElementById("o-toast-container")}function M(l,n,t){const e=J(),s=document.createElement("o-toast");s.setAttribute("type",n),(t==null?void 0:t.duration)!==void 0&&s.setAttribute("duration",String(t.duration)),s.innerHTML=l,e.appendChild(s)}class x extends g{constructor(){super(...arguments);a(this,"_value",0);a(this,"_timer",null);a(this,"_hideTimer",null);a(this,"_resetTimer",null)}static get observedAttributes(){return["value"]}connectedCallback(){this.render()}attributeChangedCallback(t,e,s){t==="value"&&this.isConnected&&this._setValue(Math.min(100,Math.max(0,parseFloat(s)||0)))}disconnectedCallback(){this._stopAuto(),this._hideTimer&&(clearTimeout(this._hideTimer),this._hideTimer=null),this._resetTimer&&(clearTimeout(this._resetTimer),this._resetTimer=null)}render(){this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host {
           position: fixed;
           top: 0; left: 0; right: 0;
@@ -1313,229 +435,9 @@
         }
       </style>
       <div class="bar" style="width:0%"></div>
-    `;
-    }
-    _bar() {
-      return this.shadowRoot?.querySelector(".bar") ?? null;
-    }
-    _setValue(v) {
-      if (this._hideTimer) {
-        clearTimeout(this._hideTimer);
-        this._hideTimer = null;
-      }
-      if (this._resetTimer) {
-        clearTimeout(this._resetTimer);
-        this._resetTimer = null;
-      }
-      this._value = v;
-      const bar = this._bar();
-      if (!bar)
-        return;
-      bar.style.opacity = "1";
-      bar.style.width = `${v}%`;
-      if (v >= 100) {
-        this._hideTimer = setTimeout(() => {
-          bar.style.opacity = "0";
-          this._resetTimer = setTimeout(() => {
-            bar.style.width = "0%";
-            this._value = 0;
-          }, 300);
-        }, 400);
-      }
-    }
-    _stopAuto() {
-      if (this._timer) {
-        clearInterval(this._timer);
-        this._timer = null;
-      }
-    }
-    static start() {
-      const el = OProgress._getInstance();
-      el._stopAuto();
-      el._timer = setInterval(() => {
-        const remaining = 90 - el._value;
-        if (remaining <= 0) {
-          el._stopAuto();
-          return;
-        }
-        const step = Math.random() * Math.min(remaining * 0.1, 5) + 0.5;
-        el._setValue(Math.min(89, el._value + step));
-      }, 300);
-    }
-    static set(v) {
-      OProgress._getInstance()._setValue(Math.min(100, Math.max(0, v)));
-    }
-    static done() {
-      const el = OProgress._getInstance();
-      el._stopAuto();
-      el._setValue(100);
-    }
-    static _getInstance() {
-      let el = document.querySelector("o-progress");
-      if (!el) {
-        el = document.createElement("o-progress");
-        document.body.appendChild(el);
-      }
-      return el;
-    }
-  }
-  customElements.define("o-progress", OProgress);
-  function asyncPlus(...promises) {
-    if (promises.length === 0)
-      return Promise.resolve([]);
-    OProgress.start();
-    let settled = 0;
-    const total = promises.length;
-    const onSettle = () => {
-      settled++;
-      OProgress.set(Math.round(settled / total * 90));
-    };
-    return Promise.allSettled(promises.map((p) => p.then((v) => {
-      onSettle();
-      return v;
-    }, (e) => {
-      onSettle();
-      throw e;
-    }))).then((results) => {
-      OProgress.done();
-      document.dispatchEvent(new CustomEvent("progress-complete", { detail: { results } }));
-      return results;
-    });
-  }
-
-  // src/toggle.ts
-  function toOptions(input) {
-    return input.map((o) => typeof o === "string" ? { label: o, value: o.toLowerCase() } : o);
-  }
-
-  class OToggle extends GlassElement {
-    static get observedAttributes() {
-      return ["options", "value"];
-    }
-    _options = [];
-    _value = null;
-    get options() {
-      return this._options;
-    }
-    set options(v) {
-      this._options = toOptions(v);
-      if (this._value && !this._options.find((o) => o.value === this._value)) {
-        this._value = this._options[0]?.value ?? null;
-      }
-      if (!this._value)
-        this._value = this._options[0]?.value ?? null;
-      this.render();
-    }
-    get value() {
-      return this._value ?? "";
-    }
-    set value(v) {
-      if (!this._options.find((o) => o.value === v))
-        return;
-      this._value = v;
-      this.setAttribute("value", v);
-      this.updateSelection();
-    }
-    constructor() {
-      super();
-      this.shadowRoot.addEventListener("click", this.handleClick);
-      this.shadowRoot.addEventListener("keydown", (e) => {
-        const ke = e;
-        if (ke.key !== "ArrowRight" && ke.key !== "ArrowLeft")
-          return;
-        const idx = this._options.findIndex((o) => o.value === this._value);
-        if (idx === -1)
-          return;
-        const next = ke.key === "ArrowRight" ? (idx + 1) % this._options.length : (idx - 1 + this._options.length) % this._options.length;
-        const opt = this._options[next];
-        if (!opt)
-          return;
-        const prev = this._value;
-        this._value = opt.value;
-        this.setAttribute("value", opt.value);
-        this.updateSelection();
-        const tabs = this.shadowRoot.querySelectorAll('[role="tab"]');
-        tabs[next]?.focus();
-        this.dispatchEvent(new CustomEvent("o-change", {
-          bubbles: true,
-          composed: true,
-          detail: { value: opt.value, index: next, prev }
-        }));
-      });
-    }
-    connectedCallback() {
-      if (this._options.length === 0) {
-        const children = [...this.querySelectorAll("[value]")];
-        if (children.length > 0) {
-          this._options = children.map((c) => ({
-            label: c.textContent?.trim() ?? "",
-            value: c.getAttribute("value") ?? ""
-          }));
-        }
-      }
-      if (this._options.length === 0) {
-        const attr = this.getAttribute("options");
-        if (attr)
-          this._options = toOptions(attr.split(",").map((s) => s.trim()));
-      }
-      if (!this._value)
-        this._value = this._options[0]?.value ?? null;
-      this.render();
-    }
-    attributeChangedCallback(name, _old, val) {
-      if (name === "options" && val !== null) {
-        const parsed = toOptions(val.split(",").map((s) => s.trim()));
-        if (this._value && !parsed.find((o) => o.value === this._value)) {
-          this._value = parsed[0]?.value ?? null;
-        }
-        this._options = parsed;
-        this.render();
-      }
-      if (name === "value" && val !== null) {
-        if (this._options.find((o) => o.value === val)) {
-          this._value = val;
-          this.updateSelection();
-        }
-      }
-    }
-    handleClick = (e) => {
-      const segments = [...this.shadowRoot.querySelectorAll(".segment")];
-      const idx = segments.findIndex((s) => s.contains(e.target));
-      if (idx === -1)
-        return;
-      const opt = this._options[idx];
-      if (!opt || opt.value === this._value)
-        return;
-      const prev = this._value;
-      this._value = opt.value;
-      this.setAttribute("value", opt.value);
-      this.updateSelection();
-      this.dispatchEvent(new CustomEvent("o-change", {
-        bubbles: true,
-        composed: true,
-        detail: { value: opt.value, index: idx, prev }
-      }));
-    };
-    updateSelection() {
-      const container = this.shadowRoot?.querySelector(".container");
-      if (!container) {
-        this.render();
-        return;
-      }
-      const idx = this._options.findIndex((o) => o.value === this._value);
-      container.style.setProperty("--idx", String(idx >= 0 ? idx : 0));
-      this.shadowRoot.querySelectorAll(".segment").forEach((s, i) => {
-        s.classList.toggle("active", i === idx);
-      });
-    }
-    render() {
-      if (!this.shadowRoot)
-        return;
-      const n = this._options.length;
-      const idx = this._options.findIndex((o) => o.value === this._value);
-      this.shadowRoot.innerHTML = `
+    `}_bar(){var t;return((t=this.shadowRoot)==null?void 0:t.querySelector(".bar"))??null}_setValue(t){this._hideTimer&&(clearTimeout(this._hideTimer),this._hideTimer=null),this._resetTimer&&(clearTimeout(this._resetTimer),this._resetTimer=null),this._value=t;const e=this._bar();e&&(e.style.opacity="1",e.style.width=`${t}%`,t>=100&&(this._hideTimer=setTimeout(()=>{e.style.opacity="0",this._resetTimer=setTimeout(()=>{e.style.width="0%",this._value=0},300)},400)))}_stopAuto(){this._timer&&(clearInterval(this._timer),this._timer=null)}static start(){const t=x._getInstance();t._stopAuto(),t._timer=setInterval(()=>{const e=90-t._value;if(e<=0){t._stopAuto();return}const s=Math.random()*Math.min(e*.1,5)+.5;t._setValue(Math.min(89,t._value+s))},300)}static set(t){x._getInstance()._setValue(Math.min(100,Math.max(0,t)))}static done(){const t=x._getInstance();t._stopAuto(),t._setValue(100)}static _getInstance(){let t=document.querySelector("o-progress");return t||(t=document.createElement("o-progress"),document.body.appendChild(t)),t}}customElements.define("o-progress",x);function O(...l){if(l.length===0)return Promise.resolve([]);x.start();let n=0;const t=l.length,e=()=>{n++,x.set(Math.round(n/t*90))};return Promise.allSettled(l.map(s=>s.then(o=>(e(),o),o=>{throw e(),o}))).then(s=>(x.done(),document.dispatchEvent(new CustomEvent("progress-complete",{detail:{results:s}})),s))}function R(l){return l.map(n=>typeof n=="string"?{label:n,value:n.toLowerCase()}:n)}class I extends g{constructor(){super();a(this,"_options",[]);a(this,"_value",null);a(this,"handleClick",t=>{const s=[...this.shadowRoot.querySelectorAll(".segment")].findIndex(r=>r.contains(t.target));if(s===-1)return;const o=this._options[s];if(!o||o.value===this._value)return;const i=this._value;this._value=o.value,this.setAttribute("value",o.value),this.updateSelection(),this.dispatchEvent(new CustomEvent("o-change",{bubbles:!0,composed:!0,detail:{value:o.value,index:s,prev:i}}))});this.shadowRoot.addEventListener("click",this.handleClick),this.shadowRoot.addEventListener("keydown",t=>{var u;const e=t;if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;const s=this._options.findIndex(b=>b.value===this._value);if(s===-1)return;const o=e.key==="ArrowRight"?(s+1)%this._options.length:(s-1+this._options.length)%this._options.length,i=this._options[o];if(!i)return;const r=this._value;this._value=i.value,this.setAttribute("value",i.value),this.updateSelection(),(u=this.shadowRoot.querySelectorAll('[role="tab"]')[o])==null||u.focus(),this.dispatchEvent(new CustomEvent("o-change",{bubbles:!0,composed:!0,detail:{value:i.value,index:o,prev:r}}))})}static get observedAttributes(){return["options","value"]}get options(){return this._options}set options(t){var e,s;this._options=R(t),this._value&&!this._options.find(o=>o.value===this._value)&&(this._value=((e=this._options[0])==null?void 0:e.value)??null),this._value||(this._value=((s=this._options[0])==null?void 0:s.value)??null),this.render()}get value(){return this._value??""}set value(t){this._options.find(e=>e.value===t)&&(this._value=t,this.setAttribute("value",t),this.updateSelection())}connectedCallback(){var t;if(this._options.length===0){const e=[...this.querySelectorAll("[value]")];e.length>0&&(this._options=e.map(s=>{var o;return{label:((o=s.textContent)==null?void 0:o.trim())??"",value:s.getAttribute("value")??""}}))}if(this._options.length===0){const e=this.getAttribute("options");e&&(this._options=R(e.split(",").map(s=>s.trim())))}this._value||(this._value=((t=this._options[0])==null?void 0:t.value)??null),this.render()}attributeChangedCallback(t,e,s){var o;if(t==="options"&&s!==null){const i=R(s.split(",").map(r=>r.trim()));this._value&&!i.find(r=>r.value===this._value)&&(this._value=((o=i[0])==null?void 0:o.value)??null),this._options=i,this.render()}t==="value"&&s!==null&&this._options.find(i=>i.value===s)&&(this._value=s,this.updateSelection())}updateSelection(){var s;const t=(s=this.shadowRoot)==null?void 0:s.querySelector(".container");if(!t){this.render();return}const e=this._options.findIndex(o=>o.value===this._value);t.style.setProperty("--idx",String(e>=0?e:0)),this.shadowRoot.querySelectorAll(".segment").forEach((o,i)=>{o.classList.toggle("active",i===e)})}render(){if(!this.shadowRoot)return;const t=this._options.length,e=this._options.findIndex(s=>s.value===this._value);this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: inline-flex; }
         .container {
           display: inline-flex;
@@ -1547,8 +449,8 @@
           padding: 3px;
           position: relative;
           user-select: none;
-          --n: ${n};
-          --idx: ${idx >= 0 ? idx : 0};
+          --n: ${t};
+          --idx: ${e>=0?e:0};
         }
         .indicator {
           position: absolute;
@@ -1578,165 +480,12 @@
         .segment.active { font-weight: 600; }
       </style>
       <div class="container" role="tablist">
-        ${n > 0 ? '<div class="indicator"></div>' : ""}
-        ${this._options.map((o) => `<div class="segment${o.value === this._value ? " active" : ""}" role="tab" aria-selected="${o.value === this._value}" tabindex="${o.value === this._value ? "0" : "-1"}" data-value="${o.value}">${o.label}</div>`).join("")}
+        ${t>0?'<div class="indicator"></div>':""}
+        ${this._options.map(s=>`<div class="segment${s.value===this._value?" active":""}" role="tab" aria-selected="${s.value===this._value}" tabindex="${s.value===this._value?"0":"-1"}" data-value="${s.value}">${s.label}</div>`).join("")}
       </div>
-    `;
-    }
-  }
-  customElements.define("o-toggle", OToggle);
-
-  // src/search.ts
-  class OSearch extends GlassElement {
-    static get observedAttributes() {
-      return ["placeholder", "value-key", "no-dropdown"];
-    }
-    _input;
-    _data = [];
-    _searchKeys = [];
-    _renderItem = null;
-    _filterFn = null;
-    _valueKey = null;
-    _currentResults = [];
-    get placeholder() {
-      return this.getAttribute("placeholder") ?? "Search…";
-    }
-    set placeholder(v) {
-      this.setAttribute("placeholder", v);
-    }
-    get valueKey() {
-      return this._valueKey;
-    }
-    set valueKey(v) {
-      this._valueKey = v;
-      this.setAttribute("value-key", v ?? "");
-    }
-    get noDropdown() {
-      return this.hasAttribute("no-dropdown");
-    }
-    set noDropdown(v) {
-      v ? this.setAttribute("no-dropdown", "") : this.removeAttribute("no-dropdown");
-    }
-    set data(v) {
-      this._data = v;
-    }
-    set searchKeys(v) {
-      this._searchKeys = v;
-    }
-    set renderItem(fn) {
-      this._renderItem = fn;
-    }
-    set filterFn(fn) {
-      this._filterFn = fn;
-    }
-    constructor() {
-      super();
-      this._input = document.createElement("input");
-      this._input.addEventListener("input", this.handleInput);
-      this.render();
-    }
-    connectedCallback() {
-      document.addEventListener("click", this.handleDocumentClick);
-    }
-    disconnectedCallback() {
-      document.removeEventListener("click", this.handleDocumentClick);
-    }
-    attributeChangedCallback(name, _old, val) {
-      if (name === "placeholder") {
-        this._input.placeholder = val ?? "Search…";
-      }
-      if (name === "value-key") {
-        this._valueKey = val;
-        this.updateDropdown();
-      }
-      if (name === "no-dropdown") {
-        this.updateDropdown();
-      }
-    }
-    handleInput = () => {
-      const query = this._input.value;
-      this.dispatchEvent(new CustomEvent("o-input", {
-        bubbles: true,
-        composed: true,
-        detail: { query }
-      }));
-      const results = this.filter(query);
-      this._currentResults = results;
-      this.dispatchEvent(new CustomEvent("o-results", {
-        bubbles: true,
-        composed: true,
-        detail: { query, results }
-      }));
-      this.updateDropdown();
-    };
-    filter(query) {
-      if (!query)
-        return [];
-      if (this._filterFn)
-        return this._data.filter((item) => this._filterFn(query, item));
-      if (this._searchKeys.length === 0)
-        return [];
-      const q = query.toLowerCase();
-      return this._data.filter((item) => this._searchKeys.some((key) => String(item[key] ?? "").toLowerCase().includes(q)));
-    }
-    handleDocumentClick = (e) => {
-      if (e.target instanceof Node && !this.contains(e.target)) {
-        this.closeDropdown();
-      }
-    };
-    closeDropdown() {
-      const dropdown = this.shadowRoot.querySelector(".dropdown");
-      if (dropdown)
-        dropdown.style.display = "none";
-    }
-    updateDropdown() {
-      const dropdown = this.shadowRoot.querySelector(".dropdown");
-      if (!dropdown)
-        return;
-      const query = this._input.value;
-      const show = !this.noDropdown && this._renderItem !== null && query.length > 0;
-      const container = this.shadowRoot.querySelector(".container");
-      if (!show) {
-        dropdown.style.display = "none";
-        if (container)
-          container.setAttribute("aria-expanded", "false");
-        return;
-      }
-      dropdown.style.display = "block";
-      if (container)
-        container.setAttribute("aria-expanded", "true");
-      if (this._currentResults.length === 0) {
-        dropdown.innerHTML = `<div class="item no-results">No results</div>`;
-        return;
-      }
-      dropdown.innerHTML = this._currentResults.map((item, i) => `<div class="item" role="option" data-index="${i}">${this._renderItem(item)}</div>`).join("");
-    }
-    handleDropdownClick = (e) => {
-      const item = e.target.closest("[data-index]");
-      if (!item)
-        return;
-      const idx = parseInt(item.dataset.index);
-      const selected = this._currentResults[idx];
-      if (selected === undefined)
-        return;
-      const query = this._input.value;
-      if (this._valueKey) {
-        const val = selected[this._valueKey];
-        if (val !== undefined)
-          this._input.value = String(val);
-      }
-      this.closeDropdown();
-      this.dispatchEvent(new CustomEvent("o-select", {
-        bubbles: true,
-        composed: true,
-        detail: { item: selected, query }
-      }));
-    };
-    render() {
-      const shadow = this.shadowRoot;
-      shadow.innerHTML = `
+    `}}customElements.define("o-toggle",I);class H extends g{constructor(){super();a(this,"_input");a(this,"_data",[]);a(this,"_searchKeys",[]);a(this,"_renderItem",null);a(this,"_filterFn",null);a(this,"_valueKey",null);a(this,"_currentResults",[]);a(this,"handleInput",()=>{const t=this._input.value;this.dispatchEvent(new CustomEvent("o-input",{bubbles:!0,composed:!0,detail:{query:t}}));const e=this.filter(t);this._currentResults=e,this.dispatchEvent(new CustomEvent("o-results",{bubbles:!0,composed:!0,detail:{query:t,results:e}})),this.updateDropdown()});a(this,"handleDocumentClick",t=>{t.target instanceof Node&&!this.contains(t.target)&&this.closeDropdown()});a(this,"handleDropdownClick",t=>{const e=t.target.closest("[data-index]");if(!e)return;const s=parseInt(e.dataset.index),o=this._currentResults[s];if(o===void 0)return;const i=this._input.value;if(this._valueKey){const r=o[this._valueKey];r!==void 0&&(this._input.value=String(r))}this.closeDropdown(),this.dispatchEvent(new CustomEvent("o-select",{bubbles:!0,composed:!0,detail:{item:o,query:i}}))});this._input=document.createElement("input"),this._input.addEventListener("input",this.handleInput),this.render()}static get observedAttributes(){return["placeholder","value-key","no-dropdown"]}get placeholder(){return this.getAttribute("placeholder")??"Search…"}set placeholder(t){this.setAttribute("placeholder",t)}get valueKey(){return this._valueKey}set valueKey(t){this._valueKey=t,this.setAttribute("value-key",t??"")}get noDropdown(){return this.hasAttribute("no-dropdown")}set noDropdown(t){t?this.setAttribute("no-dropdown",""):this.removeAttribute("no-dropdown")}set data(t){this._data=t}set searchKeys(t){this._searchKeys=t}set renderItem(t){this._renderItem=t}set filterFn(t){this._filterFn=t}connectedCallback(){document.addEventListener("click",this.handleDocumentClick)}disconnectedCallback(){document.removeEventListener("click",this.handleDocumentClick)}attributeChangedCallback(t,e,s){t==="placeholder"&&(this._input.placeholder=s??"Search…"),t==="value-key"&&(this._valueKey=s,this.updateDropdown()),t==="no-dropdown"&&this.updateDropdown()}filter(t){if(!t)return[];if(this._filterFn)return this._data.filter(s=>this._filterFn(t,s));if(this._searchKeys.length===0)return[];const e=t.toLowerCase();return this._data.filter(s=>this._searchKeys.some(o=>String(s[o]??"").toLowerCase().includes(e)))}closeDropdown(){const t=this.shadowRoot.querySelector(".dropdown");t&&(t.style.display="none")}updateDropdown(){const t=this.shadowRoot.querySelector(".dropdown");if(!t)return;const e=this._input.value,s=!this.noDropdown&&this._renderItem!==null&&e.length>0,o=this.shadowRoot.querySelector(".container");if(!s){t.style.display="none",o&&o.setAttribute("aria-expanded","false");return}if(t.style.display="block",o&&o.setAttribute("aria-expanded","true"),this._currentResults.length===0){t.innerHTML='<div class="item no-results">No results</div>';return}t.innerHTML=this._currentResults.map((i,r)=>`<div class="item" role="option" data-index="${r}">${this._renderItem(i)}</div>`).join("")}render(){const t=this.shadowRoot;t.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: block; position: relative; }
         .container {
           display: flex; align-items: center; gap: 8px;
@@ -1767,51 +516,12 @@
         .no-results { opacity: 0.5; cursor: default; }
       </style>
       <div class="container" role="combobox" aria-expanded="false" aria-haspopup="listbox">
-        <span class="icon">\uD83D\uDD0D</span>
+        <span class="icon">🔍</span>
       </div>
       <div class="dropdown" role="listbox"></div>
-    `;
-      const container = shadow.querySelector(".container");
-      this._input.placeholder = this.getAttribute("placeholder") ?? "Search…";
-      container.appendChild(this._input);
-      shadow.querySelector(".dropdown").addEventListener("click", this.handleDropdownClick);
-    }
-  }
-  customElements.define("o-search", OSearch);
-
-  // src/tooltip.ts
-  class OTooltip extends GlassElement {
-    static get observedAttributes() {
-      return ["text", "position"];
-    }
-    connectedCallback() {
-      this.render();
-    }
-    disconnectedCallback() {
-      this.removeEventListener("mouseenter", this.show);
-      this.removeEventListener("mouseleave", this.hide);
-      this.removeEventListener("focusin", this.show);
-      this.removeEventListener("focusout", this.hide);
-    }
-    attributeChangedCallback() {
-      if (this.isConnected)
-        this.render();
-    }
-    get position() {
-      return this.getAttribute("position") ?? "top";
-    }
-    show = () => {
-      this.shadowRoot.querySelector(".tooltip")?.classList.add("visible");
-    };
-    hide = () => {
-      this.shadowRoot.querySelector(".tooltip")?.classList.remove("visible");
-    };
-    render() {
-      const text = this.getAttribute("text") ?? "";
-      const pos = this.position;
-      this.shadowRoot.innerHTML = `
+    `;const e=t.querySelector(".container");this._input.placeholder=this.getAttribute("placeholder")??"Search…",e.appendChild(this._input),t.querySelector(".dropdown").addEventListener("click",this.handleDropdownClick)}}customElements.define("o-search",H);class W extends g{constructor(){super(...arguments);a(this,"show",()=>{var t;(t=this.shadowRoot.querySelector(".tooltip"))==null||t.classList.add("visible")});a(this,"hide",()=>{var t;(t=this.shadowRoot.querySelector(".tooltip"))==null||t.classList.remove("visible")})}static get observedAttributes(){return["text","position"]}connectedCallback(){this.render()}disconnectedCallback(){this.removeEventListener("mouseenter",this.show),this.removeEventListener("mouseleave",this.hide),this.removeEventListener("focusin",this.show),this.removeEventListener("focusout",this.hide)}attributeChangedCallback(){this.isConnected&&this.render()}get position(){return this.getAttribute("position")??"top"}render(){const t=this.getAttribute("text")??"",e=this.position;this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { position: relative; display: inline-block; }
         .tooltip {
           position: absolute;
@@ -1837,90 +547,10 @@
         .right { left: calc(100% + 8px); top: 50%; transform: translateY(-50%); }
       </style>
       <slot></slot>
-      <div class="tooltip ${pos}" role="tooltip">${text}</div>
-    `;
-      this.addEventListener("mouseenter", this.show);
-      this.addEventListener("mouseleave", this.hide);
-      this.addEventListener("focusin", this.show);
-      this.addEventListener("focusout", this.hide);
-    }
-  }
-  customElements.define("o-tooltip", OTooltip);
-
-  // src/dropdown.ts
-  class ODropdown extends GlassElement {
-    _options = [];
-    _focusIndex = -1;
-    _rendered = false;
-    _open = false;
-    constructor() {
-      super();
-    }
-    get options() {
-      return this._options;
-    }
-    set options(val) {
-      this._options = val;
-      this.renderMenu();
-    }
-    connectedCallback() {
-      if (!this._rendered) {
-        this.render();
-        this._rendered = true;
-      }
-      document.addEventListener("mousedown", this.handleOutsideMousedown);
-      document.addEventListener("keydown", this.handleKeyDown);
-    }
-    disconnectedCallback() {
-      document.removeEventListener("mousedown", this.handleOutsideMousedown);
-      document.removeEventListener("keydown", this.handleKeyDown);
-    }
-    handleOutsideMousedown = (e) => {
-      if (e.composedPath().includes(this))
-        return;
-      if (this._open)
-        this.close();
-    };
-    handleKeyDown = (e) => {
-      if (!this._open)
-        return;
-      const items = Array.from(this.shadowRoot.querySelectorAll('[role="menuitem"]'));
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        this._focusIndex = Math.min(this._focusIndex + 1, items.length - 1);
-        items[this._focusIndex]?.focus();
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        this._focusIndex = Math.max(this._focusIndex - 1, 0);
-        items[this._focusIndex]?.focus();
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (this._focusIndex >= 0)
-          items[this._focusIndex]?.click();
-      } else if (e.key === "Escape") {
-        this.close();
-      }
-    };
-    toggle() {
-      if (this._open)
-        this.close();
-      else
-        this.open();
-    }
-    open() {
-      this._open = true;
-      this._focusIndex = -1;
-      this.shadowRoot?.querySelector(".menu")?.classList.add("open");
-    }
-    close() {
-      this._open = false;
-      this._focusIndex = -1;
-      this.shadowRoot?.querySelector(".menu")?.classList.remove("open");
-    }
-    render() {
-      this.shadowRoot.innerHTML = `
+      <div class="tooltip ${e}" role="tooltip">${t}</div>
+    `,this.addEventListener("mouseenter",this.show),this.addEventListener("mouseleave",this.hide),this.addEventListener("focusin",this.show),this.addEventListener("focusout",this.hide)}}customElements.define("o-tooltip",W);class P extends g{constructor(){super();a(this,"_options",[]);a(this,"_focusIndex",-1);a(this,"_rendered",!1);a(this,"_open",!1);a(this,"handleOutsideMousedown",t=>{t.composedPath().includes(this)||this._open&&this.close()});a(this,"handleKeyDown",t=>{var s,o,i;if(!this._open)return;const e=Array.from(this.shadowRoot.querySelectorAll('[role="menuitem"]'));t.key==="ArrowDown"?(t.preventDefault(),this._focusIndex=Math.min(this._focusIndex+1,e.length-1),(s=e[this._focusIndex])==null||s.focus()):t.key==="ArrowUp"?(t.preventDefault(),this._focusIndex=Math.max(this._focusIndex-1,0),(o=e[this._focusIndex])==null||o.focus()):t.key==="Enter"?(t.preventDefault(),this._focusIndex>=0&&((i=e[this._focusIndex])==null||i.click())):t.key==="Escape"&&this.close()})}get options(){return this._options}set options(t){this._options=t,this.renderMenu()}connectedCallback(){this._rendered||(this.render(),this._rendered=!0),document.addEventListener("mousedown",this.handleOutsideMousedown),document.addEventListener("keydown",this.handleKeyDown)}disconnectedCallback(){document.removeEventListener("mousedown",this.handleOutsideMousedown),document.removeEventListener("keydown",this.handleKeyDown)}toggle(){this._open?this.close():this.open()}open(){var t,e;this._open=!0,this._focusIndex=-1,(e=(t=this.shadowRoot)==null?void 0:t.querySelector(".menu"))==null||e.classList.add("open")}close(){var t,e;this._open=!1,this._focusIndex=-1,(e=(t=this.shadowRoot)==null?void 0:t.querySelector(".menu"))==null||e.classList.remove("open")}render(){this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host {
           display: inline-block;
           position: relative;
@@ -1971,112 +601,17 @@
       </style>
       <div class="trigger"><slot></slot></div>
       <div class="menu" role="menu"></div>
-    `;
-      let toggling = false;
-      const doToggle = () => {
-        if (toggling)
-          return;
-        toggling = true;
-        this.toggle();
-        requestAnimationFrame(() => {
-          toggling = false;
-        });
-      };
-      this.addEventListener("click", doToggle);
-      this.addEventListener("o-click", doToggle);
-      this.renderMenu();
-    }
-    renderMenu() {
-      const menu = this.shadowRoot?.querySelector(".menu");
-      if (!menu)
-        return;
-      menu.innerHTML = this._options.map((opt) => `
+    `;let t=!1;const e=()=>{t||(t=!0,this.toggle(),requestAnimationFrame(()=>{t=!1}))};this.addEventListener("click",e),this.addEventListener("o-click",e),this.renderMenu()}renderMenu(){var e;const t=(e=this.shadowRoot)==null?void 0:e.querySelector(".menu");t&&(t.innerHTML=this._options.map(s=>`
       <button
         class="item"
         role="menuitem"
         tabindex="-1"
-        data-value="${opt.value}"
-        data-label="${opt.label}"
-      >${opt.icon ? `<span class="icon">${opt.icon}</span>` : ""}<span>${opt.label}</span></button>
-    `).join("");
-      menu.querySelectorAll('[role="menuitem"]').forEach((item) => {
-        item.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const value = item.dataset.value;
-          const label = item.dataset.label;
-          this.dispatchEvent(new CustomEvent("o-select", {
-            bubbles: true,
-            composed: true,
-            detail: { value, label }
-          }));
-          this.close();
-        });
-      });
-    }
-  }
-  customElements.define("o-dropdown", ODropdown);
-
-  // src/tabs.ts
-  class OTabs extends GlassElement {
-    _value = "";
-    _initialized = false;
-    constructor() {
-      super();
-    }
-    connectedCallback() {
-      if (this.children.length > 0) {
-        this.init();
-      } else {
-        const observer = new MutationObserver(() => {
-          if (this.querySelectorAll('[slot="tab"]').length > 0) {
-            observer.disconnect();
-            this.init();
-          }
-        });
-        observer.observe(this, { childList: true });
-        requestAnimationFrame(() => {
-          if (!this._initialized) {
-            observer.disconnect();
-            this.init();
-          }
-        });
-      }
-    }
-    init() {
-      if (this._initialized)
-        return;
-      this._initialized = true;
-      this.querySelectorAll('[slot="tab"]').forEach((el) => {
-        el.style.display = "none";
-      });
-      const tabs = Array.from(this.querySelectorAll('[slot="tab"]'));
-      if (!this._value && tabs.length) {
-        this._value = tabs[0].dataset.value ?? "";
-      }
-      this.render();
-      this._updatePanels();
-    }
-    get value() {
-      return this._value;
-    }
-    set value(v) {
-      const prev = this._value;
-      if (v === prev)
-        return;
-      this._value = v;
-      this._updateTabButtons();
-      this._updatePanels();
-    }
-    render() {
-      const tabs = Array.from(this.querySelectorAll('[slot="tab"]'));
-      const buttonsHTML = tabs.map((tab) => {
-        const val = tab.dataset.value ?? "";
-        const active = val === this._value;
-        return `<button role="tab" class="tab${active ? " active" : ""}" data-value="${val}" aria-selected="${active}" tabindex="${active ? "0" : "-1"}">${tab.textContent ?? ""}</button>`;
-      }).join("");
-      this.shadowRoot.innerHTML = `
+        data-value="${s.value}"
+        data-label="${s.label}"
+      >${s.icon?`<span class="icon">${s.icon}</span>`:""}<span>${s.label}</span></button>
+    `).join(""),t.querySelectorAll('[role="menuitem"]').forEach(s=>{s.addEventListener("click",o=>{o.stopPropagation();const i=s.dataset.value,r=s.dataset.label;this.dispatchEvent(new CustomEvent("o-select",{bubbles:!0,composed:!0,detail:{value:i,label:r}})),this.close()})}))}}customElements.define("o-dropdown",P);class K extends g{constructor(){super();a(this,"_value","");a(this,"_initialized",!1)}connectedCallback(){if(this.children.length>0)this.init();else{const t=new MutationObserver(()=>{this.querySelectorAll('[slot="tab"]').length>0&&(t.disconnect(),this.init())});t.observe(this,{childList:!0}),requestAnimationFrame(()=>{this._initialized||(t.disconnect(),this.init())})}}init(){if(this._initialized)return;this._initialized=!0,this.querySelectorAll('[slot="tab"]').forEach(e=>{e.style.display="none"});const t=Array.from(this.querySelectorAll('[slot="tab"]'));!this._value&&t.length&&(this._value=t[0].dataset.value??""),this.render(),this._updatePanels()}get value(){return this._value}set value(t){const e=this._value;t!==e&&(this._value=t,this._updateTabButtons(),this._updatePanels())}render(){const e=Array.from(this.querySelectorAll('[slot="tab"]')).map(s=>{const o=s.dataset.value??"",i=o===this._value;return`<button role="tab" class="tab${i?" active":""}" data-value="${o}" aria-selected="${i}" tabindex="${i?"0":"-1"}">${s.textContent??""}</button>`}).join("");this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: block; }
         .tablist {
           display: flex;
@@ -2114,99 +649,11 @@
           padding: 16px;
         }
       </style>
-      <div class="tablist" role="tablist">${buttonsHTML}</div>
+      <div class="tablist" role="tablist">${e}</div>
       <div class="panel-area"><slot></slot></div>
-    `;
-      this.shadowRoot.querySelector(".tablist").addEventListener("click", (e) => {
-        const btn = e.target.closest('[role="tab"]');
-        if (!btn)
-          return;
-        const val = btn.dataset.value ?? "";
-        if (val === this._value)
-          return;
-        const prev = this._value;
-        this._value = val;
-        this._updateTabButtons();
-        this._updatePanels();
-        this.dispatchEvent(new CustomEvent("o-change", {
-          bubbles: true,
-          composed: true,
-          detail: { value: val, prev }
-        }));
-      });
-      this.shadowRoot.querySelector(".tablist").addEventListener("keydown", (e) => {
-        const ke = e;
-        if (ke.key !== "ArrowLeft" && ke.key !== "ArrowRight")
-          return;
-        const tabs2 = Array.from(this.querySelectorAll('[slot="tab"]'));
-        const values = tabs2.map((t) => t.dataset.value ?? "");
-        const idx = values.indexOf(this._value);
-        if (idx === -1)
-          return;
-        const next = ke.key === "ArrowRight" ? (idx + 1) % values.length : (idx - 1 + values.length) % values.length;
-        const prev = this._value;
-        this._value = values[next];
-        this._updateTabButtons();
-        this._updatePanels();
-        this.dispatchEvent(new CustomEvent("o-change", {
-          bubbles: true,
-          composed: true,
-          detail: { value: this._value, prev }
-        }));
-        this.shadowRoot.querySelectorAll('[role="tab"]')[next]?.focus();
-      });
-    }
-    _updateTabButtons() {
-      this.shadowRoot.querySelectorAll('[role="tab"]').forEach((btn) => {
-        const active = btn.dataset.value === this._value;
-        btn.classList.toggle("active", active);
-        btn.setAttribute("aria-selected", String(active));
-        btn.tabIndex = active ? 0 : -1;
-      });
-    }
-    _updatePanels() {
-      this.querySelectorAll("[data-tab]").forEach((panel) => {
-        panel.style.display = panel.dataset.tab === this._value ? "" : "none";
-      });
-    }
-  }
-  customElements.define("o-tabs", OTabs);
-
-  // src/input.ts
-  class OInput extends GlassElement {
-    static get observedAttributes() {
-      return ["label", "placeholder", "type", "name", "disabled", "error", "success"];
-    }
-    connectedCallback() {
-      this.render();
-    }
-    attributeChangedCallback() {
-      if (this.isConnected)
-        this.render();
-    }
-    disconnectedCallback() {}
-    get value() {
-      return this.shadowRoot.querySelector("input")?.value ?? this.getAttribute("value") ?? "";
-    }
-    set value(v) {
-      const input = this.shadowRoot.querySelector("input");
-      if (input)
-        input.value = v;
-    }
-    render() {
-      const label = this.getAttribute("label") ?? "";
-      const placeholder = this.getAttribute("placeholder") ?? "";
-      const type = this.getAttribute("type") ?? "text";
-      const name = this.getAttribute("name") ?? "";
-      const value = this.getAttribute("value") ?? "";
-      const disabled = this.hasAttribute("disabled");
-      const error = this.getAttribute("error") ?? "";
-      const success = this.hasAttribute("success");
-      const borderColor = error ? "rgba(239,68,68,0.7)" : success ? "rgba(74,222,128,0.7)" : "var(--glass-border)";
-      const focusBorder = error ? "rgba(239,68,68,0.9)" : "var(--accent-warm)";
-      this.shadowRoot.innerHTML = `
+    `,this.shadowRoot.querySelector(".tablist").addEventListener("click",s=>{const o=s.target.closest('[role="tab"]');if(!o)return;const i=o.dataset.value??"";if(i===this._value)return;const r=this._value;this._value=i,this._updateTabButtons(),this._updatePanels(),this.dispatchEvent(new CustomEvent("o-change",{bubbles:!0,composed:!0,detail:{value:i,prev:r}}))}),this.shadowRoot.querySelector(".tablist").addEventListener("keydown",s=>{var h;const o=s;if(o.key!=="ArrowLeft"&&o.key!=="ArrowRight")return;const r=Array.from(this.querySelectorAll('[slot="tab"]')).map(w=>w.dataset.value??""),d=r.indexOf(this._value);if(d===-1)return;const u=o.key==="ArrowRight"?(d+1)%r.length:(d-1+r.length)%r.length,b=this._value;this._value=r[u],this._updateTabButtons(),this._updatePanels(),this.dispatchEvent(new CustomEvent("o-change",{bubbles:!0,composed:!0,detail:{value:this._value,prev:b}})),(h=this.shadowRoot.querySelectorAll('[role="tab"]')[u])==null||h.focus()})}_updateTabButtons(){this.shadowRoot.querySelectorAll('[role="tab"]').forEach(t=>{const e=t.dataset.value===this._value;t.classList.toggle("active",e),t.setAttribute("aria-selected",String(e)),t.tabIndex=e?0:-1})}_updatePanels(){this.querySelectorAll("[data-tab]").forEach(t=>{t.style.display=t.dataset.tab===this._value?"":"none"})}}customElements.define("o-tabs",K);class j extends g{static get observedAttributes(){return["label","placeholder","type","name","disabled","error","success"]}connectedCallback(){this.render()}attributeChangedCallback(){this.isConnected&&this.render()}disconnectedCallback(){}get value(){var n;return((n=this.shadowRoot.querySelector("input"))==null?void 0:n.value)??this.getAttribute("value")??""}set value(n){const t=this.shadowRoot.querySelector("input");t&&(t.value=n)}render(){const n=this.getAttribute("label")??"",t=this.getAttribute("placeholder")??"",e=this.getAttribute("type")??"text",s=this.getAttribute("name")??"",o=this.getAttribute("value")??"",i=this.hasAttribute("disabled"),r=this.getAttribute("error")??"",d=this.hasAttribute("success"),u=r?"rgba(239,68,68,0.7)":d?"rgba(74,222,128,0.7)":"var(--glass-border)",b=r?"rgba(239,68,68,0.9)":"var(--accent-warm)";this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: block; }
         .wrap { display: flex; flex-direction: column; gap: 4px; }
         label {
@@ -2218,7 +665,7 @@
         }
         input {
           background: var(--glass-bg);
-          border: 1px solid ${borderColor};
+          border: 1px solid ${u};
           border-radius: 10px;
           padding: 8px 14px;
           color: var(--glass-text);
@@ -2229,10 +676,10 @@
           box-sizing: border-box;
           backdrop-filter: blur(var(--glass-blur));
           transition: border-color 0.15s;
-          opacity: ${disabled ? "0.5" : "1"};
-          cursor: ${disabled ? "not-allowed" : "text"};
+          opacity: ${i?"0.5":"1"};
+          cursor: ${i?"not-allowed":"text"};
         }
-        input:focus { border-color: ${focusBorder}; }
+        input:focus { border-color: ${b}; }
         input::placeholder { color: var(--glass-text-dim); }
         .error-msg {
           font-size: 11px;
@@ -2241,59 +688,15 @@
         }
       </style>
       <div class="wrap">
-        ${label ? "<label></label>" : ""}
+        ${n?"<label></label>":""}
         <input
-          type="${type}"
-          name="${name}"
-          ${disabled ? "disabled" : ""}
+          type="${e}"
+          name="${s}"
+          ${i?"disabled":""}
         />
-        ${error ? '<span class="error-msg"></span>' : ""}
+        ${r?'<span class="error-msg"></span>':""}
       </div>
-    `;
-      const inputEl = this.shadowRoot.querySelector("input");
-      if (label)
-        this.shadowRoot.querySelector("label").textContent = label;
-      if (error)
-        this.shadowRoot.querySelector(".error-msg").textContent = error;
-      inputEl.placeholder = placeholder;
-      inputEl.value = value;
-      inputEl.style.borderColor = borderColor;
-      inputEl.addEventListener("input", () => {
-        this.dispatchEvent(new CustomEvent("o-input", {
-          bubbles: true,
-          composed: true,
-          detail: { value: inputEl.value }
-        }));
-      });
-      inputEl.addEventListener("blur", () => {
-        this.dispatchEvent(new CustomEvent("o-change", {
-          bubbles: true,
-          composed: true,
-          detail: { value: inputEl.value }
-        }));
-      });
-    }
-  }
-  customElements.define("o-input", OInput);
-
-  // src/skeleton.ts
-  class OSkeleton extends GlassElement {
-    static get observedAttributes() {
-      return ["variant", "width", "height", "radius", "rows"];
-    }
-    connectedCallback() {
-      this.render();
-    }
-    attributeChangedCallback() {
-      if (this.isConnected)
-        this.render();
-    }
-    disconnectedCallback() {}
-    get variant() {
-      return this.getAttribute("variant") ?? "block";
-    }
-    pulseCSS() {
-      return `
+    `;const h=this.shadowRoot.querySelector("input");n&&(this.shadowRoot.querySelector("label").textContent=n),r&&(this.shadowRoot.querySelector(".error-msg").textContent=r),h.placeholder=t,h.value=o,h.style.borderColor=u,h.addEventListener("input",()=>{this.dispatchEvent(new CustomEvent("o-input",{bubbles:!0,composed:!0,detail:{value:h.value}}))}),h.addEventListener("blur",()=>{this.dispatchEvent(new CustomEvent("o-change",{bubbles:!0,composed:!0,detail:{value:h.value}}))})}}customElements.define("o-input",j);class X extends g{static get observedAttributes(){return["variant","width","height","radius","rows"]}connectedCallback(){this.render()}attributeChangedCallback(){this.isConnected&&this.render()}disconnectedCallback(){}get variant(){return this.getAttribute("variant")??"block"}pulseCSS(){return`
       @keyframes o-pulse {
         0%, 100% { opacity: 0.4; }
         50%       { opacity: 0.9; }
@@ -2305,38 +708,16 @@
         animation: o-pulse 1.4s ease-in-out infinite;
         backdrop-filter: blur(var(--glass-blur));
       }
-    `;
-    }
-    render() {
-      const v = this.variant;
-      if (v === "table")
-        this.renderTable();
-      else if (v === "panel")
-        this.renderPanel();
-      else
-        this.renderBlock();
-    }
-    renderBlock() {
-      const w = this.getAttribute("width") ?? "100%";
-      const h = this.getAttribute("height") ?? "1em";
-      const r = this.getAttribute("radius") ?? "6px";
-      this.shadowRoot.innerHTML = `
+    `}render(){const n=this.variant;n==="table"?this.renderTable():n==="panel"?this.renderPanel():this.renderBlock()}renderBlock(){const n=this.getAttribute("width")??"100%",t=this.getAttribute("height")??"1em",e=this.getAttribute("radius")??"6px";this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: block; }
         ${this.pulseCSS()}
       </style>
-      <div class="skel" style="width:${w};height:${h};--skel-r:${r}"></div>
-    `;
-    }
-    renderTable() {
-      const rows = Math.max(1, parseInt(this.getAttribute("rows") ?? "5"));
-      const colWidths = ["25%", "30%", "20%", "15%"];
-      const headerCells = colWidths.map((w) => `<div class="skel cell" style="width:${w}"></div>`).join("");
-      const bodyRows = Array.from({ length: rows }, () => colWidths.map((w) => `<div class="skel cell" style="width:${w}"></div>`).join("")).map((cells) => `<div class="row">${cells}</div>`).join("");
-      this.shadowRoot.innerHTML = `
+      <div class="skel" style="width:${n};height:${t};--skel-r:${e}"></div>
+    `}renderTable(){const n=Math.max(1,parseInt(this.getAttribute("rows")??"5")),t=["25%","30%","20%","15%"],e=t.map(o=>`<div class="skel cell" style="width:${o}"></div>`).join(""),s=Array.from({length:n},()=>t.map(o=>`<div class="skel cell" style="width:${o}"></div>`).join("")).map(o=>`<div class="row">${o}</div>`).join("");this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: block; }
         ${this.pulseCSS()}
         .table { display: flex; flex-direction: column; gap: 8px; }
@@ -2349,15 +730,12 @@
         .cell { height: 14px; }
       </style>
       <div class="table">
-        <div class="row header">${headerCells}</div>
-        ${bodyRows}
+        <div class="row header">${e}</div>
+        ${s}
       </div>
-    `;
-    }
-    renderPanel() {
-      this.shadowRoot.innerHTML = `
+    `}renderPanel(){this.shadowRoot.innerHTML=`
       <style>
-        ${glassBaseStyles()}
+        ${p()}
         :host { display: block; }
         ${this.pulseCSS()}
         .panel {
@@ -2377,15 +755,19 @@
         <div class="skel line"></div>
         <div class="skel line short"></div>
       </div>
-    `;
-    }
-  }
-  customElements.define("o-skeleton", OSkeleton);
-
-  // src/index.ts
-  if (typeof window !== "undefined") {
-    window.toast = toast;
-    window.OProgress = OProgress;
-    window.asyncPlus = asyncPlus;
-  }
-})();
+    `}}customElements.define("o-skeleton",X);class B extends g{static get observedAttributes(){return["direction"]}connectedCallback(){this.render()}attributeChangedCallback(){this.isConnected&&this.render()}render(){const n=this.getAttribute("direction")||"y",t=n==="x"||n==="both"?"auto":"hidden",e=n==="y"||n==="both"?"auto":"hidden";this.shadowRoot.innerHTML=`
+      <style>
+        ${p()}
+        :host {
+          display: block;
+        }
+        .scroll-area {
+          overflow-x: ${t};
+          overflow-y: ${e};
+          width: 100%;
+          height: 100%;
+        }
+        ${k(".scroll-area")}
+      </style>
+      <div class="scroll-area"><slot></slot></div>
+    `}}return customElements.define("o-scroll",B),typeof window<"u"&&(window.toast=M,window.OProgress=x,window.asyncPlus=O),c.GLASS_TOKENS=y,c.GLASS_TOKENS_LIGHT=f,c.GlassElement=g,c.ODropdown=P,c.OInput=j,c.OProgress=x,c.OScroll=B,c.OSearch=H,c.OSkeleton=X,c.OTable=q,c.OTabs=K,c.OToggle=I,c.OTooltip=W,c.OWCToast=D,c.asyncPlus=O,c.glassBaseStyles=p,c.glassScrollbarStyles=k,c.toast=M,Object.defineProperty(c,Symbol.toStringTag,{value:"Module"}),c}({});

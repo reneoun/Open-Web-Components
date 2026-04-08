@@ -4,8 +4,9 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/index.ts',
-      formats: ['es'],
-      fileName: 'owc',
+      formats: ['iife'],
+      fileName: () => 'components.js',
+      name: 'OWC',
     },
   },
   test: {
