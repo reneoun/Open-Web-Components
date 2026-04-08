@@ -1,0 +1,2137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Web Components</title>
+    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"></script>
+    <style>
+      html { scroll-behavior: smooth; }
+      * { box-sizing: border-box; }
+      body {
+        background: linear-gradient(135deg, #059669, #065f46);
+        min-height: 100vh;
+        padding: 2rem;
+        padding-top: 4.5rem;
+        font-family: sans-serif;
+        color: #fff;
+        transition: background 0.5s;
+      }
+      body.theme-blue   { background: linear-gradient(135deg, #2563eb, #1e40af); }
+      body.theme-green  { background: linear-gradient(135deg, #059669, #065f46); }
+      body.theme-rose   { background: linear-gradient(135deg, #e11d48, #9f1239); }
+      body.theme-slate  { background: linear-gradient(135deg, #334155, #0f172a); }
+      h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
+      h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; scroll-margin-top: 52px; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .desc { opacity: 0.6; font-size: 13px; margin: 0 0 10px; }
+      .code-wrap { position: relative; margin-top: 10px; }
+      .code {
+        background: rgba(0,0,0,0.35);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 12px 16px;
+        padding-right: 52px;
+        font-family: monospace;
+        font-size: 12px;
+        color: rgba(255,255,255,0.85);
+        overflow-x: auto;
+        white-space: pre;
+      }
+      .copy-btn {
+        position: absolute;
+        top: 8px; right: 8px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 5px;
+        color: rgba(255,255,255,0.7);
+        font-size: 11px;
+        padding: 3px 8px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+        font-family: sans-serif;
+      }
+      .copy-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+      .copy-btn.copied { background: rgba(100,220,120,0.25); color: #7efa9a; border-color: #7efa9a; }
+
+      /* Sticky nav */
+      #nav {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 100;
+        background: rgba(3,54,25,0.78);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 0 2rem;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        overflow-x: auto;
+      }
+      #nav a {
+        color: rgba(255,255,255,0.65);
+        text-decoration: none;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+        transition: background 0.15s, color 0.15s;
+      }
+      #nav a:hover { background: rgba(255,255,255,0.12); color: #fff; }
+      #nav span.sep { color: rgba(255,255,255,0.2); font-size: 10px; flex-shrink: 0; }
+      #nav .gh-link {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,0.55);
+        text-decoration: none;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.15);
+        flex-shrink: 0;
+        transition: background 0.15s, color 0.15s;
+      }
+      #nav .gh-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+      /* Header card */
+      .hero {
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .hero .badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 11px;
+        color: rgba(255,255,255,0.7);
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+
+      /* Event log */
+      #event-log {
+        max-height: 180px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 11px;
+        color: rgba(255,255,255,0.8);
+        line-height: 1.6;
+      }
+      #event-log .entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+      #event-log .ts  { color: rgba(255,255,255,0.35); margin-right: 6px; }
+      #event-log .evname { color: #4ade80; margin-right: 4px; }
+      #event-log .payload { color: rgba(255,255,255,0.6); }
+      #event-log .empty { color: rgba(255,255,255,0.3); font-style: italic; }
+
+      /* Counter badge */
+      .counter-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        min-width: 90px;
+        text-align: center;
+        transition: background 0.2s;
+      }
+
+      /* Toggle output */
+      .toggle-output {
+        margin-top: 12px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 14px;
+        min-height: 52px;
+      }
+
+      /* Kitchen sink */
+      .ks-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; margin-top: 12px; }
+      .ks-label { font-size: 11px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+
+      /* o-panel playground */
+      .pg-controls { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+      .pg-controls label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; user-select: none; }
+      .pg-controls input[type=checkbox] { width: 14px; height: 14px; cursor: pointer; accent-color: #4ade80; }
+      .pg-controls input[type=range]  { width: 90px; accent-color: #4ade80; }
+      .pg-preview { min-height: 120px; position: relative; margin: 10px 0; }
+
+      /* Stats bar */
+      .stats-bar {
+        display: flex; gap: 20px; flex-wrap: wrap;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 12px;
+        margin-bottom: 1rem;
+      }
+      .stats-bar .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+      .stats-bar .stat .val { font-size: 18px; font-weight: 700; line-height: 1; }
+      .stats-bar .stat .lbl { opacity: 0.5; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+      /* Keyboard shortcut overlay */
+      #shortcut-overlay {
+        display: none;
+        position: fixed; inset: 0; z-index: 200;
+        background: rgba(0,0,0,0.45);
+        backdrop-filter: blur(4px);
+        align-items: center; justify-content: center;
+      }
+      #shortcut-overlay.open { display: flex; }
+      .shortcut-panel {
+        background: rgba(3,40,18,0.95);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 16px;
+        padding: 24px 28px;
+        min-width: 320px;
+        max-width: 90vw;
+        color: #fff;
+      }
+      .shortcut-panel h3 { margin: 0 0 14px; font-size: 14px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
+      .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+      .shortcut-row:last-child { border-bottom: none; }
+      .shortcut-key { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; padding: 2px 7px; font-family: monospace; font-size: 12px; }
+      .shortcut-close { float: right; margin-top: -4px; }
+
+      /* Scrollspy active nav */
+      #nav a.active { background: rgba(255,255,255,0.15); color: #fff; }
+
+      /* Scroll progress */
+      #scroll-progress {
+        position: fixed; top: 44px; left: 0; right: 0; z-index: 101;
+        height: 2px; background: rgba(74,222,128,0.8);
+        transform-origin: left; transform: scaleX(0);
+        transition: transform 0.1s;
+      }
+
+      /* Kanban item */
+      .kan-item {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 7px;
+        padding: 8px 10px;
+        margin-bottom: 7px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .kan-item .kan-btns { display: flex; gap: 3px; flex-shrink: 0; }
+      .kan-item .kan-btn {
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 4px; color: rgba(255,255,255,0.7); font-size: 11px;
+        padding: 1px 6px; cursor: pointer; transition: background 0.12s;
+      }
+      .kan-item .kan-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+      .kan-item .kan-btn:disabled { opacity: 0.2; cursor: default; }
+
+      /* Footer */
+      footer {
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 12px;
+        opacity: 0.5;
+      }
+      footer a { color: inherit; }
+    </style>
+  </head>
+  <body>
+
+    <!-- Scroll progress bar -->
+    <div id="scroll-progress"></div>
+    <o-progress></o-progress>
+
+    <!-- Sticky navigation -->
+    <nav id="nav">
+      <a href="#section-button">o-button</a>
+      <span class="sep">·</span>
+      <a href="#section-panel">o-panel</a>
+      <span class="sep">·</span>
+      <a href="#section-toast">o-toast</a>
+      <span class="sep">·</span>
+      <a href="#section-toggle">o-toggle</a>
+      <span class="sep">·</span>
+      <a href="#section-table">o-table</a>
+      <span class="sep">·</span>
+      <a href="#section-search">o-search</a>
+      <span class="sep">·</span>
+      <a href="#section-editable">o-table editable</a>
+      <span class="sep">·</span>
+      <a href="#section-note">o-note</a>
+      <span class="sep">·</span>
+      <a href="#section-dialog">o-dialog</a>
+      <span class="sep">·</span>
+      <a href="#section-tooltip">o-tooltip</a>
+      <span class="sep">·</span>
+      <a href="#section-dropdown">o-dropdown</a>
+      <span class="sep">·</span>
+      <a href="#section-tabs">o-tabs</a>
+      <span class="sep">·</span>
+      <a href="#section-input">o-input</a>
+      <span class="sep">·</span>
+      <a href="#section-skeleton">o-skeleton</a>
+      <span class="sep">·</span>
+      <a href="#section-progress">o-progress</a>
+      <span class="sep">·</span>
+      <a href="#section-async-plus">asyncPlus</a>
+      <span class="sep">·</span>
+      <a href="#section-combined">Combined</a>
+      <span class="sep">·</span>
+      <a href="#section-kitchen">Kitchen sink</a>
+      <span class="sep">·</span>
+      <a href="#section-events">Events</a>
+      <a class="gh-link" href="https://github.com/reneoun/Open-Web-Components" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </nav>
+
+    <!-- Hero header -->
+    <div class="hero">
+      <div>
+        <h1>Open Web Components <span class="badge">glassmorphism</span></h1>
+        <p style="opacity:0.7;margin:6px 0 0;font-size:14px">Zero-dependency web component library. Drop in one script tag.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div id="theme-toggle-wrap">
+          <div class="ks-label" style="text-align:right">Theme</div>
+          <o-toggle id="tgl-theme" options="Purple,Blue,Green,Rose,Slate" value="green"></o-toggle>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap" style="margin:12px 0 0;display:inline-block">
+      <div class="code" style="display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+      <button class="copy-btn" data-copy='<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"></script>'>Copy</button>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar" style="margin-top:16px">
+      <div class="stat"><span class="val" id="stat-components">14</span><span class="lbl">Components</span></div>
+      <div class="stat"><span class="val" id="stat-events">0</span><span class="lbl">Events fired</span></div>
+      <div class="stat"><span class="val" id="stat-selected">0</span><span class="lbl">Rows selected</span></div>
+      <div class="stat"><span class="val" id="stat-clicks">0</span><span class="lbl">Btn clicks</span></div>
+      <div class="stat"><span class="val" id="stat-searches">0</span><span class="lbl">Searches</span></div>
+    </div>
+
+    <!-- Keyboard shortcut overlay -->
+    <div id="shortcut-overlay">
+      <div class="shortcut-panel">
+        <h3>Keyboard shortcuts <button class="copy-btn shortcut-close" onclick="document.getElementById('shortcut-overlay').classList.remove('open')">Close</button></h3>
+        <div class="shortcut-row"><span>Show this overlay</span><kbd class="shortcut-key">?</kbd></div>
+        <div class="shortcut-row"><span>Go to o-button</span><kbd class="shortcut-key">1</kbd></div>
+        <div class="shortcut-row"><span>Go to o-panel</span><kbd class="shortcut-key">2</kbd></div>
+        <div class="shortcut-row"><span>Go to o-toast</span><kbd class="shortcut-key">3</kbd></div>
+        <div class="shortcut-row"><span>Go to o-toggle</span><kbd class="shortcut-key">4</kbd></div>
+        <div class="shortcut-row"><span>Go to o-table</span><kbd class="shortcut-key">5</kbd></div>
+        <div class="shortcut-row"><span>Go to o-search</span><kbd class="shortcut-key">6</kbd></div>
+        <div class="shortcut-row"><span>Go to combined demo</span><kbd class="shortcut-key">7</kbd></div>
+        <div class="shortcut-row"><span>Fire random toast</span><kbd class="shortcut-key">T</kbd></div>
+        <div class="shortcut-row"><span>Close this overlay</span><kbd class="shortcut-key">Esc</kbd></div>
+      </div>
+    </div>
+
+    <!-- o-button -->
+    <h2 id="section-button">o-button</h2>
+    <p class="desc">Glassmorphic button. Fires <code>o-click</code> instead of native click.</p>
+    <div class="row" style="align-items:center">
+      <o-button id="btn-demo-1">Click me</o-button>
+      <o-button id="btn-demo-2">Save</o-button>
+      <o-button id="btn-demo-3">Cancel</o-button>
+      <div class="counter-badge" id="click-counter">0 clicks</div>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;o-button&gt;Click me&lt;/o-button&gt;
+
+// Event
+btn.addEventListener('o-click', () =&gt; console.log('clicked'))</div>
+      <button class="copy-btn" data-copy="<o-button>Click me</o-button>
+btn.addEventListener('o-click', () => console.log('clicked'))">Copy</button>
+    </div>
+
+    <!-- o-panel -->
+    <h2 id="section-panel">o-panel</h2>
+    <p class="desc">Glassmorphic content panel. Supports dragging, grid snapping, and resizing.</p>
+    <div class="row">
+      <o-panel move snap="20">
+        <strong>Draggable + snap 20px</strong>
+        <p style="margin:8px 0 0;opacity:0.8">Grab ⠿ to move. Snaps to 20px grid.</p>
+      </o-panel>
+      <o-panel resize>
+        <strong>Resizable panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8">Drag the right / bottom / corner handles.</p>
+      </o-panel>
+      <o-panel move snap="40" resize>
+        <strong>Drag + snap 40px + resize</strong>
+        <p style="margin:8px 0 0;opacity:0.8">All features combined.</p>
+      </o-panel>
+      <o-panel>
+        <strong>Static panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8">No attributes.</p>
+      </o-panel>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;o-panel&gt;Static content&lt;/o-panel&gt;
+&lt;o-panel move&gt;Draggable&lt;/o-panel&gt;
+&lt;o-panel move snap="20"&gt;Snaps to 20px grid while dragging&lt;/o-panel&gt;
+&lt;o-panel resize&gt;Resizable (right / bottom / corner handles)&lt;/o-panel&gt;
+&lt;o-panel move snap="20" resize&gt;All combined&lt;/o-panel&gt;</div>
+      <button class="copy-btn" data-copy='<o-panel move snap="20" resize>Content</o-panel>'>Copy</button>
+    </div>
+
+    <!-- o-panel attribute playground -->
+    <h2 id="section-panel-playground" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-panel — attribute playground</h2>
+    <p class="desc">Toggle attributes live and see the generated markup update in real time.</p>
+    <div class="pg-controls">
+      <label><input type="checkbox" id="pg-move"> move</label>
+      <label><input type="checkbox" id="pg-resize"> resize</label>
+      <label><input type="checkbox" id="pg-snap"> snap
+        <input type="range" id="pg-snap-val" min="10" max="80" step="10" value="20" style="margin-left:4px">
+        <span id="pg-snap-num" style="min-width:24px;display:inline-block">20</span>
+      </label>
+    </div>
+    <div class="pg-preview">
+      <o-panel id="pg-panel">
+        <strong>Playground panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">Toggle checkboxes above to change attributes.</p>
+      </o-panel>
+    </div>
+    <div class="code-wrap"><div class="code" id="pg-code">&lt;o-panel&gt;Content&lt;/o-panel&gt;</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- o-toast -->
+    <h2 id="section-toast">o-toast</h2>
+    <p class="desc">Programmatic toast notifications. Call <code>window.toast(message, type?, options?)</code> after loading the CDN bundle.</p>
+    <div class="row">
+      <o-button id="btn-success">Success</o-button>
+      <o-button id="btn-error">Error</o-button>
+      <o-button id="btn-warning">Warning</o-button>
+      <o-button id="btn-info">Info</o-button>
+      <o-button id="btn-long">8s toast</o-button>
+    </div>
+    <div class="code-wrap"><div class="code">// type: 'success' | 'error' | 'warning' | 'info'  (default: 'info')
+toast('File saved!', 'success')
+toast('Connection failed', 'error')
+toast('Long message', 'info', { duration: 8000 })</div>
+      <button class="copy-btn" data-copy="toast('File saved!', 'success')">Copy</button>
+    </div>
+
+    <!-- o-toggle -->
+    <h2 id="section-toggle">o-toggle</h2>
+    <p class="desc">Segmented control toggle. Pass options as a comma-separated string or array. Fires <code>o-change</code> with <code>{ value, index }</code>.</p>
+    <div class="row">
+      <o-toggle id="demo-toggle" options="Day,Week,Month"></o-toggle>
+      <o-toggle options="S,M,L,XL" value="m"></o-toggle>
+    </div>
+    <div id="toggle-output" class="toggle-output">
+      Selected: <strong id="toggle-selected">Day</strong> — change the toggle above to see this update live.
+    </div>
+    <div class="code-wrap"><div class="code">&lt;o-toggle options="Day,Week,Month" value="day"&gt;&lt;/o-toggle&gt;
+
+// Or set via JS
+toggle.options = [{ label: 'Day', value: 'day' }, { label: 'Week', value: 'week' }]
+toggle.value = 'week'
+
+// Event
+toggle.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value, index, prev }</div>
+      <button class="copy-btn" data-copy='<o-toggle options="Day,Week,Month" value="day"></o-toggle>
+toggle.addEventListener("o-change", e => console.log(e.detail))'>Copy</button>
+    </div>
+
+    <!-- o-toggle as tabs -->
+    <h2 id="section-toggle-tabs" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-toggle — as a tab switcher</h2>
+    <p class="desc">Use <code>o-toggle</code> to drive tab content — swap any panel based on the selected value.</p>
+    <o-toggle id="tab-toggle" options="Overview,API,Examples" value="overview"></o-toggle>
+    <div style="margin-top:12px">
+      <div id="tab-overview" class="toggle-output">
+        <strong>Overview</strong>
+        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">Open Web Components is a glassmorphic web component library. Drop in one script tag and get beautiful, zero-dependency UI components that work in any framework.</p>
+      </div>
+      <div id="tab-api" class="toggle-output" style="display:none">
+        <strong>API reference</strong>
+        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">Components expose attributes (<code>move</code>, <code>resize</code>, <code>snap</code>) and fire custom DOM events (<code>o-click</code>, <code>o-change</code>, <code>o-input</code>, <code>o-results</code>, <code>o-select</code>, <code>o-sort</code>, <code>o-row-select</code>).</p>
+      </div>
+      <div id="tab-examples" class="toggle-output" style="display:none">
+        <strong>Examples</strong>
+        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">See the full interactive demos on this page. Each section has copy-ready code snippets. Press <kbd style="background:rgba(255,255,255,0.15);padding:1px 5px;border-radius:3px;font-size:11px">?</kbd> for keyboard shortcuts.</p>
+      </div>
+    </div>
+
+    <!-- o-table -->
+    <h2 id="section-table">o-table</h2>
+    <p class="desc">Sortable, resizable, glassmorphic data table. Supports column persistence and optional row selection.</p>
+    <o-table id="demo-table" storage="local" storage-key="owc-demo-table"></o-table>
+    <div class="code-wrap"><div class="code">&lt;o-table selectable&gt;&lt;/o-table&gt;
+
+table.columns = [
+  { key: 'name',  label: 'Name',  width: 160, sortable: true },
+  { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60 },
+]
+table.data = [{ name: 'Alice', score: 92 }, ...]
+
+// Events
+table.addEventListener('o-sort',       e =&gt; console.log(e.detail)) // { col, dir }
+table.addEventListener('o-row-select', e =&gt; console.log(e.detail)) // { selected: row[] }
+
+// Attributes
+// storage="local|session"  storage-key="my-key"  — persists sort + column widths
+// selectable                                      — adds checkbox column</div>
+      <button class="copy-btn" data-copy='<o-table selectable></o-table>
+table.columns = [{ key: "name", label: "Name", width: 160, sortable: true }]
+table.data = [{ name: "Alice" }]'>Copy</button>
+    </div>
+
+    <!-- o-table dynamic rows with undo/redo -->
+    <h2 id="section-table-dynamic" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-table — dynamic data + undo/redo</h2>
+    <p class="desc">Add, remove, or randomize rows at runtime. Every action is pushed to a history stack — undo and redo supported.</p>
+    <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <o-button id="tbl-add">+ Add row</o-button>
+      <o-button id="tbl-remove">- Remove last</o-button>
+      <o-button id="tbl-randomize">Randomize scores</o-button>
+      <o-button id="tbl-reset">Reset</o-button>
+      <div style="width:1px;height:24px;background:rgba(255,255,255,0.2)"></div>
+      <o-button id="tbl-undo" disabled>↩ Undo</o-button>
+      <o-button id="tbl-redo" disabled>↪ Redo</o-button>
+      <span id="tbl-row-count" style="opacity:0.6;font-size:13px">4 rows</span>
+    </div>
+    <o-table id="demo-table-dyn" storage="local" storage-key="owc-dyn-table"></o-table>
+
+    <!-- o-button loading state -->
+    <h2 id="section-button-loading" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-button — simulated async loading</h2>
+    <p class="desc">Disable and update text while awaiting an async operation — restore on completion.</p>
+    <div class="row">
+      <o-button id="btn-async-save">Save to server</o-button>
+      <o-button id="btn-async-upload">Upload file</o-button>
+      <o-button id="btn-async-sync">Sync data</o-button>
+    </div>
+    <div class="code-wrap"><div class="code">btn.addEventListener('o-click', async () =&gt; {
+  btn.setAttribute('disabled', '')
+  btn.textContent = 'Saving…'
+  await doWork()
+  btn.removeAttribute('disabled')
+  btn.textContent = 'Save to server'
+  toast('Saved!', 'success')
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- o-toggle as color swatch picker -->
+    <h2 id="section-toggle-color" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-toggle — color swatch picker</h2>
+    <p class="desc">Drive any visual state from <code>o-toggle</code> — here a live color preview controlled by the selected option.</p>
+    <div class="row" style="align-items:center;gap:16px">
+      <o-toggle id="color-picker" options="Red,Orange,Yellow,Green,Blue,Purple" value="blue"></o-toggle>
+      <div id="color-swatch" style="width:48px;height:48px;border-radius:10px;background:#3b82f6;transition:background 0.3s;border:2px solid rgba(255,255,255,0.3)"></div>
+    </div>
+    <div style="margin-top:8px;opacity:0.6;font-size:13px">Hex: <code id="color-hex">#3b82f6</code></div>
+
+    <!-- o-search -->
+    <h2 id="section-search">o-search</h2>
+    <p class="desc">Glassmorphic search bar with built-in filtering and optional dropdown. Add <code>no-dropdown</code> to use it as a pure filter input.</p>
+    <o-search id="demo-search-standalone" placeholder="Search fruits..." style="max-width:400px"></o-search>
+    <div id="search-result" style="margin-top:8px;opacity:0.7;font-size:13px"></div>
+    <div class="code-wrap"><div class="code">&lt;o-search placeholder="Search..." no-dropdown&gt;&lt;/o-search&gt;
+
+search.data       = [{ name: 'Apple' }, { name: 'Banana' }]
+search.searchKeys = ['name']
+search.valueKey   = 'name'                           // fills input on select
+search.renderItem = item =&gt; `&lt;b&gt;${item.name}&lt;/b&gt;`   // custom dropdown row
+
+// Custom filter (overrides searchKeys)
+search.filterFn = (query, item) =&gt; item.name.startsWith(query)
+
+// Events
+search.addEventListener('o-input',   e =&gt; console.log(e.detail)) // { query }
+search.addEventListener('o-results', e =&gt; console.log(e.detail)) // { query, results }
+search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, query }</div>
+      <button class="copy-btn" data-copy='<o-search placeholder="Search..." no-dropdown></o-search>
+search.data = [{ name: "Apple" }]
+search.searchKeys = ["name"]'>Copy</button>
+    </div>
+
+    <!-- Rich o-search with custom renderItem -->
+    <h2 id="section-search-rich" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-search — rich dropdown with custom renderItem</h2>
+    <p class="desc">Pass a <code>renderItem</code> function to build any dropdown layout — emoji, icons, multi-line, badges.</p>
+    <o-search id="demo-search-rich" placeholder="Search commands..." style="max-width:440px"></o-search>
+    <div id="rich-selected" style="margin-top:8px;opacity:0.7;font-size:13px;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">search.renderItem = item =&gt; `
+  &lt;span style="font-size:18px"&gt;${item.icon}&lt;/span&gt;
+  &lt;span&gt;&lt;b&gt;${item.name}&lt;/b&gt;&lt;br&gt;
+    &lt;small style="opacity:0.6"&gt;${item.desc}&lt;/small&gt;&lt;/span&gt;`</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- o-table editable -->
+    <h2 id="section-editable">o-table — editable cells</h2>
+    <p class="desc">Inline cell editing. <code>editable="always"</code> shows a persistent input; <code>editable="click"</code> reveals inputs per-row via a pencil button.</p>
+    <o-table id="editable-table" editable></o-table>
+    <div id="editable-log" style="margin-top:8px;font-size:12px;opacity:0.6;font-family:monospace;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">&lt;o-table editable&gt;&lt;/o-table&gt;
+
+table.columns = [
+  { key: 'name', label: 'Name', width: 160, editable: 'always' },
+  { key: 'role', label: 'Role', width: 140, editable: 'click'  },
+]
+table.data = [{ name: 'Alice', role: 'Engineer' }]
+
+table.addEventListener('o-cell-change', e =&gt; console.log(e.detail))
+table.addEventListener('o-row-change',  e =&gt; console.log(e.detail))</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- o-note -->
+    <h2 id="section-note">o-note</h2>
+    <p class="desc">Glass-styled note component. <code>variant="textarea"</code> (default) auto-resizes with optional floating label and char counter. <code>variant="card"</code> adds a title and tag chips.</p>
+    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:240px;max-width:380px">
+        <p style="font-size:12px;opacity:0.5;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em">Textarea variant</p>
+        <o-note label="Your thoughts" placeholder="Start typing..." max-length="200" style="display:block"></o-note>
+      </div>
+      <div style="flex:1;min-width:240px;max-width:380px">
+        <p style="font-size:12px;opacity:0.5;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em">Card variant</p>
+        <o-note variant="card" style="display:block"></o-note>
+      </div>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;!-- textarea --&gt;
+&lt;o-note label="Note" placeholder="..." max-length="200"&gt;&lt;/o-note&gt;
+
+&lt;!-- card --&gt;
+&lt;o-note variant="card"&gt;&lt;/o-note&gt;
+
+note.addEventListener('o-change', e =&gt; console.log(e.detail))</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- o-dialog -->
+    <h2 id="section-dialog">o-dialog</h2>
+    <p class="desc">Glassmorphism form dialog with blurred backdrop, slot-based content, and programmatic open/close. Fires <code>o-submit</code> with named input values and <code>o-cancel</code> on backdrop click or Escape.</p>
+    <div class="row">
+      <o-button id="btn-open-dialog">Open dialog</o-button>
+      <span id="dialog-result" style="font-size:13px;opacity:0.6"></span>
+    </div>
+
+    <o-dialog id="demo-dialog">
+      <span slot="title">Add team member</span>
+
+      <o-input name="name" label="Name" placeholder="Alice" style="width:100%;margin-bottom:10px"></o-input>
+      <o-input name="role" label="Role" placeholder="Engineer" style="width:100%"></o-input>
+
+      <div slot="actions">
+        <o-button type="submit">Add member</o-button>
+        <o-button id="btn-dialog-cancel">Cancel</o-button>
+      </div>
+    </o-dialog>
+
+    <div class="code-wrap"><div class="code">&lt;o-dialog id="d"&gt;
+  &lt;span slot="title"&gt;Add Item&lt;/span&gt;
+
+  &lt;label&gt;Name&lt;/label&gt;
+  &lt;input name="name" type="text"&gt;
+
+  &lt;div slot="actions"&gt;
+    &lt;o-button type="submit"&gt;Save&lt;/o-button&gt;
+  &lt;/div&gt;
+&lt;/o-dialog&gt;
+
+document.getElementById('d').open()
+
+d.addEventListener('o-submit', e =&gt; console.log(e.detail)) // { name }
+d.addEventListener('o-cancel', () =&gt; console.log('cancelled'))</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- o-tooltip -->
+    <h2 id="section-tooltip">o-tooltip</h2>
+    <p class="desc">Glassmorphic tooltip that wraps any element. Appears on hover or focus. Supports four positions via the <code>position</code> attribute.</p>
+    <div class="row" style="align-items:center;gap:24px;flex-wrap:wrap;padding:20px 0">
+      <o-tooltip text="Default tooltip (top)">
+        <o-button>Hover me (top)</o-button>
+      </o-tooltip>
+      <o-tooltip text="Appears below" position="bottom">
+        <o-button>Bottom</o-button>
+      </o-tooltip>
+      <o-tooltip text="Appears to the left" position="left">
+        <o-button>Left</o-button>
+      </o-tooltip>
+      <o-tooltip text="Appears to the right" position="right">
+        <o-button>Right</o-button>
+      </o-tooltip>
+      <o-tooltip text="Works on any element too" position="top">
+        <span style="padding:6px 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:13px;cursor:default">Plain span</span>
+      </o-tooltip>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;o-tooltip text="Hello!" position="top"&gt;
+  &lt;o-button&gt;Hover me&lt;/o-button&gt;
+&lt;/o-tooltip&gt;
+
+&lt;!-- position: top (default) | bottom | left | right --&gt;</div>
+      <button class="copy-btn" data-copy='<o-tooltip text="Hello!" position="top">
+  <o-button>Hover me</o-button>
+</o-tooltip>'>Copy</button>
+    </div>
+
+    <!-- o-dropdown -->
+    <h2 id="section-dropdown">o-dropdown</h2>
+    <p class="desc">Glassmorphic dropdown menu. Set options via the <code>options</code> property. Fires <code>o-select</code> with <code>{ value, label }</code>. Keyboard-navigable with arrow keys and Escape.</p>
+    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div>
+        <div class="ks-label" style="margin-bottom:6px">Actions menu</div>
+        <o-dropdown id="demo-dropdown-actions">
+          <o-button>Actions ▾</o-button>
+        </o-dropdown>
+      </div>
+      <div>
+        <div class="ks-label" style="margin-bottom:6px">With icons</div>
+        <o-dropdown id="demo-dropdown-icons">
+          <o-button>File ▾</o-button>
+        </o-dropdown>
+      </div>
+      <div>
+        <div class="ks-label" style="margin-bottom:6px">Status</div>
+        <o-dropdown id="demo-dropdown-status">
+          <o-button>Set status ▾</o-button>
+        </o-dropdown>
+      </div>
+    </div>
+    <div id="dropdown-result" style="margin-top:10px;font-size:13px;opacity:0.6;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">const dd = document.querySelector('o-dropdown')
+
+dd.options = [
+  { label: 'Edit',      value: 'edit',      icon: '✏️' },
+  { label: 'Duplicate', value: 'duplicate', icon: '📋' },
+  { label: 'Delete',    value: 'delete',    icon: '🗑️' },
+]
+
+dd.addEventListener('o-select', e =&gt; {
+  console.log(e.detail) // { value, label }
+})
+
+// Programmatic control
+dd.open()
+dd.close()
+dd.toggle()</div>
+      <button class="copy-btn" data-copy="dd.options = [{ label: 'Edit', value: 'edit', icon: '✏️' }]
+dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
+    </div>
+
+    <!-- o-tabs -->
+    <h2 id="section-tabs">o-tabs</h2>
+    <p class="desc">Glassmorphic tab bar. Add <code>slot="tab"</code> children with <code>data-value</code> for the tab headers, and <code>data-tab</code> on panel elements for content. Fires <code>o-change</code> with <code>{ value, prev }</code>. Arrow-key navigable.</p>
+    <o-tabs id="demo-tabs" style="max-width:560px">
+      <span slot="tab" data-value="overview">Overview</span>
+      <span slot="tab" data-value="install">Installation</span>
+      <span slot="tab" data-value="events">Events</span>
+      <span slot="tab" data-value="theming">Theming</span>
+
+      <div data-tab="overview" style="font-size:14px;line-height:1.7;opacity:0.85">
+        <strong style="display:block;margin-bottom:6px">Open Web Components</strong>
+        A glassmorphic web component library — zero dependencies, one script tag. All components are built with native Custom Elements and Shadow DOM, making them compatible with any framework or plain HTML.
+      </div>
+      <div data-tab="install" style="font-size:14px;line-height:1.7">
+        <div class="ks-label">Via CDN</div>
+        <div class="code" style="margin-bottom:10px">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+        <div class="ks-label">Via npm</div>
+        <div class="code">npm install @owc/components</div>
+      </div>
+      <div data-tab="events" style="font-size:13px;font-family:monospace;line-height:2;opacity:0.85">
+        o-button  → <span style="color:#4ade80">o-click</span><br>
+        o-toggle  → <span style="color:#4ade80">o-change</span> { value, index, prev }<br>
+        o-search  → <span style="color:#4ade80">o-input</span>, <span style="color:#4ade80">o-results</span>, <span style="color:#4ade80">o-select</span><br>
+        o-table   → <span style="color:#4ade80">o-sort</span>, <span style="color:#4ade80">o-row-select</span>, <span style="color:#4ade80">o-cell-change</span><br>
+        o-dialog  → <span style="color:#4ade80">o-submit</span>, <span style="color:#4ade80">o-cancel</span><br>
+        o-note    → <span style="color:#4ade80">o-change</span> { value } / { title, body, tags }<br>
+        o-dropdown → <span style="color:#4ade80">o-select</span> { value, label }<br>
+        o-tabs    → <span style="color:#4ade80">o-change</span> { value, prev }
+      </div>
+      <div data-tab="theming" style="font-size:14px;line-height:1.7;opacity:0.85">
+        <strong style="display:block;margin-bottom:6px">CSS custom properties</strong>
+        All components inherit from <code>GlassElement</code> and use CSS variables: <code>--glass-bg</code>, <code>--glass-border</code>, <code>--glass-blur</code>, <code>--glass-shadow</code>, <code>--glass-text</code>, <code>--glass-hover</code>, <code>--accent-warm</code>. Override on <code>:root</code> or any ancestor to apply a custom theme.
+      </div>
+    </o-tabs>
+    <div id="tabs-result" style="margin-top:8px;font-size:13px;opacity:0.6;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">&lt;o-tabs&gt;
+  &lt;span slot="tab" data-value="one"&gt;Tab 1&lt;/span&gt;
+  &lt;span slot="tab" data-value="two"&gt;Tab 2&lt;/span&gt;
+
+  &lt;div data-tab="one"&gt;Content for tab one&lt;/div&gt;
+  &lt;div data-tab="two"&gt;Content for tab two&lt;/div&gt;
+&lt;/o-tabs&gt;
+
+tabs.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value, prev }
+tabs.value = 'two' // programmatic switch</div>
+      <button class="copy-btn" data-copy='<o-tabs>
+  <span slot="tab" data-value="one">Tab 1</span>
+  <div data-tab="one">Content</div>
+</o-tabs>
+tabs.addEventListener("o-change", e => console.log(e.detail))'>Copy</button>
+    </div>
+
+    <!-- o-input -->
+    <h2 id="section-input">o-input</h2>
+    <p class="desc">Glassmorphic text input with optional static label and validation states. Fires <code>o-input</code> on every keystroke and <code>o-change</code> on blur.</p>
+    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Default</div>
+        <o-input id="demo-input-default" label="Full name" placeholder="Alice Smith" style="display:block"></o-input>
+      </div>
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Error state</div>
+        <o-input label="Email" placeholder="name@example.com" error="Invalid email address" style="display:block"></o-input>
+      </div>
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Success state</div>
+        <o-input label="Username" value="reneoun" success style="display:block"></o-input>
+      </div>
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Disabled</div>
+        <o-input label="API key" value="sk-••••••••" disabled style="display:block"></o-input>
+      </div>
+    </div>
+    <div id="input-log" style="margin-top:10px;font-size:12px;opacity:0.6;font-family:monospace;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">&lt;o-input label="Name" placeholder="Alice"&gt;&lt;/o-input&gt;
+&lt;o-input label="Email" error="Invalid email"&gt;&lt;/o-input&gt;
+&lt;o-input label="User" success&gt;&lt;/o-input&gt;
+&lt;o-input label="Key" disabled&gt;&lt;/o-input&gt;
+
+input.addEventListener('o-input',  e =&gt; console.log(e.detail)) // { value }
+input.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value }</div>
+      <button class="copy-btn" data-copy='<o-input label="Name" placeholder="Alice"></o-input>
+input.addEventListener("o-input", e => console.log(e.detail))'>Copy</button>
+    </div>
+
+    <!-- o-skeleton -->
+    <h2 id="section-skeleton">o-skeleton</h2>
+    <p class="desc">Pulsing glassmorphic placeholder for loading states. Three variants: <code>block</code> (default), <code>table</code> (matches <code>o-table</code>), and <code>panel</code> (matches <code>o-panel</code>). Swap in wherever content is loading.</p>
+    <div class="row" style="align-items:flex-start;gap:24px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px;max-width:280px">
+        <div class="ks-label" style="margin-bottom:8px">Panel variant</div>
+        <div id="skel-panel-wrap"><o-skeleton variant="panel" style="display:block"></o-skeleton></div>
+        <div id="real-panel-wrap" style="display:none">
+          <o-panel>
+            <strong>Loaded content</strong>
+            <p style="margin:8px 0 0;opacity:0.8;font-size:13px">This replaced the skeleton after 2s.</p>
+          </o-panel>
+        </div>
+      </div>
+      <div style="flex:2;min-width:280px">
+        <div class="ks-label" style="margin-bottom:8px">Table variant</div>
+        <div id="skel-table-wrap"><o-skeleton variant="table" rows="4" style="display:block"></o-skeleton></div>
+        <div id="real-table-wrap" style="display:none">
+          <o-table id="skel-demo-table"></o-table>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <o-button id="btn-skel-simulate">Simulate load (2s)</o-button>
+      <o-button id="btn-skel-reset">Reset</o-button>
+      <span id="skel-status" style="font-size:12px;opacity:0.6"></span>
+    </div>
+    <div style="margin-top:12px">
+      <div class="ks-label" style="margin-bottom:6px">Block variant (custom size)</div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <o-skeleton width="120px" height="36px" radius="10px"></o-skeleton>
+        <o-skeleton width="80px"  height="36px" radius="18px"></o-skeleton>
+        <o-skeleton width="200px" height="14px" radius="4px"></o-skeleton>
+      </div>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;!-- block (default) --&gt;
+&lt;o-skeleton width="200px" height="40px" radius="10px"&gt;&lt;/o-skeleton&gt;
+
+&lt;!-- while o-table loads --&gt;
+&lt;o-skeleton variant="table" rows="5"&gt;&lt;/o-skeleton&gt;
+
+&lt;!-- while o-panel loads --&gt;
+&lt;o-skeleton variant="panel"&gt;&lt;/o-skeleton&gt;</div>
+      <button class="copy-btn" data-copy='<o-skeleton variant="table" rows="5"></o-skeleton>'>Copy</button>
+    </div>
+
+    <!-- o-progress -->
+    <h2 id="section-progress">o-progress</h2>
+    <p class="desc">Fixed top-of-page loading bar. Use the static API or set the <code>value</code> attribute (0–100). <code>OProgress.done()</code> or <code>value="100"</code> animates to full then fades out automatically.</p>
+    <div class="row" style="gap:10px;flex-wrap:wrap">
+      <o-button id="btn-prog-start">Start</o-button>
+      <o-button id="btn-prog-50">Set 50%</o-button>
+      <o-button id="btn-prog-75">Set 75%</o-button>
+      <o-button id="btn-prog-done">Done</o-button>
+    </div>
+    <div style="margin-top:14px">
+      <div class="ks-label" style="margin-bottom:6px">Value attribute (drag to set)</div>
+      <div class="row" style="gap:12px;align-items:center">
+        <input type="range" id="prog-slider" min="0" max="100" value="0" style="width:200px;accent-color:#4ade80">
+        <span id="prog-slider-val" style="font-size:12px;opacity:0.6;font-family:monospace;min-width:32px">0%</span>
+      </div>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;o-progress&gt;&lt;/o-progress&gt;
+
+// Static API (works without a JS reference)
+OProgress.start()    // auto-increments slowly
+OProgress.set(60)    // jump to 60%
+OProgress.done()     // shoot to 100% then fade out
+
+// Attribute API
+document.querySelector('o-progress').setAttribute('value', '75')</div>
+      <button class="copy-btn" data-copy="OProgress.start()
+OProgress.set(60)
+OProgress.done()">Copy</button>
+    </div>
+
+    <!-- asyncPlus demo -->
+    <h2 id="section-async-plus">asyncPlus</h2>
+    <p class="desc"><code>asyncPlus(...promises)</code> wraps multiple promises and automatically drives the progress bar — starts on the first call, increments as each settles, completes when all are done. Fires a <code>progress-complete</code> event on <code>document</code>.</p>
+    <o-panel style="max-width:520px;width:100%">
+      <div class="ks-label" style="margin-bottom:10px">Simulate parallel requests</div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <o-button id="btn-async-3">3 requests</o-button>
+        <o-button id="btn-async-5">5 requests</o-button>
+        <o-button id="btn-async-8">8 requests (1 fails)</o-button>
+      </div>
+      <div id="async-plus-log" style="margin-top:12px;font-size:13px;opacity:0.7;min-height:20px"></div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">// Auto-drives OProgress for any set of promises
+const results = await asyncPlus(
+  fetch('/api/users'),
+  fetch('/api/posts'),
+  fetch('/api/comments')
+)
+// results: PromiseSettledResult[] — never rejects
+
+// Fires when all settle
+document.addEventListener('progress-complete', e => {
+  console.log(e.detail.results)
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Combined: o-search + o-table + pagination -->
+    <h2 id="section-combined">Search + Table + Pagination</h2>
+    <p class="desc">Live example combining <code>o-search</code>, <code>o-table</code> (selectable), <code>o-toggle</code> for pages + page size, and <code>o-button</code> for prev/next.</p>
+    <o-search id="demo-search" placeholder="Search people..." no-dropdown style="max-width:500px"></o-search>
+
+    <!-- Column visibility -->
+    <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:12px;opacity:0.5;text-transform:uppercase;letter-spacing:0.06em">Columns:</span>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="name"       checked style="accent-color:#4ade80"> Name</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="company"    checked style="accent-color:#4ade80"> Company</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="department" checked style="accent-color:#4ade80"> Department</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="age"        checked style="accent-color:#4ade80"> Age</label>
+    </div>
+
+    <!-- Batch actions (shown when rows selected) -->
+    <div id="batch-bar" style="display:none;margin-top:8px;padding:8px 12px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);border-radius:8px;display:none;align-items:center;gap:10px;flex-wrap:wrap">
+      <span id="batch-count" style="font-size:13px;font-weight:600"></span>
+      <o-button id="btn-batch-export">Export selected</o-button>
+      <o-button id="btn-batch-toast">Notify selected</o-button>
+      <o-button id="btn-batch-clear">Clear selection</o-button>
+    </div>
+
+    <div style="width:max-content;max-width:100%">
+      <div style="margin-top:12px;position:relative">
+        <o-table id="demo-table2" selectable></o-table>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <o-button id="btn-prev">‹</o-button>
+        <o-toggle id="tgl-pages" options="1"></o-toggle>
+        <o-button id="btn-next">›</o-button>
+        <div style="flex:1"></div>
+        <o-toggle id="tgl-pagesize" options="5,10,25,All" value="10"></o-toggle>
+        <o-button id="btn-export-csv">Export CSV</o-button>
+      </div>
+    </div>
+
+    <!-- Row detail JSON panel -->
+    <div id="row-detail-wrap" style="margin-top:12px;display:none">
+      <o-panel move snap="10" style="max-width:380px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <strong style="font-size:13px">Selected row</strong>
+          <o-button id="btn-close-detail" style="font-size:11px">✕</o-button>
+        </div>
+        <pre id="row-detail-json" style="margin:0;font-family:monospace;font-size:12px;color:rgba(255,255,255,0.85);white-space:pre-wrap;word-break:break-word"></pre>
+      </o-panel>
+    </div>
+
+    <div class="code-wrap"><div class="code">// Wire search to filter table data
+search.addEventListener('o-input', e => {
+  const q = e.detail.query.toLowerCase()
+  table.data = allData.filter(r =>
+    Object.values(r).some(v => String(v).toLowerCase().includes(q))
+  )
+})
+
+// Paginate
+tglPageSize.addEventListener('o-change', e => { pageSize = e.detail.value; render() })
+btnPrev.addEventListener('o-click', () => { if (page &gt; 0) { page--; render() } })
+btnNext.addEventListener('o-click', () => { if ((page + 1) * pageSize &lt; data.length) { page++; render() } })
+
+// Export selected rows as CSV
+btnExport.addEventListener('o-click', () => {
+  const rows = table.selected
+  const csv  = [cols.map(c => c.label), ...rows.map(r => cols.map(c => r[c.key]))].map(r => r.join(',')).join('\n')
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv])), download: 'export.csv' })
+  a.click()
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Toast builder -->
+    <h2 id="section-toast-builder">Custom toast builder</h2>
+    <p class="desc">Compose a custom notification — type your message, pick a type, set a duration, and fire. Built entirely from OWC components.</p>
+    <o-panel style="max-width:520px;width:100%">
+      <o-input id="toast-msg-input" label="Message" placeholder="Your notification message..." style="width:100%"></o-input>
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px">
+        <div>
+          <div class="ks-label">Type</div>
+          <o-toggle id="toast-type" options="Success,Error,Warning,Info" value="info"></o-toggle>
+        </div>
+        <div>
+          <div class="ks-label">Duration</div>
+          <o-toggle id="toast-dur" options="2s,4s,8s,∞" value="4s"></o-toggle>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <o-button id="btn-fire-custom-toast">Fire toast</o-button>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">&lt;o-input id="msg" label="Message" placeholder="Your message..."&gt;&lt;/o-input&gt;
+&lt;o-toggle id="type" options="Success,Error,Warning,Info" value="info"&gt;&lt;/o-toggle&gt;
+&lt;o-toggle id="dur"  options="2s,4s,8s,∞" value="4s"&gt;&lt;/o-toggle&gt;
+&lt;o-button&gt;Fire toast&lt;/o-button&gt;
+
+const durMap = { '2s': 2000, '4s': 4000, '8s': 8000, '∞': 99999 }
+btn.addEventListener('o-click', () =>
+  toast(msg.value || 'Hello!', type.value.toLowerCase(), { duration: durMap[dur.value] })
+)</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Kanban demo -->
+    <h2 id="section-kanban">o-panel — kanban board</h2>
+    <p class="desc">Three <code>o-panel</code> columns as a kanban board. Move items between columns using the arrow buttons.</p>
+    <div class="row" style="align-items:flex-start;gap:12px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">
+      <o-panel id="kan-todo"    style="min-width:180px;flex:1">
+        <div style="font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+          <span>To do <span id="kan-todo-count" style="opacity:0.5;font-weight:400;font-size:12px">(3)</span></span>
+        </div>
+        <div id="kan-todo-list"></div>
+      </o-panel>
+      <o-panel id="kan-doing"   style="min-width:180px;flex:1">
+        <div style="font-weight:700;margin-bottom:10px">In progress <span id="kan-doing-count" style="opacity:0.5;font-weight:400;font-size:12px">(2)</span></div>
+        <div id="kan-doing-list"></div>
+      </o-panel>
+      <o-panel id="kan-done"    style="min-width:180px;flex:1">
+        <div style="font-weight:700;margin-bottom:10px">Done <span id="kan-done-count" style="opacity:0.5;font-weight:400;font-size:12px">(1)</span></div>
+        <div id="kan-done-list"></div>
+      </o-panel>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;!-- Three o-panel columns as a kanban board --&gt;
+&lt;div style="display:flex;gap:12px"&gt;
+  &lt;o-panel id="todo"&gt;...&lt;/o-panel&gt;
+  &lt;o-panel id="doing"&gt;...&lt;/o-panel&gt;
+  &lt;o-panel id="done"&gt;...&lt;/o-panel&gt;
+&lt;/div&gt;
+
+// Move item between columns
+function move(item, fromCol, toCol) {
+  fromCol.items = fromCol.items.filter(i => i !== item)
+  toCol.items   = [...toCol.items, item]
+  renderColumn(fromCol)
+  renderColumn(toCol)
+}</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Scroll to top -->
+    <div id="scroll-top-btn" style="display:none;position:fixed;bottom:24px;right:24px;z-index:90">
+      <o-button id="btn-scroll-top">↑ Top</o-button>
+    </div>
+
+    <!-- Live clock widget -->
+    <h2 id="section-clock">o-panel — as a live widget</h2>
+    <p class="desc">An <code>o-panel</code> used as a real-time widget host — draggable clock showing that panels can hold any live content.</p>
+    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <o-panel move snap="10" style="min-width:180px;text-align:center">
+        <div id="clock-time" style="font-size:2.2rem;font-weight:700;letter-spacing:0.05em;line-height:1">00:00:00</div>
+        <div id="clock-date" style="font-size:12px;opacity:0.6;margin-top:4px"></div>
+        <div style="margin-top:10px;display:flex;gap:6px;justify-content:center">
+          <o-toggle id="clock-fmt" options="24h,12h" value="24h"></o-toggle>
+        </div>
+      </o-panel>
+      <o-panel move snap="10" style="min-width:200px">
+        <div style="font-size:12px;opacity:0.5;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">Notification queue</div>
+        <div class="row" style="gap:6px;flex-wrap:wrap">
+          <o-button id="q-success">+Success</o-button>
+          <o-button id="q-error">+Error</o-button>
+          <o-button id="q-info">+Info</o-button>
+          <o-button id="q-fire">Fire queue</o-button>
+        </div>
+        <div id="q-count" style="margin-top:8px;font-size:12px;opacity:0.6">Queue: 0 toasts</div>
+      </o-panel>
+    </div>
+    <div class="code-wrap"><div class="code">// Clock: update every second
+setInterval(() =&gt; {
+  clock.textContent = new Date().toLocaleTimeString()
+}, 1000)
+
+// Notification queue: fire with staggered delays
+queue.forEach((item, i) =&gt; {
+  setTimeout(() =&gt; toast(item.msg, item.type), i * 800)
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Auto-complete with side effects -->
+    <h2 id="section-autocomplete">Auto-complete with side effects</h2>
+    <p class="desc">Select a country in the dropdown — the currency, flag, and continent fields auto-populate. One <code>o-search</code> driving multiple outputs.</p>
+    <o-panel style="max-width:480px;width:100%">
+      <div class="ks-label">Country</div>
+      <o-search id="country-search" placeholder="Search countries..." style="width:100%;margin-bottom:12px"></o-search>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="ks-label">Flag</div>
+          <div id="country-flag" style="font-size:2.5rem;line-height:1;min-height:40px">—</div>
+        </div>
+        <div>
+          <div class="ks-label">Currency</div>
+          <div id="country-currency" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
+        </div>
+        <div>
+          <div class="ks-label">Continent</div>
+          <div id="country-continent" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
+        </div>
+        <div>
+          <div class="ks-label">Dialing code</div>
+          <div id="country-dial" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
+        </div>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">// One o-search drives multiple output fields
+search.items = countries.map(c => ({ label: c.name, value: c.name }))
+
+search.addEventListener('o-select', e => {
+  const c = countries.find(x => x.name === e.detail.value)
+  flag.textContent      = c.flag
+  currency.textContent  = c.currency
+  continent.textContent = c.continent
+  dial.textContent      = c.dial
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Form validation demo -->
+    <h2 id="section-form">Form validation</h2>
+    <p class="desc">A submit button that stays disabled until all required fields have content — built with <code>o-search</code> as text inputs and <code>o-button</code> as submit.</p>
+    <o-panel style="max-width:460px;width:100%">
+      <o-input id="form-fname" label="First name *" placeholder="Enter first name..." style="width:100%;margin-bottom:10px"></o-input>
+      <o-input id="form-lname" label="Last name *" placeholder="Enter last name..." style="width:100%;margin-bottom:10px"></o-input>
+      <o-input id="form-email" label="Email *" type="email" placeholder="name@example.com" style="width:100%;margin-bottom:14px"></o-input>
+
+      <div style="display:flex;align-items:center;gap:10px">
+        <o-button id="btn-form-submit" disabled>Submit</o-button>
+        <span id="form-hint" style="font-size:12px;opacity:0.5">Fill all fields to enable</span>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">&lt;o-input id="fname" label="First name *" placeholder="Alice"&gt;&lt;/o-input&gt;
+&lt;o-input id="email" label="Email *" type="email" placeholder="name@example.com"&gt;&lt;/o-input&gt;
+&lt;o-button id="submit" disabled&gt;Submit&lt;/o-button&gt;
+
+const values = {}
+inputs.forEach(el =>
+  el.addEventListener('o-input', e => {
+    values[el.id] = e.detail.value
+    submit.toggleAttribute('disabled', !Object.values(values).every(Boolean))
+  })
+)
+
+// Show validation state on blur
+emailInput.addEventListener('o-change', e => {
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.detail.value)
+  emailInput.setAttribute('error', valid ? '' : 'Enter a valid email')
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Multi-search AND filter -->
+    <h2 id="section-multisearch">Multi-search (AND filter)</h2>
+    <p class="desc">Two <code>o-search</code> bars filtering the same dataset simultaneously — results must match both queries.</p>
+    <div class="row" style="gap:12px">
+      <o-search id="multi-s1" placeholder="Filter by name..." no-dropdown style="max-width:300px"></o-search>
+      <o-search id="multi-s2" placeholder="Filter by company..." no-dropdown style="max-width:300px"></o-search>
+      <o-button id="btn-multi-clear">Clear</o-button>
+    </div>
+    <div style="margin-top:8px;font-size:13px;opacity:0.6" id="multi-count"></div>
+    <div style="margin-top:8px">
+      <o-table id="multi-table"></o-table>
+    </div>
+    <div class="code-wrap"><div class="code">// Two o-search bars — results must satisfy both filters simultaneously
+s1.addEventListener('o-input', e => { q1 = e.detail.query; render() })
+s2.addEventListener('o-input', e => { q2 = e.detail.query; render() })
+
+function render() {
+  const a = q1.toLowerCase(), b = q2.toLowerCase()
+  table.data = allData.filter(r =>
+    (!a || r.name.toLowerCase().includes(a) || r.dept.toLowerCase().includes(a)) &&
+    (!b || r.company.toLowerCase().includes(b))
+  )
+}</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Kitchen sink -->
+    <h2 id="section-kitchen">Kitchen sink</h2>
+    <p class="desc">All components inside a single draggable + resizable <code>o-panel</code> — a practical multi-component composition.</p>
+    <o-panel move resize snap="20" style="max-width:560px;width:100%">
+      <strong style="display:block;margin-bottom:12px">Component playground</strong>
+
+      <div class="ks-label">Search</div>
+      <o-search id="ks-search" placeholder="Filter actions..." style="max-width:100%;width:100%" no-dropdown></o-search>
+
+      <div class="ks-label" style="margin-top:12px">Mode</div>
+      <div class="row">
+        <o-toggle id="ks-toggle" options="Read,Edit,Preview" value="read"></o-toggle>
+        <span id="ks-mode-out" style="font-size:13px;opacity:0.7">Mode: Read</span>
+      </div>
+
+      <div class="ks-label" style="margin-top:12px">Actions</div>
+      <div class="row">
+        <o-button id="ks-save">Save</o-button>
+        <o-button id="ks-publish">Publish</o-button>
+        <o-button id="ks-discard">Discard</o-button>
+      </div>
+
+      <div id="ks-search-out" style="margin-top:10px;font-size:12px;opacity:0.6;min-height:18px"></div>
+    </o-panel>
+
+    <!-- Live event log -->
+    <h2 id="section-events">Live event log</h2>
+    <p class="desc">All component events from this page, logged in real time.</p>
+    <o-panel style="width:100%;max-width:700px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong style="font-size:13px">Events <span id="log-count" style="opacity:0.4;font-weight:400;font-size:11px">(0)</span></strong>
+        <o-button id="btn-clear-log">Clear</o-button>
+      </div>
+      <div id="event-log"><div class="empty">No events yet — interact with the components above.</div></div>
+    </o-panel>
+
+    <!-- Footer -->
+    <footer>
+      <span>Open Web Components — glassmorphism library by <a href="https://github.com/reneoun" target="_blank">reneoun</a></span>
+      <a href="https://github.com/reneoun/Open-Web-Components" target="_blank">View on GitHub →</a>
+    </footer>
+
+    <script>
+      // ── Event log ──────────────────────────────────────────────
+      const logEl    = document.getElementById('event-log')
+      const logCount = document.getElementById('log-count')
+      let totalEvents = 0
+
+      // ── Stats bar ──────────────────────────────────────────────
+      const statEvents   = document.getElementById('stat-events')
+      const statSelected = document.getElementById('stat-selected')
+      const statClicks   = document.getElementById('stat-clicks')
+      const statSearches = document.getElementById('stat-searches')
+      let statClickCount = 0, statSearchCount = 0
+
+      function logEvent(name, detail) {
+        totalEvents++
+        logCount.textContent = `(${totalEvents})`
+        statEvents.textContent = totalEvents
+        const ts = new Date().toTimeString().slice(0, 8)
+        let payload = ''
+        try { payload = JSON.stringify(detail) } catch(e) { payload = String(detail) }
+        const entry = document.createElement('div')
+        entry.className = 'entry'
+        entry.innerHTML = `<span class="ts">${ts}</span><span class="evname">${name}</span><span class="payload">${payload}</span>`
+        if (logEl.querySelector('.empty')) logEl.innerHTML = ''
+        logEl.prepend(entry)
+        const entries = logEl.querySelectorAll('.entry')
+        if (entries.length > 60) entries[entries.length - 1].remove()
+      }
+
+      document.getElementById('btn-clear-log').addEventListener('o-click', () => {
+        logEl.innerHTML = '<div class="empty">Cleared.</div>'
+        totalEvents = 0
+        logCount.textContent = '(0)'
+        statEvents.textContent = 0
+      })
+
+      // ── Scrollspy ──────────────────────────────────────────────
+      const navLinks = document.querySelectorAll('#nav a[href^="#"]')
+      const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean)
+      const spy = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            navLinks.forEach(a => a.classList.remove('active'))
+            const link = document.querySelector(`#nav a[href="#${e.target.id}"]`)
+            if (link) link.classList.add('active')
+          }
+        })
+      }, { threshold: 0.3, rootMargin: '-48px 0px -60% 0px' })
+      sections.forEach(s => spy.observe(s))
+
+      // ── Keyboard shortcuts ─────────────────────────────────────
+      const overlay = document.getElementById('shortcut-overlay')
+      const sectionIds = ['section-button','section-panel','section-toast','section-toggle','section-table','section-search','section-combined']
+      const toastTypes = ['success','error','warning','info']
+      document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+        if (e.key === '?') { overlay.classList.toggle('open'); return }
+        if (e.key === 'Escape') { overlay.classList.remove('open'); return }
+        const idx = parseInt(e.key)
+        if (idx >= 1 && idx <= sectionIds.length) {
+          document.getElementById(sectionIds[idx - 1]).scrollIntoView({ behavior: 'smooth', block: 'start' })
+          return
+        }
+        if (e.key === 't' || e.key === 'T') {
+          const type = toastTypes[Math.floor(Math.random() * toastTypes.length)]
+          toast(`Keyboard toast — type: ${type}`, type)
+          logEvent('shortcut:toast', { type })
+        }
+      })
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open') })
+
+      // ── o-panel attribute playground ──────────────────────────
+      const pgPanel   = document.getElementById('pg-panel')
+      const pgCode    = document.getElementById('pg-code')
+      const pgMove    = document.getElementById('pg-move')
+      const pgResize  = document.getElementById('pg-resize')
+      const pgSnap    = document.getElementById('pg-snap')
+      const pgSnapVal = document.getElementById('pg-snap-val')
+      const pgSnapNum = document.getElementById('pg-snap-num')
+
+      function updatePgPanel() {
+        pgSnapVal.disabled = !pgSnap.checked
+        pgSnapNum.style.opacity = pgSnap.checked ? '1' : '0.3'
+        if (pgMove.checked) pgPanel.setAttribute('move', ''); else pgPanel.removeAttribute('move')
+        if (pgResize.checked) pgPanel.setAttribute('resize', ''); else pgPanel.removeAttribute('resize')
+        if (pgSnap.checked) pgPanel.setAttribute('snap', pgSnapVal.value); else pgPanel.removeAttribute('snap')
+        const attrs = [
+          pgMove.checked ? 'move' : '',
+          pgSnap.checked ? `snap="${pgSnapVal.value}"` : '',
+          pgResize.checked ? 'resize' : '',
+        ].filter(Boolean).join(' ')
+        pgCode.textContent = attrs ? `<o-panel ${attrs}>Content</o-panel>` : '<o-panel>Content</o-panel>'
+        logEvent('pg:update', { move: pgMove.checked, resize: pgResize.checked, snap: pgSnap.checked ? pgSnapVal.value : false })
+      }
+      pgMove.addEventListener('change', updatePgPanel)
+      pgResize.addEventListener('change', updatePgPanel)
+      pgSnap.addEventListener('change', updatePgPanel)
+      pgSnapVal.addEventListener('input', () => { pgSnapNum.textContent = pgSnapVal.value; updatePgPanel() })
+      updatePgPanel()
+
+      // ── Copy to clipboard ──────────────────────────────────────
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const text = btn.dataset.copy || btn.closest('.code-wrap').querySelector('.code').textContent
+          navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = 'Copied!'
+            btn.classList.add('copied')
+            setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied') }, 1500)
+          })
+        })
+      })
+
+      // ── Theme switcher ─────────────────────────────────────────
+      const themeMap = { purple: '', blue: 'theme-blue', green: 'theme-green', rose: 'theme-rose', slate: 'theme-slate' }
+      document.getElementById('tgl-theme').addEventListener('o-change', e => {
+        document.body.className = themeMap[e.detail.value] || ''
+        logEvent('theme-change', { theme: e.detail.value })
+      })
+
+      // ── Combined demo ──────────────────────────────────────────
+      const COLUMNS = [
+        { key: 'name',       label: 'Name',       width: 160 },
+        { key: 'company',    label: 'Company',     width: 200 },
+        { key: 'department', label: 'Department',  width: 140 },
+        { key: 'age',        label: 'Age',         width: 60  },
+      ]
+
+      const search   = document.getElementById('demo-search')
+      const table    = document.getElementById('demo-table2')
+      const btnPrev  = document.getElementById('btn-prev')
+      const btnNext  = document.getElementById('btn-next')
+      const tglPages = document.getElementById('tgl-pages')
+      const tglSize  = document.getElementById('tgl-pagesize')
+
+      table.columns = COLUMNS
+
+      let allData      = []
+      let filteredData = []
+      let currentPage  = 1
+      let pageSize     = 10
+
+      function getPageSize() { return tglSize.value === 'all' ? Infinity : parseInt(tglSize.value) }
+      function totalPages()  { return pageSize === Infinity ? 1 : Math.max(1, Math.ceil(filteredData.length / pageSize)) }
+      function updatePageToggle() {
+        const n = totalPages()
+        tglPages.options = Array.from({ length: n }, (_, i) => String(i + 1))
+        tglPages.value = String(currentPage)
+      }
+      function updateNavButtons() {
+        const off = 'opacity:0.35;pointer-events:none'
+        btnPrev.style.cssText = currentPage <= 1 ? off : ''
+        btnNext.style.cssText = currentPage >= totalPages() ? off : ''
+      }
+      function render() {
+        const start = pageSize === Infinity ? 0 : (currentPage - 1) * pageSize
+        const end   = pageSize === Infinity ? filteredData.length : start + pageSize
+        table.data  = filteredData.slice(start, end)
+        updatePageToggle()
+        updateNavButtons()
+      }
+      function applySearch(query) {
+        const q = query.toLowerCase()
+        filteredData = q
+          ? allData.filter(r =>
+              r.name.toLowerCase().includes(q) ||
+              r.company.toLowerCase().includes(q) ||
+              r.department.toLowerCase().includes(q))
+          : allData
+        currentPage = 1
+        render()
+      }
+
+      fetch('https://dummyjson.com/users?limit=50')
+        .then(r => r.json())
+        .then(({ users }) => {
+          allData = users.map(u => ({
+            name:       `${u.firstName} ${u.lastName}`,
+            company:    u.company.name,
+            department: u.company.department,
+            age:        u.age,
+          }))
+          filteredData = allData
+          render()
+          // Also feed multi-search table via event (cross-script-block safe)
+          document.dispatchEvent(new CustomEvent('owc-data-ready', { detail: allData }))
+        })
+        .catch(err => console.error('Failed to load users', err))
+
+      search.addEventListener('o-input',    e => { applySearch(e.detail.query); if (e.detail.query) { statSearchCount++; statSearches.textContent = statSearchCount } logEvent('o-input', e.detail) })
+      tglPages.addEventListener('o-change', e => { currentPage = parseInt(e.detail.value); render(); logEvent('o-change (pages)', e.detail) })
+      tglSize.addEventListener('o-change',  e => { pageSize = getPageSize(); currentPage = 1; render(); logEvent('o-change (size)', e.detail) })
+      btnPrev.addEventListener('o-click',   () => { if (currentPage > 1) { currentPage--; render() } logEvent('o-click', 'prev') })
+      btnNext.addEventListener('o-click',   () => { if (currentPage < totalPages()) { currentPage++; render() } logEvent('o-click', 'next') })
+      // ── Column visibility ──────────────────────────────────────
+      const ALL_COLUMNS = [
+        { key: 'name',       label: 'Name',       width: 160 },
+        { key: 'company',    label: 'Company',     width: 200 },
+        { key: 'department', label: 'Department',  width: 140 },
+        { key: 'age',        label: 'Age',         width: 60  },
+      ]
+      function updateColumns() {
+        const visible = new Set([...document.querySelectorAll('.col-vis:checked')].map(cb => cb.dataset.col))
+        table.columns = ALL_COLUMNS.filter(c => visible.has(c.key))
+        logEvent('col-visibility', { visible: [...visible] })
+      }
+      document.querySelectorAll('.col-vis').forEach(cb => cb.addEventListener('change', updateColumns))
+      table.columns = COLUMNS  // initial set handled below
+
+      // ── Batch actions + JSON detail ────────────────────────────
+      const batchBar      = document.getElementById('batch-bar')
+      const batchCount    = document.getElementById('batch-count')
+      const rowDetailWrap = document.getElementById('row-detail-wrap')
+      const rowDetailJson = document.getElementById('row-detail-json')
+      let selectedRows    = []
+
+      document.getElementById('btn-close-detail').addEventListener('o-click', () => {
+        rowDetailWrap.style.display = 'none'
+      })
+      document.getElementById('btn-batch-export').addEventListener('o-click', () => {
+        const keys = ['name','company','department','age']
+        const lines = [keys.join(','), ...selectedRows.map(r => keys.map(k => `"${r[k]}"`).join(','))]
+        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' })), download: 'selected.csv' })
+        a.click()
+        toast(`Exported ${selectedRows.length} rows`, 'success')
+        logEvent('batch:export', { count: selectedRows.length })
+      })
+      document.getElementById('btn-batch-toast').addEventListener('o-click', () => {
+        toast(`Notifying ${selectedRows.length} people: ${selectedRows.slice(0,2).map(r=>r.name).join(', ')}${selectedRows.length>2?' …':''}`, 'info', { duration: 3000 })
+        logEvent('batch:notify', { count: selectedRows.length })
+      })
+      document.getElementById('btn-batch-clear').addEventListener('o-click', () => {
+        table.columns = [...table.columns]  // force re-render to deselect
+        batchBar.style.display = 'none'
+        rowDetailWrap.style.display = 'none'
+        logEvent('batch:clear', {})
+      })
+
+      table.addEventListener('o-row-select', e => {
+        selectedRows = e.detail.selected
+        statSelected.textContent = selectedRows.length
+        logEvent('o-row-select', { count: selectedRows.length })
+        if (selectedRows.length > 0) {
+          batchBar.style.display = 'flex'
+          batchCount.textContent = `${selectedRows.length} row${selectedRows.length > 1 ? 's' : ''} selected`
+        } else {
+          batchBar.style.display = 'none'
+        }
+        if (selectedRows.length === 1) {
+          const r = selectedRows[0]
+          rowDetailJson.textContent = JSON.stringify(r, null, 2)
+          rowDetailWrap.style.display = ''
+          toast(`${r.name} — ${r.company}`, 'info', { duration: 2000 })
+        } else {
+          rowDetailWrap.style.display = 'none'
+        }
+      })
+    </script>
+
+    <script>
+      // ── Form validation ────────────────────────────────────────
+      const formFields = { fname: '', lname: '', email: '' }
+      const submitBtn  = document.getElementById('btn-form-submit')
+      const formHint   = document.getElementById('form-hint')
+
+      function updateFormValidity() {
+        const allFilled = Object.values(formFields).every(v => v.trim().length > 0)
+        if (allFilled) submitBtn.removeAttribute('disabled'); else submitBtn.setAttribute('disabled', '')
+        formHint.textContent = allFilled ? 'Ready to submit' : `Fill all fields to enable`
+      }
+      ;[['form-fname','fname'],['form-lname','lname'],['form-email','email']].forEach(([id, key]) => {
+        document.getElementById(id).addEventListener('o-input', e => {
+          formFields[key] = e.detail.value
+          updateFormValidity()
+          logEvent('form:input', { field: key, length: e.detail.value.length })
+        })
+      })
+      document.getElementById('btn-form-submit').addEventListener('o-click', () => {
+        toast(`Welcome, ${formFields.fname} ${formFields.lname}!`, 'success', { duration: 3000 })
+        logEvent('form:submit', { name: `${formFields.fname} ${formFields.lname}` })
+      })
+
+      // ── Multi-search AND filter ─────────────────────────────────
+      const multiTable  = document.getElementById('multi-table')
+      const multiCount  = document.getElementById('multi-count')
+      const multiS1     = document.getElementById('multi-s1')
+      const multiS2     = document.getElementById('multi-s2')
+      let multiQuery1   = '', multiQuery2 = '', multiAllData = []
+
+      multiTable.columns = [
+        { key: 'name',       label: 'Name',    width: 160 },
+        { key: 'company',    label: 'Company', width: 200 },
+        { key: 'department', label: 'Dept',    width: 140 },
+        { key: 'age',        label: 'Age',     width: 60  },
+      ]
+
+      function renderMultiTable() {
+        const q1 = multiQuery1.toLowerCase(), q2 = multiQuery2.toLowerCase()
+        const filtered = multiAllData.filter(r =>
+          (!q1 || r.name.toLowerCase().includes(q1) || r.department.toLowerCase().includes(q1)) &&
+          (!q2 || r.company.toLowerCase().includes(q2))
+        )
+        multiTable.data = filtered
+        multiCount.textContent = `${filtered.length} of ${multiAllData.length} people match both filters`
+        logEvent('multi-search', { q1: multiQuery1, q2: multiQuery2, results: filtered.length })
+      }
+
+      // Reuse allData once it loads
+      const _origFetch = fetch
+      document.addEventListener('owc-data-ready', (e) => {
+        multiAllData = e.detail
+        renderMultiTable()
+      })
+
+      multiS1.addEventListener('o-input', e => { multiQuery1 = e.detail.query; renderMultiTable() })
+      multiS2.addEventListener('o-input', e => { multiQuery2 = e.detail.query; renderMultiTable() })
+      document.getElementById('btn-multi-clear').addEventListener('o-click', () => {
+        multiQuery1 = ''; multiQuery2 = ''
+        // Can't easily clear o-search value externally without re-render; just re-filter
+        renderMultiTable()
+        logEvent('multi-search:clear', {})
+      })
+
+      // ── o-table demo (with score color coding) ────────────────
+      const t = document.getElementById('demo-table')
+      t.columns = [
+        { key: 'name',  label: 'Name',  width: 160, sortable: true },
+        { key: 'role',  label: 'Role',  width: 140, sortable: true },
+        { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60,
+          renderCell: val => {
+            const color = val >= 90 ? '#4ade80' : val >= 80 ? '#facc15' : '#f87171'
+            return `<span style="color:${color};font-weight:600">${val}</span>`
+          }
+        },
+      ]
+      t.data = [
+        { name: 'Alice', role: 'Engineer', score: 92 },
+        { name: 'Bob',   role: 'Designer', score: 85 },
+        { name: 'Carol', role: 'Manager',  score: 78 },
+        { name: 'Dave',  role: 'Engineer', score: 95 },
+      ]
+      t.addEventListener('o-sort', e => logEvent('o-sort', e.detail))
+
+      // ── Scroll progress + scroll-to-top ───────────────────────
+      const progressBar = document.getElementById('scroll-progress')
+      const scrollTopWrap = document.getElementById('scroll-top-btn')
+      window.addEventListener('scroll', () => {
+        const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight)
+        progressBar.style.transform = `scaleX(${Math.min(pct, 1)})`
+        scrollTopWrap.style.display = window.scrollY > 400 ? '' : 'none'
+      })
+      document.getElementById('btn-scroll-top').addEventListener('o-click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      })
+
+      // ── Toast builder ──────────────────────────────────────────
+      const toastMsgInput = document.getElementById('toast-msg-input')
+      const toastTypeTgl  = document.getElementById('toast-type')
+      const toastDurTgl   = document.getElementById('toast-dur')
+      let toastBuilderMsg = ''
+
+      toastMsgInput.addEventListener('o-input', e => { toastBuilderMsg = e.detail.value })
+      document.getElementById('btn-fire-custom-toast').addEventListener('o-click', () => {
+        const msg = toastBuilderMsg.trim() || 'Hello from the toast builder!'
+        const type = toastTypeTgl.value || 'info'
+        const durMap = { '2s': 2000, '4s': 4000, '8s': 8000, '∞': 0 }
+        const dur = durMap[toastDurTgl.value] ?? 4000
+        const opts = dur > 0 ? { duration: dur } : { duration: 99999 }
+        toast(msg, type, opts)
+        logEvent('custom-toast', { msg, type, dur })
+      })
+
+      // ── Kanban ─────────────────────────────────────────────────
+      const kanCols = {
+        todo:  { items: ['Design mockups', 'Write tests', 'Update docs'], listId: 'kan-todo-list',  countId: 'kan-todo-count'  },
+        doing: { items: ['Build o-panel',  'Fix o-search'],               listId: 'kan-doing-list', countId: 'kan-doing-count' },
+        done:  { items: ['Setup repo'],                                    listId: 'kan-done-list',  countId: 'kan-done-count'  },
+      }
+      const COL_ORDER = ['todo','doing','done']
+
+      function renderKanban() {
+        COL_ORDER.forEach(col => {
+          const { items, listId, countId } = kanCols[col]
+          document.getElementById(countId).textContent = `(${items.length})`
+          const listEl = document.getElementById(listId)
+          listEl.innerHTML = ''
+          items.forEach((item, i) => {
+            const div = document.createElement('div')
+            div.className = 'kan-item'
+            const colIdx = COL_ORDER.indexOf(col)
+            div.innerHTML = `<span>${item}</span><div class="kan-btns">
+              <button class="kan-btn" ${colIdx===0?'disabled':''} onclick="kanMove('${col}',${i},-1)">←</button>
+              <button class="kan-btn" ${colIdx===COL_ORDER.length-1?'disabled':''} onclick="kanMove('${col}',${i},1)">→</button>
+            </div>`
+            listEl.appendChild(div)
+          })
+        })
+      }
+      window.kanMove = (col, idx, dir) => {
+        const item = kanCols[col].items.splice(idx, 1)[0]
+        const targetCol = COL_ORDER[COL_ORDER.indexOf(col) + dir]
+        kanCols[targetCol].items.push(item)
+        renderKanban()
+        logEvent('kanban:move', { item, from: col, to: targetCol })
+        if (targetCol === 'done') toast(`✓ "${item}" done!`, 'success', { duration: 2000 })
+      }
+      renderKanban()
+
+      // ── Auto-complete with side effects ────────────────────────
+      const COUNTRIES = [
+        { name: 'United States', flag: '🇺🇸', currency: 'USD — US Dollar',   continent: 'North America', dial: '+1' },
+        { name: 'Germany',       flag: '🇩🇪', currency: 'EUR — Euro',          continent: 'Europe',        dial: '+49' },
+        { name: 'Japan',         flag: '🇯🇵', currency: 'JPY — Yen',           continent: 'Asia',          dial: '+81' },
+        { name: 'Brazil',        flag: '🇧🇷', currency: 'BRL — Real',          continent: 'South America', dial: '+55' },
+        { name: 'India',         flag: '🇮🇳', currency: 'INR — Rupee',         continent: 'Asia',          dial: '+91' },
+        { name: 'France',        flag: '🇫🇷', currency: 'EUR — Euro',          continent: 'Europe',        dial: '+33' },
+        { name: 'Netherlands',   flag: '🇳🇱', currency: 'EUR — Euro',          continent: 'Europe',        dial: '+31' },
+        { name: 'Australia',     flag: '🇦🇺', currency: 'AUD — Aus. Dollar',   continent: 'Oceania',       dial: '+61' },
+        { name: 'Canada',        flag: '🇨🇦', currency: 'CAD — Can. Dollar',   continent: 'North America', dial: '+1' },
+        { name: 'South Korea',   flag: '🇰🇷', currency: 'KRW — Won',           continent: 'Asia',          dial: '+82' },
+        { name: 'Mexico',        flag: '🇲🇽', currency: 'MXN — Peso',          continent: 'North America', dial: '+52' },
+        { name: 'Nigeria',       flag: '🇳🇬', currency: 'NGN — Naira',         continent: 'Africa',        dial: '+234' },
+      ]
+      const countrySearch = document.getElementById('country-search')
+      countrySearch.data = COUNTRIES
+      countrySearch.searchKeys = ['name', 'continent', 'currency']
+      countrySearch.valueKey = 'name'
+      countrySearch.renderItem = c => `<span style="font-size:1.5rem;margin-right:8px">${c.flag}</span><span><b>${c.name}</b><br><small style="opacity:0.6">${c.continent} · ${c.currency}</small></span>`
+      countrySearch.addEventListener('o-select', e => {
+        const c = e.detail.item
+        document.getElementById('country-flag').textContent      = c.flag
+        document.getElementById('country-currency').textContent  = c.currency
+        document.getElementById('country-continent').textContent = c.continent
+        document.getElementById('country-dial').textContent      = c.dial
+        logEvent('autocomplete:select', { country: c.name })
+      })
+
+      // ── Dynamic table ─────────────────────────────────────────
+      const dynTable = document.getElementById('demo-table-dyn')
+      const tblRowCount = document.getElementById('tbl-row-count')
+      const NAMES = ['Alice','Bob','Carol','Dave','Eve','Frank','Grace','Heidi','Ivan','Judy']
+      const ROLES = ['Engineer','Designer','Manager','Analyst','DevOps','QA']
+      const INITIAL_DYN = [
+        { name: 'Alice', role: 'Engineer', score: 92 },
+        { name: 'Bob',   role: 'Designer', score: 85 },
+        { name: 'Carol', role: 'Manager',  score: 78 },
+        { name: 'Dave',  role: 'Engineer', score: 95 },
+      ]
+      let dynData = [...INITIAL_DYN.map(r => ({...r}))]
+      let dynHistory = [JSON.stringify(dynData)]
+      let dynHistIdx = 0
+
+      dynTable.columns = [
+        { key: 'name',  label: 'Name',  width: 160, sortable: true },
+        { key: 'role',  label: 'Role',  width: 140, sortable: true },
+        { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60,
+          renderCell: v => `<span style="color:${v>=90?'#4ade80':v>=80?'#facc15':'#f87171'};font-weight:600">${v}</span>`
+        },
+      ]
+
+      const undoBtn = document.getElementById('tbl-undo')
+      const redoBtn = document.getElementById('tbl-redo')
+
+      function updateUndoRedo() {
+        if (dynHistIdx > 0) undoBtn.removeAttribute('disabled'); else undoBtn.setAttribute('disabled', '')
+        if (dynHistIdx < dynHistory.length - 1) redoBtn.removeAttribute('disabled'); else redoBtn.setAttribute('disabled', '')
+      }
+      function pushHistory() {
+        dynHistory = dynHistory.slice(0, dynHistIdx + 1)
+        dynHistory.push(JSON.stringify(dynData))
+        dynHistIdx = dynHistory.length - 1
+        updateUndoRedo()
+      }
+      function syncDynTable() {
+        dynTable.data = [...dynData]
+        tblRowCount.textContent = `${dynData.length} row${dynData.length !== 1 ? 's' : ''}`
+      }
+      syncDynTable(); updateUndoRedo()
+
+      document.getElementById('tbl-add').addEventListener('o-click', () => {
+        dynData.push({ name: NAMES[Math.floor(Math.random()*NAMES.length)], role: ROLES[Math.floor(Math.random()*ROLES.length)], score: 60 + Math.floor(Math.random()*40) })
+        pushHistory(); syncDynTable(); logEvent('table:add-row', { total: dynData.length })
+      })
+      document.getElementById('tbl-remove').addEventListener('o-click', () => {
+        if (dynData.length > 1) { dynData.pop(); pushHistory(); syncDynTable(); logEvent('table:remove-row', { total: dynData.length }) }
+        else toast('Cannot remove last row', 'warning')
+      })
+      document.getElementById('tbl-randomize').addEventListener('o-click', () => {
+        dynData = dynData.map(r => ({ ...r, score: 60 + Math.floor(Math.random()*40) }))
+        pushHistory(); syncDynTable(); logEvent('table:randomize', {})
+      })
+      document.getElementById('tbl-reset').addEventListener('o-click', () => {
+        dynData = INITIAL_DYN.map(r => ({...r}))
+        pushHistory(); syncDynTable(); logEvent('table:reset', {})
+      })
+      undoBtn.addEventListener('o-click', () => {
+        if (dynHistIdx > 0) { dynHistIdx--; dynData = JSON.parse(dynHistory[dynHistIdx]); syncDynTable(); updateUndoRedo(); logEvent('table:undo', { step: dynHistIdx }) }
+      })
+      redoBtn.addEventListener('o-click', () => {
+        if (dynHistIdx < dynHistory.length - 1) { dynHistIdx++; dynData = JSON.parse(dynHistory[dynHistIdx]); syncDynTable(); updateUndoRedo(); logEvent('table:redo', { step: dynHistIdx }) }
+      })
+
+      // ── Async loading simulation ───────────────────────────────
+      const asyncDefs = [
+        { id: 'btn-async-save',   idle: 'Save to server',   busy: 'Saving…',    done: 'Saved!',         type: 'success', ms: 1800 },
+        { id: 'btn-async-upload', idle: 'Upload file',      busy: 'Uploading…', done: 'Upload complete', type: 'success', ms: 2400 },
+        { id: 'btn-async-sync',   idle: 'Sync data',        busy: 'Syncing…',   done: 'All synced',     type: 'info',    ms: 1200 },
+      ]
+      asyncDefs.forEach(def => {
+        const btn = document.getElementById(def.id)
+        btn.addEventListener('o-click', () => {
+          if (btn.hasAttribute('disabled')) return
+          btn.setAttribute('disabled', '')
+          btn.textContent = def.busy
+          logEvent('async:start', { action: def.idle })
+          setTimeout(() => {
+            btn.removeAttribute('disabled')
+            btn.textContent = def.idle
+            toast(def.done, def.type)
+            logEvent('async:done', { action: def.idle })
+          }, def.ms)
+        })
+      })
+
+      // ── Color swatch picker ────────────────────────────────────
+      const colorMap = { red: '#ef4444', orange: '#f97316', yellow: '#eab308', green: '#22c55e', blue: '#3b82f6', purple: '#a855f7' }
+      const swatchEl = document.getElementById('color-swatch')
+      const hexEl    = document.getElementById('color-hex')
+      document.getElementById('color-picker').addEventListener('o-change', e => {
+        const hex = colorMap[e.detail.value] || '#3b82f6'
+        swatchEl.style.background = hex
+        hexEl.textContent = hex
+        logEvent('color-pick', { color: e.detail.value, hex })
+      })
+
+      // ── Live clock widget ──────────────────────────────────────
+      const clockTime = document.getElementById('clock-time')
+      const clockDate = document.getElementById('clock-date')
+      const clockFmt  = document.getElementById('clock-fmt')
+      let use24h = true
+
+      function updateClock() {
+        const now = new Date()
+        clockTime.textContent = now.toLocaleTimeString([], { hour12: !use24h, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        clockDate.textContent = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })
+      }
+      updateClock()
+      setInterval(updateClock, 1000)
+      clockFmt.addEventListener('o-change', e => { use24h = e.detail.value === '24h'; updateClock() })
+
+      // ── Notification queue ─────────────────────────────────────
+      let notifQueue = []
+      const qCount = document.getElementById('q-count')
+      function updateQCount() { qCount.textContent = `Queue: ${notifQueue.length} toast${notifQueue.length !== 1 ? 's' : ''}` }
+
+      document.getElementById('q-success').addEventListener('o-click', () => { notifQueue.push({ msg: 'File saved ✓', type: 'success' }); updateQCount(); logEvent('queue:add', { type: 'success' }) })
+      document.getElementById('q-error').addEventListener('o-click',   () => { notifQueue.push({ msg: 'Upload failed', type: 'error' });  updateQCount(); logEvent('queue:add', { type: 'error' }) })
+      document.getElementById('q-info').addEventListener('o-click',    () => { notifQueue.push({ msg: 'Sync complete', type: 'info' });   updateQCount(); logEvent('queue:add', { type: 'info' }) })
+      document.getElementById('q-fire').addEventListener('o-click',    () => {
+        if (!notifQueue.length) { toast('Queue is empty — add some toasts first', 'warning'); return }
+        const q = [...notifQueue]
+        notifQueue = []
+        updateQCount()
+        q.forEach((item, i) => setTimeout(() => { toast(item.msg, item.type); logEvent('queue:fire', item) }, i * 700))
+      })
+
+      // ── o-toggle demo ──────────────────────────────────────────
+      document.getElementById('demo-toggle').addEventListener('o-change', e => {
+        document.getElementById('toggle-selected').textContent = e.detail.value
+        logEvent('o-change (toggle)', e.detail)
+      })
+
+      // ── o-toggle as tab switcher ───────────────────────────────
+      const tabPanels = { overview: 'tab-overview', api: 'tab-api', examples: 'tab-examples' }
+      document.getElementById('tab-toggle').addEventListener('o-change', e => {
+        Object.entries(tabPanels).forEach(([key, id]) => {
+          document.getElementById(id).style.display = key === e.detail.value ? '' : 'none'
+        })
+        logEvent('tab-switch', { tab: e.detail.value })
+      })
+
+      // ── Rich o-search ──────────────────────────────────────────
+      const richSearch = document.getElementById('demo-search-rich')
+      const richSelectedEl = document.getElementById('rich-selected')
+      const COMMANDS = [
+        { name: 'New file',        desc: 'Create a blank document',     icon: '📄', shortcut: '⌘N' },
+        { name: 'Open file',       desc: 'Browse and open a file',      icon: '📂', shortcut: '⌘O' },
+        { name: 'Save',            desc: 'Save current document',       icon: '💾', shortcut: '⌘S' },
+        { name: 'Find & replace',  desc: 'Search within the document',  icon: '🔍', shortcut: '⌘H' },
+        { name: 'Export PDF',      desc: 'Download as PDF file',        icon: '📤', shortcut: '' },
+        { name: 'Share link',      desc: 'Copy a shareable URL',        icon: '🔗', shortcut: '' },
+        { name: 'Dark mode',       desc: 'Toggle theme',                icon: '🌙', shortcut: '⌘D' },
+        { name: 'Settings',        desc: 'Open preferences',            icon: '⚙️',  shortcut: '⌘,' },
+        { name: 'Keyboard shortcuts', desc: 'View all shortcuts',       icon: '⌨️',  shortcut: '?' },
+      ]
+      richSearch.data = COMMANDS
+      richSearch.searchKeys = ['name', 'desc']
+      richSearch.valueKey = 'name'
+      richSearch.renderItem = item => `<span style="font-size:16px;margin-right:8px;flex-shrink:0">${item.icon}</span><span style="flex:1"><b>${item.name}</b><br><small style="opacity:0.6">${item.desc}</small></span>${item.shortcut ? `<kbd style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:1px 5px;font-size:10px;font-family:monospace;flex-shrink:0">${item.shortcut}</kbd>` : ''}`
+      richSearch.addEventListener('o-select', e => {
+        richSelectedEl.textContent = `Selected: ${e.detail.item.icon} ${e.detail.item.name}`
+        toast(`${e.detail.item.icon} ${e.detail.item.name}`, 'info', { duration: 2000 })
+        logEvent('rich:o-select', { name: e.detail.item.name })
+      })
+      richSearch.addEventListener('o-results', e => logEvent('rich:o-results', { count: e.detail.results.length }))
+
+      // ── CSV export ─────────────────────────────────────────────
+      document.getElementById('btn-export-csv').addEventListener('o-click', () => {
+        if (!filteredData.length) { toast('No data to export', 'warning'); return }
+        const keys = COLUMNS.map(c => c.key)
+        const lines = [COLUMNS.map(c => c.label).join(',')]
+        filteredData.forEach(row => lines.push(keys.map(k => `"${String(row[k]).replace(/"/g,'""')}"`).join(',')))
+        const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = 'owc-data.csv'
+        a.click()
+        toast(`Exported ${filteredData.length} rows as CSV`, 'success')
+        logEvent('export-csv', { rows: filteredData.length })
+      })
+
+      // ── o-button click counter ─────────────────────────────────
+      let clicks = 0
+      const counterEl = document.getElementById('click-counter')
+      ;['btn-demo-1','btn-demo-2','btn-demo-3'].forEach(id => {
+        document.getElementById(id).addEventListener('o-click', () => {
+          clicks++
+          statClickCount++
+          counterEl.textContent = clicks + (clicks === 1 ? ' click' : ' clicks')
+          statClicks.textContent = statClickCount
+          logEvent('o-click (button)', { total: clicks })
+        })
+      })
+
+      // ── o-toast demo ───────────────────────────────────────────
+      document.getElementById('btn-success').addEventListener('o-click', () => { toast('File saved successfully!', 'success'); logEvent('toast', { type: 'success' }) })
+      document.getElementById('btn-error').addEventListener('o-click',   () => { toast('Connection failed', 'error');         logEvent('toast', { type: 'error' }) })
+      document.getElementById('btn-warning').addEventListener('o-click', () => { toast('Low disk space', 'warning');          logEvent('toast', { type: 'warning' }) })
+      document.getElementById('btn-info').addEventListener('o-click',    () => { toast('Update available', 'info');           logEvent('toast', { type: 'info' }) })
+      document.getElementById('btn-long').addEventListener('o-click',    () => { toast('Long toast — 8 seconds', 'info', { duration: 8000 }); logEvent('toast', { duration: 8000 }) })
+
+      // ── o-search standalone demo ───────────────────────────────
+      const ss = document.getElementById('demo-search-standalone')
+      ss.data = ['Apple','Banana','Cherry','Date','Elderberry','Fig','Grape','Honeydew','Kiwi','Lemon','Mango'].map(n => ({ name: n }))
+      ss.searchKeys = ['name']
+      ss.valueKey = 'name'
+      ss.renderItem = item => item.name
+      ss.addEventListener('o-results', e => {
+        document.getElementById('search-result').textContent =
+          e.detail.query ? `${e.detail.results.length} result(s) for "${e.detail.query}"` : ''
+        logEvent('o-results', { query: e.detail.query, count: e.detail.results.length })
+      })
+      ss.addEventListener('o-select', e => logEvent('o-select', { item: e.detail.item }))
+
+      // ── Kitchen sink ───────────────────────────────────────────
+      const ksToggle = document.getElementById('ks-toggle')
+      const ksModeOut = document.getElementById('ks-mode-out')
+      ksToggle.addEventListener('o-change', e => {
+        ksModeOut.textContent = `Mode: ${e.detail.value.charAt(0).toUpperCase() + e.detail.value.slice(1)}`
+        logEvent('ks:o-change', e.detail)
+      })
+
+      const ACTIONS = ['Save document', 'Publish draft', 'Discard changes', 'Export PDF', 'Share link', 'View history']
+      const ksSearchEl = document.getElementById('ks-search')
+      const ksSearchOut = document.getElementById('ks-search-out')
+      ksSearchEl.data = ACTIONS.map(a => ({ name: a }))
+      ksSearchEl.searchKeys = ['name']
+      ksSearchEl.valueKey = 'name'
+      ksSearchEl.renderItem = item => item.name
+      ksSearchEl.addEventListener('o-results', e => {
+        ksSearchOut.textContent = e.detail.query
+          ? `${e.detail.results.length} of ${ACTIONS.length} actions match`
+          : ''
+        logEvent('ks:o-results', { count: e.detail.results.length })
+      })
+
+      ;['ks-save','ks-publish','ks-discard'].forEach(id => {
+        document.getElementById(id).addEventListener('o-click', () => {
+          const label = document.getElementById(id).textContent
+          toast(`${label} clicked`, 'info', { duration: 2000 })
+          logEvent('ks:o-click', { action: label })
+        })
+      })
+
+      // ── Editable table demo ────────────────────────────────────
+      const editableTable = document.getElementById('editable-table')
+      const editableLog = document.getElementById('editable-log')
+      editableTable.columns = [
+        { key: 'name',   label: 'Name',   width: 160, editable: 'always' },
+        { key: 'role',   label: 'Role',   width: 140, editable: 'click'  },
+        { key: 'status', label: 'Status', width: 100 },
+      ]
+      editableTable.data = [
+        { name: 'Alice', role: 'Engineer',  status: 'Active'   },
+        { name: 'Bob',   role: 'Designer',  status: 'On leave' },
+        { name: 'Carol', role: 'Manager',   status: 'Active'   },
+      ]
+      editableTable.addEventListener('o-cell-change', e => {
+        editableLog.textContent = `o-cell-change → key: "${e.detail.key}", value: "${e.detail.value}", row ${e.detail.rowIndex}`
+        logEvent('o-cell-change', e.detail)
+      })
+      editableTable.addEventListener('o-row-change', e => {
+        editableLog.textContent = `o-row-change → row ${e.detail.rowIndex}: ${JSON.stringify(e.detail.changes)}`
+        logEvent('o-row-change', e.detail)
+      })
+
+      // ── o-dialog demo ──────────────────────────────────────────
+      const demoDialog = document.getElementById('demo-dialog')
+      const dialogResult = document.getElementById('dialog-result')
+      document.getElementById('btn-open-dialog').addEventListener('o-click', () => {
+        demoDialog.open()
+        logEvent('dialog:open', {})
+      })
+      document.getElementById('btn-dialog-cancel').addEventListener('o-click', () => {
+        demoDialog.close()
+        demoDialog.dispatchEvent(new CustomEvent('o-cancel', { bubbles: true }))
+      })
+      demoDialog.addEventListener('o-submit', e => {
+        dialogResult.textContent = `Submitted: ${JSON.stringify(e.detail)}`
+        logEvent('o-submit', e.detail)
+      })
+      demoDialog.addEventListener('o-cancel', () => {
+        dialogResult.textContent = 'Cancelled'
+        logEvent('o-cancel', {})
+      })
+
+      // ── o-dropdown demos ────────────────────────────────────────
+      const ddResult = document.getElementById('dropdown-result')
+
+      const ddActions = document.getElementById('demo-dropdown-actions')
+      ddActions.options = [
+        { label: 'Edit',      value: 'edit',      icon: '✏️' },
+        { label: 'Duplicate', value: 'duplicate', icon: '📋' },
+        { label: 'Archive',   value: 'archive',   icon: '📦' },
+        { label: 'Delete',    value: 'delete',    icon: '🗑️' },
+      ]
+      ddActions.addEventListener('o-select', e => {
+        ddResult.textContent = `Selected: "${e.detail.label}" (value: ${e.detail.value})`
+        logEvent('o-select', e.detail)
+      })
+
+      const ddIcons = document.getElementById('demo-dropdown-icons')
+      ddIcons.options = [
+        { label: 'New file',   value: 'new',    icon: '📄' },
+        { label: 'Open…',      value: 'open',   icon: '📂' },
+        { label: 'Save',       value: 'save',   icon: '💾' },
+        { label: 'Export CSV', value: 'export', icon: '📊' },
+      ]
+      ddIcons.addEventListener('o-select', e => {
+        ddResult.textContent = `File: "${e.detail.label}" (value: ${e.detail.value})`
+        logEvent('o-select', e.detail)
+      })
+
+      const ddStatus = document.getElementById('demo-dropdown-status')
+      ddStatus.options = [
+        { label: 'Active',    value: 'active',    icon: '🟢' },
+        { label: 'Away',      value: 'away',      icon: '🟡' },
+        { label: 'Busy',      value: 'busy',      icon: '🔴' },
+        { label: 'Offline',   value: 'offline',   icon: '⚫' },
+      ]
+      ddStatus.addEventListener('o-select', e => {
+        ddResult.textContent = `Status set to: "${e.detail.label}"`
+        logEvent('o-select', e.detail)
+      })
+
+      // ── o-tabs demo ─────────────────────────────────────────────
+      const demoTabs = document.getElementById('demo-tabs')
+      const tabsResult = document.getElementById('tabs-result')
+      demoTabs.addEventListener('o-change', e => {
+        tabsResult.textContent = `Switched to: "${e.detail.value}" (prev: "${e.detail.prev}")`
+        logEvent('o-change', e.detail)
+      })
+
+      // ── o-input demo ────────────────────────────────────────────
+      const inputLog = document.getElementById('input-log')
+      const demoInputDefault = document.getElementById('demo-input-default')
+      demoInputDefault.addEventListener('o-input', e => {
+        inputLog.textContent = `o-input → "${e.detail.value}"`
+        logEvent('o-input', e.detail)
+      })
+      demoInputDefault.addEventListener('o-change', e => {
+        logEvent('o-change', e.detail)
+      })
+
+      // ── o-skeleton demo ──────────────────────────────────────────
+      const skelPanelWrap = document.getElementById('skel-panel-wrap')
+      const realPanelWrap = document.getElementById('real-panel-wrap')
+      const skelTableWrap = document.getElementById('skel-table-wrap')
+      const realTableWrap = document.getElementById('real-table-wrap')
+      const skelStatus    = document.getElementById('skel-status')
+      const skelDemoTable = document.getElementById('skel-demo-table')
+
+      skelDemoTable.columns = [
+        { key: 'name', label: 'Name', width: 140, sortable: true },
+        { key: 'role', label: 'Role', width: 140 },
+        { key: 'score', label: 'Score', width: 80, sortable: true },
+      ]
+      skelDemoTable.data = [
+        { name: 'Alice',   role: 'Engineer',  score: 94 },
+        { name: 'Bob',     role: 'Designer',  score: 87 },
+        { name: 'Carol',   role: 'PM',        score: 91 },
+        { name: 'Dave',    role: 'QA',        score: 82 },
+      ]
+
+      let skelLoading = false
+      document.getElementById('btn-skel-simulate').addEventListener('o-click', () => {
+        if (skelLoading) return
+        skelLoading = true
+        skelStatus.textContent = 'Loading…'
+        skelPanelWrap.style.display = ''
+        realPanelWrap.style.display = 'none'
+        skelTableWrap.style.display = ''
+        realTableWrap.style.display = 'none'
+        OProgress.start()
+        setTimeout(() => {
+          skelPanelWrap.style.display = 'none'
+          realPanelWrap.style.display = ''
+          skelTableWrap.style.display = 'none'
+          realTableWrap.style.display = ''
+          skelStatus.textContent = 'Loaded!'
+          skelLoading = false
+          OProgress.done()
+        }, 2000)
+      })
+      document.getElementById('btn-skel-reset').addEventListener('o-click', () => {
+        skelPanelWrap.style.display = ''
+        realPanelWrap.style.display = 'none'
+        skelTableWrap.style.display = ''
+        realTableWrap.style.display = 'none'
+        skelStatus.textContent = ''
+        skelLoading = false
+      })
+
+      // ── o-progress demo ──────────────────────────────────────────
+      document.getElementById('btn-prog-start').addEventListener('o-click', () => OProgress.start())
+      document.getElementById('btn-prog-50').addEventListener('o-click',    () => OProgress.set(50))
+      document.getElementById('btn-prog-75').addEventListener('o-click',    () => OProgress.set(75))
+      document.getElementById('btn-prog-done').addEventListener('o-click',  () => OProgress.done())
+
+      const progSlider    = document.getElementById('prog-slider')
+      const progSliderVal = document.getElementById('prog-slider-val')
+      progSlider.addEventListener('input', () => {
+        const v = parseInt(progSlider.value)
+        progSliderVal.textContent = `${v}%`
+        document.querySelector('o-progress').setAttribute('value', String(v))
+      })
+
+      // ── asyncPlus demo ───────────────────────────────────────────
+      function fakeRequest(ms, fail = false) {
+        return new Promise((resolve, reject) =>
+          setTimeout(() => fail ? reject(new Error(`timeout after ${ms}ms`)) : resolve(`done in ${ms}ms`), ms)
+        )
+      }
+
+      const asyncLog = document.getElementById('async-plus-log')
+
+      document.getElementById('btn-async-3').addEventListener('o-click', async () => {
+        asyncLog.textContent = 'Running 3 requests...'
+        const results = await asyncPlus(fakeRequest(800), fakeRequest(1400), fakeRequest(600))
+        const ok = results.filter(r => r.status === 'fulfilled').length
+        asyncLog.textContent = `✓ Done — ${ok}/3 succeeded`
+        logEvent('asyncPlus', { total: 3, succeeded: ok })
+      })
+
+      document.getElementById('btn-async-5').addEventListener('o-click', async () => {
+        asyncLog.textContent = 'Running 5 requests...'
+        const results = await asyncPlus(
+          fakeRequest(400), fakeRequest(900), fakeRequest(1200), fakeRequest(700), fakeRequest(1600)
+        )
+        const ok = results.filter(r => r.status === 'fulfilled').length
+        asyncLog.textContent = `✓ Done — ${ok}/5 succeeded`
+        logEvent('asyncPlus', { total: 5, succeeded: ok })
+      })
+
+      document.getElementById('btn-async-8').addEventListener('o-click', async () => {
+        asyncLog.textContent = 'Running 8 requests (1 will fail)...'
+        const results = await asyncPlus(
+          fakeRequest(300), fakeRequest(700), fakeRequest(500, true),
+          fakeRequest(1100), fakeRequest(900), fakeRequest(400),
+          fakeRequest(1400), fakeRequest(800)
+        )
+        const ok = results.filter(r => r.status === 'fulfilled').length
+        asyncLog.textContent = `✓ Done — ${ok}/8 succeeded, 1 failed as expected`
+        logEvent('asyncPlus', { total: 8, succeeded: ok, failed: 1 })
+      })
+
+      document.addEventListener('progress-complete', e => {
+        logEvent('progress-complete', { count: e.detail.results.length })
+      })
+    </script>
+
+  </body>
+</html>
