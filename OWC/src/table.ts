@@ -1,4 +1,4 @@
-import { GlassElement, glassBaseStyles } from './glass'
+import { GlassElement, glassBaseStyles, glassScrollbarStyles } from './glass'
 
 export interface OTableColumn {
   key: string
@@ -99,6 +99,7 @@ export class OTable extends GlassElement {
       <style>
         ${glassBaseStyles()}
         :host { display: block; overflow-x: auto; }
+        ${glassScrollbarStyles(':host')}
         table {
           border-collapse: collapse;
           font-family: sans-serif; font-size: 14px;

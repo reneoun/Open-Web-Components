@@ -35,6 +35,28 @@ export function glassBaseStyles(): string {
   `;
 }
 
+export function glassScrollbarStyles(selector = ':host'): string {
+  return `
+    /* Firefox */
+    ${selector} {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    /* Webkit (Chrome, Safari, Edge) */
+    ${selector}::-webkit-scrollbar { width: 6px; height: 6px; }
+    ${selector}::-webkit-scrollbar-track { background: transparent; }
+    ${selector}::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px;
+      transition: background 0.2s;
+    }
+    ${selector}::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    ${selector}::-webkit-scrollbar-corner { background: transparent; }
+  `;
+}
+
 export class GlassElement extends HTMLElement {
   constructor() {
     super();

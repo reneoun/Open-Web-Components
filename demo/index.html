@@ -9,7 +9,7 @@
       html { scroll-behavior: smooth; }
       * { box-sizing: border-box; }
       body {
-        background: linear-gradient(135deg, #7c3aed, #5b21b6);
+        background: linear-gradient(135deg, #059669, #065f46);
         min-height: 100vh;
         padding: 2rem;
         padding-top: 4.5rem;
@@ -69,7 +69,15 @@
         align-items: center;
         gap: 4px;
         overflow-x: auto;
+        /* Glass scrollbar */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.15) transparent;
       }
+      #nav::-webkit-scrollbar { width: 6px; height: 6px; }
+      #nav::-webkit-scrollbar-track { background: transparent; }
+      #nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+      #nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+      #nav::-webkit-scrollbar-corner { background: transparent; }
       #nav a {
         color: rgba(255,255,255,0.65);
         text-decoration: none;
@@ -320,7 +328,7 @@
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <div id="theme-toggle-wrap">
           <div class="ks-label" style="text-align:right">Theme</div>
-          <o-toggle id="tgl-theme" options="Purple,Blue,Green,Rose,Slate" value="purple"></o-toggle>
+          <o-toggle id="tgl-theme" options="Purple,Blue,Green,Rose,Slate" value="green"></o-toggle>
         </div>
       </div>
     </div>

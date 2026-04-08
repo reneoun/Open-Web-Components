@@ -1,4 +1,4 @@
-import { GlassElement, glassBaseStyles } from './glass'
+import { GlassElement, glassBaseStyles, glassScrollbarStyles } from './glass'
 
 console.log('Open Web Components (OWC) Core Module Loaded - René Oun');
 
@@ -131,6 +131,7 @@ class OWCPanel extends GlassElement {
                     font-family: sans-serif;
                     font-size: 14px;
                     box-sizing: border-box;
+                    overflow: auto;
                 }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
@@ -159,6 +160,7 @@ class OWCPanel extends GlassElement {
                 }
                 .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
                 .resize-se:hover { border-color: var(--glass-text-muted); }
+                ${glassScrollbarStyles('.panel')}
             </style>
             <div class="panel" role="region">
                 ${hasDrag   ? '<button class="move-handle" title="Drag to move">⠿</button>' : ''}

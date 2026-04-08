@@ -11,6 +11,7 @@ import './dropdown'
 import './tabs'
 import './input'
 import './skeleton'
+import './scroll'
 import { OProgress } from './progress'
 import './progress'
 
@@ -28,6 +29,7 @@ export * from './tabs'
 export * from './input'
 export * from './skeleton'
 export * from './progress'
+export * from './scroll'
 
 // Expose globals for plain <script> usage
 if (typeof window !== 'undefined') {
