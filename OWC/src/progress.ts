@@ -108,3 +108,30 @@ export class OProgress extends GlassElement {
 }
 
 customElements.define('o-progress', OProgress)
+
+/**
+ * asyncPlus — track multiple promises and auto-drive the progress bar.
+ *
+ * - Calls OProgress.start() immediately
+ * - Increments the bar as each promise settles (proportional to total)
+ * - Calls OProgress.done() when all are settled
+ * - Dispatches a 'progress-complete' event on document with all results
+ * - Returns Promise<PromiseSettledResult[]> (never rejects)
+ */
+export function asyncPlus<T>(...promises: Promise<T>[]): Promise<PromiseSettledResult<T>[]> {
+  if (promises.length === 0) return Promise.resolve([])
+  OProgress.start()
+  let settled = 0
+  const total = promises.length
+  const onSettle = () => {
+    settled++
+    OProgress.set(Math.round((settled / total) * 90))
+  }
+  return Promise.allSettled(
+    promises.map(p => p.then(v => { onSettle(); return v }, e => { onSettle(); throw e }))
+  ).then(results => {
+    OProgress.done()
+    document.dispatchEvent(new CustomEvent('progress-complete', { detail: { results } }))
+    return results
+  })
+}

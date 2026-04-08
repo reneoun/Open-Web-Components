@@ -3,6 +3,7 @@ import './table'
 import './note'
 import './dialog'
 import { toast } from './toast'
+import { asyncPlus } from './progress'
 import './toggle'
 import './search'
 import './tooltip'
@@ -32,4 +33,5 @@ export * from './progress'
 if (typeof window !== 'undefined') {
   (window as any).toast = toast
   ;(window as any).OProgress = OProgress
+  ;(window as any).asyncPlus = asyncPlus
 }

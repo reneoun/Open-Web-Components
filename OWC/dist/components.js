@@ -32,6 +32,7 @@
   __export(exports_src, {
     toast: () => toast,
     glassBaseStyles: () => glassBaseStyles,
+    asyncPlus: () => asyncPlus,
     OWCToast: () => OWCToast,
     OTooltip: () => OTooltip,
     OToggle: () => OToggle,
@@ -1263,6 +1264,145 @@
     container.appendChild(el);
   }
 
+  // src/progress.ts
+  class OProgress extends GlassElement {
+    _value = 0;
+    _timer = null;
+    _hideTimer = null;
+    _resetTimer = null;
+    static get observedAttributes() {
+      return ["value"];
+    }
+    connectedCallback() {
+      this.render();
+    }
+    attributeChangedCallback(name, _old, next) {
+      if (name === "value" && this.isConnected) {
+        this._setValue(Math.min(100, Math.max(0, parseFloat(next) || 0)));
+      }
+    }
+    disconnectedCallback() {
+      this._stopAuto();
+      if (this._hideTimer) {
+        clearTimeout(this._hideTimer);
+        this._hideTimer = null;
+      }
+      if (this._resetTimer) {
+        clearTimeout(this._resetTimer);
+        this._resetTimer = null;
+      }
+    }
+    render() {
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host {
+          position: fixed;
+          top: 0; left: 0; right: 0;
+          z-index: 9999;
+          display: block;
+          pointer-events: none;
+        }
+        .bar {
+          height: 3px;
+          width: 0%;
+          background: rgba(74,222,128,0.85);
+          box-shadow: 0 0 8px rgba(74,222,128,0.5);
+          transition: width 0.2s ease, opacity 0.3s ease;
+          opacity: 1;
+        }
+      </style>
+      <div class="bar" style="width:0%"></div>
+    `;
+    }
+    _bar() {
+      return this.shadowRoot?.querySelector(".bar") ?? null;
+    }
+    _setValue(v) {
+      if (this._hideTimer) {
+        clearTimeout(this._hideTimer);
+        this._hideTimer = null;
+      }
+      if (this._resetTimer) {
+        clearTimeout(this._resetTimer);
+        this._resetTimer = null;
+      }
+      this._value = v;
+      const bar = this._bar();
+      if (!bar)
+        return;
+      bar.style.opacity = "1";
+      bar.style.width = `${v}%`;
+      if (v >= 100) {
+        this._hideTimer = setTimeout(() => {
+          bar.style.opacity = "0";
+          this._resetTimer = setTimeout(() => {
+            bar.style.width = "0%";
+            this._value = 0;
+          }, 300);
+        }, 400);
+      }
+    }
+    _stopAuto() {
+      if (this._timer) {
+        clearInterval(this._timer);
+        this._timer = null;
+      }
+    }
+    static start() {
+      const el = OProgress._getInstance();
+      el._stopAuto();
+      el._timer = setInterval(() => {
+        const remaining = 90 - el._value;
+        if (remaining <= 0) {
+          el._stopAuto();
+          return;
+        }
+        const step = Math.random() * Math.min(remaining * 0.1, 5) + 0.5;
+        el._setValue(Math.min(89, el._value + step));
+      }, 300);
+    }
+    static set(v) {
+      OProgress._getInstance()._setValue(Math.min(100, Math.max(0, v)));
+    }
+    static done() {
+      const el = OProgress._getInstance();
+      el._stopAuto();
+      el._setValue(100);
+    }
+    static _getInstance() {
+      let el = document.querySelector("o-progress");
+      if (!el) {
+        el = document.createElement("o-progress");
+        document.body.appendChild(el);
+      }
+      return el;
+    }
+  }
+  customElements.define("o-progress", OProgress);
+  function asyncPlus(...promises) {
+    if (promises.length === 0)
+      return Promise.resolve([]);
+    OProgress.start();
+    let settled = 0;
+    const total = promises.length;
+    const onSettle = () => {
+      settled++;
+      OProgress.set(Math.round(settled / total * 90));
+    };
+    return Promise.allSettled(promises.map((p) => p.then((v) => {
+      onSettle();
+      return v;
+    }, (e) => {
+      onSettle();
+      throw e;
+    }))).then((results) => {
+      OProgress.done();
+      document.dispatchEvent(new CustomEvent("progress-complete", { detail: { results } }));
+      return results;
+    });
+  }
+
   // src/toggle.ts
   function toOptions(input) {
     return input.map((o) => typeof o === "string" ? { label: o, value: o.toLowerCase() } : o);
@@ -2242,126 +2382,10 @@
   }
   customElements.define("o-skeleton", OSkeleton);
 
-  // src/progress.ts
-  class OProgress extends GlassElement {
-    _value = 0;
-    _timer = null;
-    _hideTimer = null;
-    _resetTimer = null;
-    static get observedAttributes() {
-      return ["value"];
-    }
-    connectedCallback() {
-      this.render();
-    }
-    attributeChangedCallback(name, _old, next) {
-      if (name === "value" && this.isConnected) {
-        this._setValue(Math.min(100, Math.max(0, parseFloat(next) || 0)));
-      }
-    }
-    disconnectedCallback() {
-      this._stopAuto();
-      if (this._hideTimer) {
-        clearTimeout(this._hideTimer);
-        this._hideTimer = null;
-      }
-      if (this._resetTimer) {
-        clearTimeout(this._resetTimer);
-        this._resetTimer = null;
-      }
-    }
-    render() {
-      this.shadowRoot.innerHTML = `
-      <style>
-        ${glassBaseStyles()}
-        :host {
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          z-index: 9999;
-          display: block;
-          pointer-events: none;
-        }
-        .bar {
-          height: 3px;
-          width: 0%;
-          background: rgba(74,222,128,0.85);
-          box-shadow: 0 0 8px rgba(74,222,128,0.5);
-          transition: width 0.2s ease, opacity 0.3s ease;
-          opacity: 1;
-        }
-      </style>
-      <div class="bar" style="width:0%"></div>
-    `;
-    }
-    _bar() {
-      return this.shadowRoot?.querySelector(".bar") ?? null;
-    }
-    _setValue(v) {
-      if (this._hideTimer) {
-        clearTimeout(this._hideTimer);
-        this._hideTimer = null;
-      }
-      if (this._resetTimer) {
-        clearTimeout(this._resetTimer);
-        this._resetTimer = null;
-      }
-      this._value = v;
-      const bar = this._bar();
-      if (!bar)
-        return;
-      bar.style.opacity = "1";
-      bar.style.width = `${v}%`;
-      if (v >= 100) {
-        this._hideTimer = setTimeout(() => {
-          bar.style.opacity = "0";
-          this._resetTimer = setTimeout(() => {
-            bar.style.width = "0%";
-            this._value = 0;
-          }, 300);
-        }, 400);
-      }
-    }
-    _stopAuto() {
-      if (this._timer) {
-        clearInterval(this._timer);
-        this._timer = null;
-      }
-    }
-    static start() {
-      const el = OProgress._getInstance();
-      el._stopAuto();
-      el._timer = setInterval(() => {
-        const remaining = 90 - el._value;
-        if (remaining <= 0) {
-          el._stopAuto();
-          return;
-        }
-        const step = Math.random() * Math.min(remaining * 0.1, 5) + 0.5;
-        el._setValue(Math.min(89, el._value + step));
-      }, 300);
-    }
-    static set(v) {
-      OProgress._getInstance()._setValue(Math.min(100, Math.max(0, v)));
-    }
-    static done() {
-      const el = OProgress._getInstance();
-      el._stopAuto();
-      el._setValue(100);
-    }
-    static _getInstance() {
-      let el = document.querySelector("o-progress");
-      if (!el) {
-        el = document.createElement("o-progress");
-        document.body.appendChild(el);
-      }
-      return el;
-    }
-  }
-  customElements.define("o-progress", OProgress);
-
   // src/index.ts
   if (typeof window !== "undefined") {
     window.toast = toast;
     window.OProgress = OProgress;
+    window.asyncPlus = asyncPlus;
   }
 })();
