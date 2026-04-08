@@ -1,14 +1,22 @@
 # Open Web Components (OWC)
 
-Glassmorphism web components — drop a single script tag and use them anywhere.
+Glassmorphism web components — drop a single `<script>` tag and use them anywhere.
+
+**OWC is intentionally simple.** No build step, no framework, no configuration. Just plain HTML, CSS, and JS — easy for developers to pick up and easy for AI to work with. If you can write a `<div>`, you can use OWC.
+
+🌐 **Live demo:** [owc.oun-y.com](https://owc.oun-y.com)
+
+> Sharing == Caring, make the dev community a better place for all ❤️🍀
+
+---
 
 ## Quick Start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.1/OWC/dist/components.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.4.0/OWC/dist/components.js"></script>
 ```
 
-[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.2.1` pins the version so updates never break your page. **11 components** included.
+[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.4.0` pin means updates never break your page. **14 components + 1 utility** included.
 
 To always get the latest (not recommended for production):
 ```html
@@ -29,17 +37,28 @@ import '@owc/components'
 
 ## Components
 
-- [`o-button`](#o-button) — Glassmorphic button
-- [`o-panel`](#o-panel) — Draggable, resizable glass panel
-- [`o-table`](#o-table) — Sortable, resizable, selectable, editable table
-- [`o-note`](#o-note) — Glass textarea or card note
-- [`o-dialog`](#o-dialog) — Form dialog with backdrop
-- [`o-toggle`](#o-toggle) — Segmented toggle / tab switcher
-- [`o-search`](#o-search) — Search input with live dropdown
-- [`o-toast`](#o-toast) — Toast notifications
-- [`o-tooltip`](#o-tooltip) — Glassmorphic tooltip
-- [`o-dropdown`](#o-dropdown) — Dropdown menu
-- [`o-tabs`](#o-tabs) — Tab panel switcher
+| Tag | Description |
+|---|---|
+| [`o-button`](#o-button) | Glassmorphic button |
+| [`o-panel`](#o-panel) | Draggable, resizable glass panel |
+| [`o-table`](#o-table) | Sortable, resizable, selectable, editable table |
+| [`o-note`](#o-note) | Glass textarea or card note |
+| [`o-dialog`](#o-dialog) | Form dialog with backdrop |
+| [`o-toggle`](#o-toggle) | Segmented toggle / tab switcher |
+| [`o-search`](#o-search) | Search input with live dropdown |
+| [`o-toast`](#o-toast) | Toast notifications |
+| [`o-tooltip`](#o-tooltip) | Glassmorphic tooltip |
+| [`o-dropdown`](#o-dropdown) | Dropdown menu |
+| [`o-tabs`](#o-tabs) | Tab panel switcher |
+| [`o-input`](#o-input) | Text input with label and validation states |
+| [`o-skeleton`](#o-skeleton) | Pulsing placeholder for loading states |
+| [`o-progress`](#o-progress) | Fixed top-of-page loading bar |
+
+**Utility:**
+
+| Function | Description |
+|---|---|
+| [`asyncPlus()`](#asyncplus) | Wrap promises and auto-drive the progress bar |
 
 ---
 
@@ -141,45 +160,6 @@ Sortable, resizable, row-selectable table. Set `columns` and `data` via JS.
 | `storage` | `local` or `session` — persist sort + column widths |
 | `storage-key` | Key name for storage (required when `storage` is set) |
 
-**Row selection:**
-
-```js
-table.setAttribute('selectable', '')
-table.addEventListener('o-row-select', e => {
-  console.log(e.detail.selected) // array of selected row objects
-})
-
-// Read selected rows at any time
-console.log(table.selected)
-```
-
-**Inline editing:**
-
-```html
-<o-table id="edit-table" editable></o-table>
-
-<script>
-  const table = document.getElementById('edit-table')
-
-  table.columns = [
-    { key: 'name', label: 'Name', editable: 'always' }, // input always visible
-    { key: 'role', label: 'Role', editable: 'click'  }, // edit button reveals input
-    { key: 'dept', label: 'Dept' }                       // read-only
-  ]
-  table.data = [{ name: 'Alice', role: 'Engineer', dept: 'Eng' }]
-
-  // Single cell committed (always mode)
-  table.addEventListener('o-cell-change', e => {
-    console.log(e.detail) // { key, value, rowIndex, row }
-  })
-
-  // Row confirmed (click mode)
-  table.addEventListener('o-row-change', e => {
-    console.log(e.detail) // { rowIndex, row, changes: { key: newValue } }
-  })
-</script>
-```
-
 **Events:**
 
 | Event | `detail` |
@@ -194,8 +174,6 @@ console.log(table.selected)
 ### `o-note`
 
 Glass-styled note area. Two variants: `textarea` (default) and `card`.
-
-**Textarea variant:**
 
 ```html
 <o-note
@@ -212,17 +190,10 @@ Glass-styled note area. Two variants: `textarea` (default) and `card`.
 </script>
 ```
 
-**Card variant** — title, body, and tag chips:
+**Card variant:**
 
 ```html
 <o-note variant="card" placeholder="Write something…"></o-note>
-
-<script>
-  document.querySelector('o-note').addEventListener('o-change', e => {
-    const { title, body, tags } = e.detail
-    console.log(title, body, tags)
-  })
-</script>
 ```
 
 | Attribute | Variant | Description |
@@ -250,15 +221,13 @@ Glassmorphism form dialog with a blurred backdrop, slots, and programmatic open/
 <o-dialog id="my-dialog">
   <span slot="title">Add Team Member</span>
 
-  <label>Name</label>
-  <input name="name" type="text" placeholder="Alice" />
-
-  <label>Role</label>
-  <input name="role" type="text" placeholder="Engineer" />
+  <!-- Use o-input for glass-styled fields -->
+  <o-input name="name" label="Name" placeholder="Alice" style="width:100%;margin-bottom:10px"></o-input>
+  <o-input name="role" label="Role" placeholder="Engineer" style="width:100%"></o-input>
 
   <div slot="actions">
     <o-button type="submit">Save</o-button>
-    <o-button variant="ghost" id="cancel-btn">Cancel</o-button>
+    <o-button id="cancel-btn">Cancel</o-button>
   </div>
 </o-dialog>
 
@@ -273,16 +242,14 @@ Glassmorphism form dialog with a blurred backdrop, slots, and programmatic open/
   dialog.addEventListener('o-submit', e => {
     console.log(e.detail) // { name: 'Alice', role: 'Engineer' }
   })
-  dialog.addEventListener('o-cancel', () => {
-    console.log('cancelled')
-  })
+  dialog.addEventListener('o-cancel', () => console.log('cancelled'))
 </script>
 ```
 
 | Slot | Description |
 |---|---|
 | `title` | Dialog header text |
-| *(default)* | Form content — named inputs are collected on submit |
+| *(default)* | Form content — `o-input[name]` and native `input[name]` values collected on submit |
 | `actions` | Footer buttons |
 
 | Method / Attribute | Description |
@@ -291,20 +258,18 @@ Glassmorphism form dialog with a blurred backdrop, slots, and programmatic open/
 | `dialog.open()` | Opens programmatically |
 | `dialog.close()` | Closes programmatically |
 
-**Behaviour:** Clicking the backdrop or pressing Escape closes the dialog and fires `o-cancel`. Clicking a `[type="submit"]` button collects all `name`d inputs and fires `o-submit`, then closes.
-
 **Events:**
 
 | Event | `detail` |
 |---|---|
-| `o-submit` | `{ name: value }` pairs from slotted form fields |
+| `o-submit` | `{ name: value }` pairs from `o-input[name]` and native `input[name]` fields |
 | `o-cancel` | `null` |
 
 ---
 
 ### `o-toggle`
 
-Segmented toggle / tab switcher. Set `options` via JS.
+Segmented toggle / tab switcher.
 
 ```html
 <o-toggle id="my-toggle"></o-toggle>
@@ -352,16 +317,11 @@ Search input with a live results dropdown. Feed it data and it filters on every 
     { name: 'Alice Johnson', role: 'Engineer' },
     { name: 'Bob Smith',     role: 'Designer' },
   ]
-  search.searchKeys = ['name', 'role']  // fields to search
+  search.searchKeys = ['name', 'role']
   search.renderItem = item => `${item.name} — ${item.role}`
 
-  search.addEventListener('o-select', e => {
-    console.log(e.detail.item)  // full selected object
-  })
-
-  // Live query events
-  search.addEventListener('o-input',   e => console.log(e.detail.query))
-  search.addEventListener('o-results', e => console.log(e.detail.results))
+  search.addEventListener('o-select', e => console.log(e.detail.item))
+  search.addEventListener('o-input',  e => console.log(e.detail.query))
 </script>
 ```
 
@@ -369,13 +329,7 @@ Search input with a live results dropdown. Feed it data and it filters on every 
 |---|---|
 | `placeholder` | Input placeholder text |
 | `value-key` | Property name used as display value after selection |
-| `no-dropdown` | Disables the dropdown (emit results only) |
-
-| Property | Type | Description |
-|---|---|---|
-| `data` | `unknown[]` | Items to search through |
-| `searchKeys` | `string[]` | Object keys to match against |
-| `renderItem` | `(item) => string` | Custom HTML renderer for dropdown rows |
+| `no-dropdown` | Disables the dropdown (emit events only) |
 
 **Events:**
 
@@ -389,40 +343,25 @@ Search input with a live results dropdown. Feed it data and it filters on every 
 
 ### `o-toast`
 
-Toast notifications. Use the `toast()` global function (recommended) or the element directly.
-
-**Imperative (recommended):**
+Toast notifications. Use the `toast()` global function or the element directly.
 
 ```js
 toast('File saved!', 'success')
 toast('Connection failed', 'error', { duration: 5000 })
-toast('<strong>Update</strong> available', 'info')
+toast('Update available', 'info')
 ```
-
-**Declarative:**
 
 ```html
+<!-- Declarative -->
 <o-toast type="success">File saved!</o-toast>
-<o-toast type="error" message="Connection failed" duration="5000"></o-toast>
 ```
 
-| Param / Attribute | Values | Default |
+| Param | Values | Default |
 |---|---|---|
 | `type` | `success` `error` `warning` `info` | — |
 | `duration` | ms | `3000` |
-| `message` | string (fallback when no slot content) | — |
-
-| CSS property | Default |
-|---|---|
-| `--o-toast-bg` | `rgba(255,255,255,0.18)` |
-| `--o-toast-border` | `rgba(255,255,255,0.3)` |
-| `--o-toast-blur` | `10px` |
-| `--o-toast-radius` | `10px` |
-| `--o-toast-color` | `#fff` |
 
 Toasts appear **top-right** on desktop and **bottom-center** on mobile. Hover to pause, click ✕ to dismiss.
-
-> ⚠️ `toast()` sets content as `innerHTML` — sanitize any user-generated input before passing it.
 
 ---
 
@@ -455,21 +394,12 @@ Dropdown menu. Set options via JS, fires `o-select`.
 <script>
   const menu = document.getElementById('menu')
   menu.options = [
-    { label: 'Edit', value: 'edit' },
+    { label: 'Edit',   value: 'edit'   },
     { label: 'Delete', value: 'delete' },
   ]
   menu.addEventListener('o-select', e => console.log(e.detail))
 </script>
 ```
-
-| Property | Type | Description |
-|---|---|---|
-| `options` | `{ label, value, icon? }[]` | Menu items |
-
-| Method | Description |
-|---|---|
-| `toggle()` | Open / close menu |
-| `close()` | Close menu |
 
 | Event | `detail` |
 |---|---|
@@ -488,12 +418,6 @@ Tab panel with glass styling. Define tabs via `slot="tab"`, content via `data-ta
   <div data-tab="overview">Overview content here</div>
   <div data-tab="details">Details content here</div>
 </o-tabs>
-
-<script>
-  document.querySelector('o-tabs').addEventListener('o-change', e => {
-    console.log(e.detail) // { value, prev }
-  })
-</script>
 ```
 
 | Property | Type | Description |
@@ -506,65 +430,154 @@ Tab panel with glass styling. Define tabs via `slot="tab"`, content via `data-ta
 
 ---
 
+### `o-input`
+
+Glass text input with a static label and validation states.
+
+```html
+<o-input label="Email" type="email" placeholder="name@example.com"></o-input>
+```
+
+| Attribute | Type | Default | Description |
+|---|---|---|---|
+| `label` | string | — | Static label rendered above the input |
+| `placeholder` | string | — | Input placeholder text |
+| `type` | string | `text` | `text`, `password`, `email`, `number` |
+| `name` | string | — | Form field name (collected by `o-dialog` on submit) |
+| `value` | string | `''` | Current value |
+| `disabled` | boolean | false | Disables the input |
+| `error` | string | — | Error message below; red border applied |
+| `success` | boolean | false | Green border applied |
+
+```js
+// Validation on blur
+input.addEventListener('o-change', e => {
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.detail.value)
+  input.setAttribute('error', valid ? '' : 'Enter a valid email address')
+})
+```
+
+**Events:**
+
+| Event | `detail` | When |
+|---|---|---|
+| `o-input` | `{ value }` | Every keystroke |
+| `o-change` | `{ value }` | On blur |
+
+---
+
+### `o-skeleton`
+
+Pulsing placeholder shown while content is loading. Three variants.
+
+```html
+<!-- Block (default) — sized via attributes -->
+<o-skeleton width="200px" height="40px" radius="8px"></o-skeleton>
+
+<!-- While o-table data is fetching -->
+<o-skeleton variant="table" rows="6"></o-skeleton>
+
+<!-- While o-panel content is fetching -->
+<o-skeleton variant="panel"></o-skeleton>
+```
+
+| Attribute | Type | Default | Description |
+|---|---|---|---|
+| `variant` | `block \| table \| panel` | `block` | Skeleton layout preset |
+| `width` | string | `100%` | Width (block only) |
+| `height` | string | `1em` | Height (block only) |
+| `radius` | string | `6px` | Border-radius (block only) |
+| `rows` | number | `5` | Body rows (table variant only) |
+
+No JS required — purely visual, CSS pulse animation.
+
+---
+
+### `o-progress`
+
+Fixed top-of-page loading bar. Add once to the page; control it via the static API.
+
+```html
+<o-progress></o-progress>
+
+<script>
+  OProgress.start()   // auto-increments slowly (indeterminate feel)
+  OProgress.set(60)   // jump to 60%
+  OProgress.done()    // shoot to 100% then fade out
+</script>
+```
+
+| Method | Description |
+|---|---|
+| `OProgress.start()` | Begins auto-increment. Safe to call multiple times. |
+| `OProgress.set(n)` | Jumps to value `n` (0–100). |
+| `OProgress.done()` | Shoots to 100%, fades out after 400ms. |
+
+Setting `value="100"` via attribute also triggers auto-hide.
+
+---
+
+### `asyncPlus()`
+
+Wraps multiple promises and automatically drives `o-progress` — no manual `start()` / `done()` calls needed.
+
+```js
+const results = await asyncPlus(
+  fetch('/api/users'),
+  fetch('/api/posts'),
+  fetch('/api/comments')
+)
+// results: PromiseSettledResult[] — never rejects
+
+// Fires when all promises settle
+document.addEventListener('progress-complete', e => {
+  console.log(e.detail.results)
+})
+```
+
+- Calls `OProgress.start()` immediately
+- Increments the bar proportionally as each promise settles
+- Calls `OProgress.done()` when all are done
+- Dispatches `progress-complete` on `document` with all results
+- Returns `Promise<PromiseSettledResult[]>` (like `Promise.allSettled`, never rejects)
+
+---
+
 ## Full Example
 
 ```html
 <!doctype html>
 <html>
 <head>
-  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.1/OWC/dist/components.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.4.0/OWC/dist/components.js"></script>
 </head>
-<body style="background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 2rem;">
+<body style="background: linear-gradient(135deg, #059669, #065f46); min-height: 100vh; padding: 2rem; color: #fff;">
 
-  <!-- Panel with a button -->
+  <o-progress></o-progress>
+
   <o-panel move snap="20">
-    <o-button id="save-btn">Save file</o-button>
+    <o-input id="name-input" label="Name" placeholder="Alice"></o-input>
+    <o-button id="save-btn" style="margin-top:10px">Save</o-button>
   </o-panel>
 
-  <!-- Editable table -->
-  <o-table id="team-table" editable selectable></o-table>
-
-  <!-- Note -->
-  <o-note label="Notes" max-length="300" style="max-width:400px"></o-note>
-
-  <!-- Dialog trigger -->
-  <o-button id="add-btn">Add member</o-button>
-
-  <o-dialog id="add-dialog">
-    <span slot="title">Add Member</span>
-    <input name="name" type="text" placeholder="Name" />
-    <input name="role" type="text" placeholder="Role" />
+  <o-dialog id="confirm-dialog">
+    <span slot="title">Confirm</span>
+    <o-input name="reason" label="Reason" placeholder="Why?"></o-input>
     <div slot="actions">
-      <o-button type="submit">Save</o-button>
+      <o-button type="submit">Confirm</o-button>
     </div>
   </o-dialog>
 
   <script>
-    // Button → toast
-    document.getElementById('save-btn').addEventListener('o-click', () => {
-      toast('File saved!', 'success')
+    document.getElementById('save-btn').addEventListener('o-click', async () => {
+      // Drive progress automatically across parallel requests
+      const [users, posts] = await asyncPlus(fetch('/api/users'), fetch('/api/posts'))
+      toast('Loaded!', 'success')
     })
 
-    // Editable table
-    const table = document.getElementById('team-table')
-    table.columns = [
-      { key: 'name', label: 'Name', editable: 'always', width: 160 },
-      { key: 'role', label: 'Role', editable: 'click',  width: 140 },
-    ]
-    table.data = [
-      { name: 'Alice', role: 'Engineer' },
-      { name: 'Bob',   role: 'Designer' },
-    ]
-    table.addEventListener('o-row-change', e => {
-      toast(`Row ${e.detail.rowIndex} updated`, 'success')
-    })
-
-    // Dialog
-    const dialog = document.getElementById('add-dialog')
-    document.getElementById('add-btn').addEventListener('o-click', () => dialog.open())
+    const dialog = document.getElementById('confirm-dialog')
     dialog.addEventListener('o-submit', e => {
-      table.data = [...table.data, e.detail]
-      toast(`Added ${e.detail.name}`, 'success')
+      toast(`Confirmed: ${e.detail.reason}`, 'success')
     })
   </script>
 
@@ -576,14 +589,22 @@ Tab panel with glass styling. Define tabs via `slot="tab"`, content via `data-ta
 
 ## Theming
 
-Components default to a **light greenish** theme and auto-switch to dark glass via `prefers-color-scheme`. Override per-element:
+Components default to **white glass** (bright on dark backgrounds). Override per-element with the `theme` attribute:
 
 ```html
-<o-panel theme="light">Always light</o-panel>
-<o-panel theme="dark">Always dark (classic glass)</o-panel>
+<o-panel theme="light">Green-tinted glass (good on light backgrounds)</o-panel>
 ```
 
-All components use CSS custom properties (`--glass-bg`, `--glass-border`, `--glass-blur`, `--glass-shadow`, `--accent-warm`, `--glass-text`) that you can override globally or per-component.
+All components expose CSS custom properties you can override globally or per-component:
+
+| Variable | Description |
+|---|---|
+| `--glass-bg` | Panel / input background |
+| `--glass-border` | Border color |
+| `--glass-blur` | Backdrop blur amount |
+| `--glass-text` | Primary text color |
+| `--glass-text-muted` | Secondary text color |
+| `--accent-warm` | Accent / active color |
 
 ---
 
