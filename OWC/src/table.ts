@@ -151,6 +151,13 @@ export class OTable extends GlassElement {
         .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
         .edit-confirm { color: rgba(74,222,128,0.9); }
         .edit-cancel { color: rgba(248,113,113,0.9); }
+        tr.editing-highlight td { border-left: 3px solid var(--accent-warm); background: rgba(251,191,36,0.06); }
+        tr.edit-row td { background: var(--glass-bg); border-left: 3px solid var(--accent-warm); padding: 12px 14px; }
+        .edit-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .edit-field { display: flex; flex-direction: column; gap: 4px; }
+        .edit-field label { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
+        .edit-form .cell-input { width: 140px; }
+        .edit-form-actions { display: flex; gap: 4px; align-items: center; margin-left: auto; }
       </style>
       ${(() => {
         const hasClickEditable = this._columns.some(c => c.editable === 'click')
@@ -188,12 +195,14 @@ export class OTable extends GlassElement {
 
   private renderRow(row: Record<string, unknown>, rowIndex: number, hasClickEditable: boolean): string {
     const checked = this._selectedRows.has(row) ? ' checked' : ''
-    const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : ''
+    const isSelected = this._selectedRows.has(row)
     const checkbox = this.selectable
       ? `<td><input type="checkbox" data-select-row${checked} aria-label="Select row"></td>`
       : ''
 
     const isEditing = this._editingRows.has(row)
+    const trClasses = [isSelected ? 'selected' : '', isEditing ? 'editing-highlight' : ''].filter(Boolean).join(' ')
+    const trClassAttr = trClasses ? ` class="${trClasses}"` : ''
 
     let editTd = ''
     if (this.editable && hasClickEditable) {
@@ -207,15 +216,44 @@ export class OTable extends GlassElement {
            </td>`
     }
 
+    // Always-editable cells render inline inputs; click-editable show as read-only text in the main row
     const cells = this._columns.map(c => {
-      if (this.editable && c.editable && (c.editable === 'always' || isEditing)) {
+      if (this.editable && c.editable === 'always') {
         const val = String(row[c.key] ?? '').replace(/"/g, '&quot;')
         return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`
       }
       return `<td>${row[c.key] ?? ''}</td>`
     }).join('')
 
-    return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`
+    let result = `<tr${trClassAttr} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`
+
+    // Render edit form row below when editing
+    if (isEditing) {
+      const totalCols = this._columns.length + (this.selectable ? 1 : 0) + (hasClickEditable ? 1 : 0)
+      const fields = this._columns
+        .filter(c => c.editable === 'click')
+        .map(c => {
+          const val = String(row[c.key] ?? '').replace(/"/g, '&quot;')
+          return `<div class="edit-field">
+            <label>${c.label}</label>
+            <input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" />
+          </div>`
+        }).join('')
+
+      result += `<tr class="edit-row" data-edit-for="${rowIndex}">
+        <td colspan="${totalCols}">
+          <div class="edit-form">
+            ${fields}
+            <div class="edit-form-actions">
+              <button class="edit-confirm" data-row-index="${rowIndex}" title="Confirm">✓</button>
+              <button class="edit-cancel" data-row-index="${rowIndex}" title="Cancel">✗</button>
+            </div>
+          </div>
+        </td>
+      </tr>`
+    }
+
+    return result
   }
 
   private getSortedData(): Record<string, unknown>[] {
@@ -368,19 +406,25 @@ export class OTable extends GlassElement {
         })
       })
 
-      // Edit button: enter edit mode for that row
+      // Edit button: enter edit mode for that row (close any other first)
       this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-btn').forEach(btn => {
         btn.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
           const rowIndex = parseInt(btn.dataset.rowIndex!)
           const row = this.getSortedData()[rowIndex]
+          // Close any currently editing row without saving
+          this._editingRows.forEach(r => {
+            const orig = this._rowOriginals.get(r)
+            if (orig) { Object.assign(r, orig); this._rowOriginals.delete(r) }
+          })
+          this._editingRows.clear()
           this._rowOriginals.set(row, { ...row })
           this._editingRows.add(row)
           this.render()
         })
       })
 
-      // Confirm button: commit changes, fire o-row-change
+      // Confirm button: commit changes from edit form row, fire o-row-change
       this.shadowRoot!.querySelectorAll<HTMLElement>('.edit-confirm').forEach(btn => {
         btn.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
@@ -390,7 +434,7 @@ export class OTable extends GlassElement {
           const changes: Record<string, unknown> = {}
 
           this.shadowRoot!.querySelectorAll<HTMLInputElement>(
-            `tr[data-row-index="${rowIndex}"] input.cell-input`
+            `tr[data-edit-for="${rowIndex}"] input.cell-input`
           ).forEach(input => {
             const k = input.dataset.key!
             const col = this._columns.find(c => c.key === k)

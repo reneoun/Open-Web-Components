@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Web Components</title>
-    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.1/OWC/dist/components.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.3.0/OWC/dist/components.js"></script>
     <style>
       * { box-sizing: border-box; }
       body {
@@ -50,7 +50,7 @@
 
     <h1>Open Web Components</h1>
     <p style="opacity:0.7;margin:0 0 0.25rem">Glassmorphism web component library</p>
-    <div class="code" style="margin:12px 0 0;display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.2.1/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+    <div class="code" style="margin:12px 0 0;display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.3.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
 
     <!-- o-button -->
     <h2>o-button</h2>
@@ -304,7 +304,8 @@ search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, q
     <h2>o-table (editable)</h2>
     <p class="desc">
       <code>editable="always"</code> renders inline inputs.
-      <code>editable="click"</code> uses a row edit button (✏️) with confirm/cancel.
+      <code>editable="click"</code> opens a form row below the original with label:input pairs.
+      Press ✏️ to edit, ✓ to confirm, ✗ to cancel.
       Events: <code>o-cell-change</code>, <code>o-row-change</code>.
     </p>
     <o-table id="editable-table" editable selectable></o-table>
@@ -314,8 +315,10 @@ search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, q
 table.columns = [
   { key: 'name', label: 'Name', editable: 'always' },
   { key: 'role', label: 'Role', editable: 'click'  },
+  { key: 'dept', label: 'Dept', editable: 'click'  },
   { key: 'status', label: 'Status' }
 ]
+// Click ✏️ → form row appears below with editable fields
 // Events: o-cell-change, o-row-change</div>
     <script>
       const editTable = document.getElementById('editable-table')
@@ -323,12 +326,13 @@ table.columns = [
       editTable.columns = [
         { key: 'name',   label: 'Name',   editable: 'always', width: 160 },
         { key: 'role',   label: 'Role',   editable: 'click',  width: 140 },
+        { key: 'dept',   label: 'Dept',   editable: 'click',  width: 140 },
         { key: 'status', label: 'Status', width: 120 }
       ]
       editTable.data = [
-        { name: 'Alice', role: 'Engineer', status: 'Active' },
-        { name: 'Bob',   role: 'Designer', status: 'Away'   },
-        { name: 'Carol', role: 'Manager',  status: 'Active' }
+        { name: 'Alice', role: 'Engineer', dept: 'Platform', status: 'Active' },
+        { name: 'Bob',   role: 'Designer', dept: 'Product',  status: 'Away'   },
+        { name: 'Carol', role: 'Manager',  dept: 'Ops',      status: 'Active' }
       ]
       editTable.addEventListener('o-cell-change', e => {
         editLog.textContent = `o-cell-change: ${e.detail.key} = "${e.detail.value}" (row ${e.detail.rowIndex})`
