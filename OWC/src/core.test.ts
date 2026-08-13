@@ -108,3 +108,199 @@ describe('OWCPanel', () => {
     expect(resizeSE).toBeNull()
   })
 })
+
+describe('OWCPanel drag overlays and events', () => {
+  let el: HTMLElement
+
+  // The overlays are appended straight to document.body and tagged with
+  // data-owc-overlay, which is also the documented hook for pages to target them.
+  const grid = () => document.querySelector<HTMLElement>('[data-owc-overlay="grid"]') ?? undefined
+  const zone = () => document.querySelector<HTMLElement>('[data-owc-overlay="dropzone"]') ?? undefined
+
+  const down = (t: Element, x = 100, y = 100) =>
+    t.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, screenX: x, screenY: y }))
+  const move = (x: number, y: number) =>
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, screenX: x, screenY: y }))
+  const up = () => document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+
+  beforeEach(() => {
+    document.body.innerHTML = ''
+    el = document.createElement('o-panel')
+    el.setAttribute('move', '')
+    el.setAttribute('snap', '20')
+    el.setAttribute('resize', '')
+    document.body.appendChild(el)
+  })
+
+  afterEach(() => {
+    up()
+    document.body.innerHTML = ''
+  })
+
+  it('shows the snap grid while dragging', () => {
+    expect(grid()).toBeUndefined()
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    expect(grid()).toBeDefined()
+  })
+
+  it('draws grid lines that contrast with the theme', () => {
+    el.setAttribute('theme', 'light')
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    // light theme must use dark lines, never white-on-white
+    const img = grid()!.style.backgroundImage.replace(/\s+/g, '')
+    expect(img).toContain('rgba(0,0,0')
+    expect(img).not.toContain('rgba(255,255,255')
+  })
+
+  it('shows a drop zone while dragging', () => {
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    move(300, 200)
+    expect(zone()).toBeDefined()
+    expect(zone()!.style.borderStyle).toBe('dashed')
+  })
+
+  it('raises the dragged panel above the overlays, and restores after', () => {
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    expect(Number(el.style.zIndex)).toBeGreaterThan(9998)
+    up()
+    expect(el.style.zIndex).toBe('')
+  })
+
+  it('fires o-drag-start, o-drag-move and o-drag-end', () => {
+    const seen: string[] = []
+    ;['o-drag-start', 'o-drag-move', 'o-drag-end']
+      .forEach(n => el.addEventListener(n, () => seen.push(n)))
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    move(300, 200)
+    up()
+    expect(seen).toContain('o-drag-start')
+    expect(seen).toContain('o-drag-move')
+    expect(seen).toContain('o-drag-end')
+  })
+
+  it('o-drag-move lets a listener redirect the drop zone', () => {
+    el.addEventListener('o-drag-move', (e) => {
+      (e as CustomEvent).detail.setDropZone({ x: 11, y: 22, width: 333, height: 44 })
+    })
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    move(300, 200)
+    expect(zone()!.style.left).toBe('11px')
+    expect(zone()!.style.top).toBe('22px')
+    expect(zone()!.style.width).toBe('333px')
+  })
+
+  it('o-drag-move can suppress the drop zone with null', () => {
+    el.addEventListener('o-drag-move', (e) => {
+      (e as CustomEvent).detail.setDropZone(null)
+    })
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    move(300, 200)
+    expect(zone()?.style.opacity).not.toBe('1')
+  })
+
+  it('hides both overlays after the drag ends', () => {
+    down(el.shadowRoot!.querySelector('.move-handle')!)
+    move(300, 200)
+    up()
+    expect(grid()?.style.opacity).not.toBe('1')
+    expect(zone()?.style.opacity).not.toBe('1')
+  })
+
+  it('fires o-resize-start / o-resize-end and outlines the new size', () => {
+    const seen: string[] = []
+    ;['o-resize-start', 'o-resize-end'].forEach(n => el.addEventListener(n, () => seen.push(n)))
+    down(el.shadowRoot!.querySelector('.resize-se')!, 0, 0)
+    expect(zone()).toBeDefined()
+    move(200, 120)
+    up()
+    expect(seen).toEqual(['o-resize-start', 'o-resize-end'])
+  })
+
+  it('ignores a stray mouseup with no drag in progress', () => {
+    let fired = 0
+    el.addEventListener('o-drag-end', () => { fired++ })
+    up()
+    expect(fired).toBe(0)
+  })
+})
+
+describe('OWCPanel handle attribute', () => {
+  let el: HTMLElement
+
+  const down = (t: Element) =>
+    t.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, screenX: 10, screenY: 10 }))
+  const up = () => document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+
+  // children first, then move/handle: mirrors how the parser builds these panels
+  const build = (inner: string, handle = 'header') => {
+    document.body.innerHTML = ''
+    el = document.createElement('o-panel')
+    el.innerHTML = inner
+    el.setAttribute('move', '')
+    el.setAttribute('snap', '20')
+    if (handle) el.setAttribute('handle', handle)
+    document.body.appendChild(el)
+    return el
+  }
+
+  afterEach(() => { up(); document.body.innerHTML = '' })
+
+  it('drops the built-in ⠿ when the handle matches', () => {
+    build('<header>Title</header>')
+    expect(el.shadowRoot!.querySelector('.move-handle')).toBeNull()
+  })
+
+  it('keeps the ⠿ when the handle selector matches nothing', () => {
+    build('<div>no header here</div>', '.nope')
+    expect(el.shadowRoot!.querySelector('.move-handle')).not.toBeNull()
+  })
+
+  it('starts a drag from the light-DOM handle', () => {
+    build('<header>Title</header>')
+    let started = false
+    el.addEventListener('o-drag-start', () => { started = true })
+    down(el.querySelector('header')!)
+    expect(started).toBe(true)
+  })
+
+  it('marks the handle grabbable and unselectable', () => {
+    build('<header>Title</header>')
+    const h = el.querySelector('header') as HTMLElement
+    expect(h.style.cursor).toBe('grab')
+    expect(h.style.userSelect).toBe('none')
+  })
+
+  it('does NOT drag when a control inside the handle is used', () => {
+    build('<header>Title <select><option>a</option></select> <button>x</button></header>')
+    let started = false
+    el.addEventListener('o-drag-start', () => { started = true })
+    down(el.querySelector('select')!)
+    down(el.querySelector('button')!)
+    expect(started).toBe(false)
+  })
+
+  it('does NOT drag from panel content outside the handle', () => {
+    build('<header>Title</header><p class="body">content</p>')
+    let started = false
+    el.addEventListener('o-drag-start', () => { started = true })
+    down(el.querySelector('.body')!)
+    expect(started).toBe(false)
+  })
+
+  it('picks up a handle added after connect (deferred child parsing)', async () => {
+    document.body.innerHTML = ''
+    el = document.createElement('o-panel')
+    el.setAttribute('move', '')
+    el.setAttribute('handle', 'header')
+    document.body.appendChild(el)            // connects with no children yet
+    expect(el.shadowRoot!.querySelector('.move-handle')).not.toBeNull()   // fallback
+
+    el.innerHTML = '<header>Late</header>'
+    await new Promise(r => setTimeout(r, 0)) // let the MutationObserver run
+    expect(el.shadowRoot!.querySelector('.move-handle')).toBeNull()
+    let started = false
+    el.addEventListener('o-drag-start', () => { started = true })
+    down(el.querySelector('header')!)
+    expect(started).toBe(true)
+  })
+})

@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `o-panel handle="<selector>"` — drag by your own element (e.g. a panel header) instead of
+  the ⠿ button, which is then dropped. Interactive controls inside the handle
+  (`select`/`button`/`input`/`textarea`/`a`/`label`/`summary`) still receive their clicks, and
+  the ⠿ remains as a fallback until the handle exists (IIFE builds connect before children
+  are parsed).
+- `o-panel` drag/resize events: `o-drag-start`, `o-drag-move`, `o-drag-end`,
+  `o-resize-start`, `o-resize-move`, `o-resize-end`. Consumers no longer have to patch
+  internals to react to a drop.
+- `o-panel` **drop zone** overlay — dashed outline of where the panel will land.
+  Redirect it from `o-drag-move` via `detail.setDropZone(rect)`, or hide it with `null`.
+- Overlays are tagged `data-owc-overlay="grid" | "dropzone"` for styling/targeting.
+
+### Fixed
+- Snap grid was effectively invisible on light backgrounds: it drew white lines at
+  0.12 alpha regardless of theme. Now theme-aware (dark lines on light themes),
+  stronger, with every 5th line emphasised.
+- The dragged panel is raised above the overlays instead of being criss-crossed by them.
+- Grid/drop-zone overlays are recreated if the page has replaced `document.body`
+  (the cached node was orphaned and nothing was drawn).
+- A stray `mouseup` no longer emits a drag/resize end when nothing was in progress.
+
 ## [1.2.1] - 2026-04-08
 
 ### Fixed

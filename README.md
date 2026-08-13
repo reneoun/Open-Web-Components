@@ -112,6 +112,61 @@ A glass content panel that can be dragged, snapped to a grid, and resized.
 | `move` | Shows drag handle, enables repositioning |
 | `snap` | Grid size in px for snapping while dragging (min 8) |
 | `resize` | Shows resize handles on right edge, bottom edge, and corner |
+| `handle` | CSS selector for your own drag handle; replaces the ⠿ button |
+| `theme` | `light` picks the light overlay palette; omit to follow `prefers-color-scheme` |
+
+**Custom drag handle.** Point `handle` at an element in your own markup and the whole thing
+becomes the grab area — no separate ⠿ button:
+
+```html
+<o-panel move snap="20" resize handle="header">
+  <header>Panel title</header>   <!-- drag from here -->
+  <p>Content — not draggable</p>
+</o-panel>
+```
+
+o-panel sets `cursor: grab` and `user-select: none` on that element for you. Clicks on
+`select`, `button`, `input`, `textarea`, `a`, `label` and `summary` **inside** the handle keep
+working normally instead of starting a drag, so a header full of controls is fine. If the
+selector matches nothing (or the children haven't parsed yet — the IIFE build connects before
+them) the ⠿ button stays as a fallback, and o-panel switches over as soon as the element
+appears.
+
+**While dragging** you get two overlays, both `pointer-events: none` and tagged
+`data-owc-overlay="grid"` / `data-owc-overlay="dropzone"` so a page can restyle them:
+
+- the **snap grid** — every 5th line drawn stronger, coloured for the panel's theme
+  (dark lines on light themes, light on dark)
+- the **drop zone** — a dashed outline of where the panel will land
+
+The dragged panel is raised above both overlays and restored on release.
+
+**Events:**
+
+| Event | `detail` |
+|---|---|
+| `o-drag-start` | `{ x, y, rect }` |
+| `o-drag-move` | `{ x, y, rect, setDropZone(rect \| null) }` |
+| `o-drag-end` | `{ x, y, rect }` — fires after the overlays are cleared |
+| `o-resize-start` | `{ width, height, edge }` — `edge` is `'e'`, `'s'` or `'se'` |
+| `o-resize-move` | `{ width, height, edge }` |
+| `o-resize-end` | `{ width, height }` |
+
+`rect` is `{ x, y, width, height }` in viewport coordinates.
+
+Call `setDropZone()` from `o-drag-move` to point the highlight at your own target —
+useful when the panel does not land where it is floating (columns, grids, lists).
+Pass `null` to hide it:
+
+```js
+// highlight the grid cell the panel will snap into, not the panel itself
+panel.addEventListener('o-drag-move', e => {
+  e.detail.setDropZone(cellRectUnder(e.detail.rect))
+})
+
+// persist the position yourself once the drag finishes
+panel.addEventListener('o-drag-end', e => save(e.detail.x, e.detail.y))
+```
 
 ---
 

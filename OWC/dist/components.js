@@ -114,33 +114,61 @@
 
   // src/core.ts
   console.log("Open Web Components (OWC) Core Module Loaded - René Oun");
+  var OVERLAY_COLORS = {
+    dark: {
+      gridMinor: "rgba(255,255,255,0.22)",
+      gridMajor: "rgba(255,255,255,0.40)",
+      zoneLine: "rgba(251,191,36,0.85)",
+      zoneFill: "rgba(251,191,36,0.12)"
+    },
+    light: {
+      gridMinor: "rgba(0,0,0,0.16)",
+      gridMajor: "rgba(0,0,0,0.30)",
+      zoneLine: "rgba(22,163,74,0.85)",
+      zoneFill: "rgba(22,163,74,0.14)"
+    }
+  };
+  var Z_GRID = 9997;
+  var Z_ZONE = 9998;
+  var Z_DRAGGED = 9999;
+  function makeOverlay(z, kind) {
+    const el = document.createElement("div");
+    el.setAttribute("data-owc-overlay", kind);
+    el.setAttribute("aria-hidden", "true");
+    Object.assign(el.style, {
+      position: "fixed",
+      pointerEvents: "none",
+      zIndex: String(z),
+      transition: "opacity 160ms ease",
+      opacity: "0"
+    });
+    document.body.appendChild(el);
+    return el;
+  }
   var _gridEl = null;
   var _gridFadeOut = null;
-  function showSnapGrid(snap, offsetX = 0, offsetY = 0) {
+  function showSnapGrid(snap, offsetX = 0, offsetY = 0, theme = "dark") {
     if (snap < 8)
       return;
     if (_gridFadeOut) {
       clearTimeout(_gridFadeOut);
       _gridFadeOut = null;
     }
-    if (!_gridEl) {
-      _gridEl = document.createElement("div");
-      Object.assign(_gridEl.style, {
-        position: "fixed",
-        inset: "0",
-        pointerEvents: "none",
-        zIndex: "9998",
-        transition: "opacity 200ms ease",
-        opacity: "0"
-      });
-      document.body.appendChild(_gridEl);
+    if (!_gridEl || !_gridEl.isConnected) {
+      _gridEl = makeOverlay(Z_GRID, "grid");
+      _gridEl.style.inset = "0";
     }
+    const c = OVERLAY_COLORS[theme];
     _gridEl.style.backgroundImage = [
-      `linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)`,
-      `linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)`
+      `linear-gradient(${c.gridMajor} 1px, transparent 1px)`,
+      `linear-gradient(90deg, ${c.gridMajor} 1px, transparent 1px)`,
+      `linear-gradient(${c.gridMinor} 1px, transparent 1px)`,
+      `linear-gradient(90deg, ${c.gridMinor} 1px, transparent 1px)`
     ].join(",");
-    _gridEl.style.backgroundSize = `${snap}px ${snap}px`;
-    _gridEl.style.backgroundPosition = `${offsetX % snap}px ${offsetY % snap}px`;
+    _gridEl.style.backgroundSize = `${snap * 5}px ${snap * 5}px, ${snap * 5}px ${snap * 5}px, ${snap}px ${snap}px, ${snap}px ${snap}px`;
+    const ox = (offsetX % snap + snap) % snap;
+    const oy = (offsetY % snap + snap) % snap;
+    _gridEl.style.backgroundPosition = `${ox}px ${oy}px, ${ox}px ${oy}px, ${ox}px ${oy}px, ${ox}px ${oy}px`;
     _gridEl.offsetHeight;
     _gridEl.style.opacity = "1";
   }
@@ -154,6 +182,43 @@
       if (_gridEl === el)
         _gridEl = null;
       _gridFadeOut = null;
+    }, 220);
+  }
+  var _zoneEl = null;
+  var _zoneFadeOut = null;
+  function showDropZone(rect, theme = "dark") {
+    if (_zoneFadeOut) {
+      clearTimeout(_zoneFadeOut);
+      _zoneFadeOut = null;
+    }
+    if (!_zoneEl || !_zoneEl.isConnected)
+      _zoneEl = makeOverlay(Z_ZONE, "dropzone");
+    const c = OVERLAY_COLORS[theme];
+    Object.assign(_zoneEl.style, {
+      left: `${Math.round(rect.x)}px`,
+      top: `${Math.round(rect.y)}px`,
+      width: `${Math.round(rect.width)}px`,
+      height: `${Math.round(rect.height)}px`,
+      borderStyle: "dashed",
+      borderWidth: "2px",
+      borderColor: c.zoneLine,
+      borderRadius: "10px",
+      background: c.zoneFill,
+      boxSizing: "border-box"
+    });
+    _zoneEl.offsetHeight;
+    _zoneEl.style.opacity = "1";
+  }
+  function hideDropZone() {
+    if (!_zoneEl)
+      return;
+    _zoneEl.style.opacity = "0";
+    const el = _zoneEl;
+    _zoneFadeOut = setTimeout(() => {
+      el.remove();
+      if (_zoneEl === el)
+        _zoneEl = null;
+      _zoneFadeOut = null;
     }, 220);
   }
 
@@ -187,24 +252,71 @@
       });
     }
   }
+  var INTERACTIVE = "select,button,input,textarea,a,label,summary,[contenteditable]";
 
   class OWCPanel extends GlassElement {
     static get observedAttributes() {
-      return ["move", "snap", "resize"];
+      return ["move", "snap", "resize", "handle"];
     }
     dragStart = null;
     dragOffset = { x: 0, y: 0 };
     resizeStart = null;
+    prevZIndex = "";
+    activeHandle = null;
+    handleWatcher = null;
     constructor() {
       super();
     }
     connectedCallback() {
       this.render();
+      this.addEventListener("mousedown", this.onHostMouseDown);
+      this.watchForHandle();
+    }
+    disconnectedCallback() {
+      this.removeEventListener("mousedown", this.onHostMouseDown);
+      this.handleWatcher?.disconnect();
+      this.handleWatcher = null;
     }
     attributeChangedCallback() {
-      if (this.isConnected)
+      if (this.isConnected) {
         this.render();
+        this.watchForHandle();
+      }
     }
+    get lightHandle() {
+      const sel = this.getAttribute("handle");
+      return sel ? this.querySelector(sel) : null;
+    }
+    watchForHandle() {
+      this.handleWatcher?.disconnect();
+      this.handleWatcher = null;
+      if (!this.getAttribute("handle") || this.lightHandle)
+        return;
+      this.handleWatcher = new MutationObserver(() => {
+        if (this.lightHandle) {
+          this.handleWatcher?.disconnect();
+          this.handleWatcher = null;
+          this.render();
+        }
+      });
+      this.handleWatcher.observe(this, { childList: true, subtree: true });
+    }
+    onHostMouseDown = (e) => {
+      if (!this.hasAttribute("move") || !this.getAttribute("handle"))
+        return;
+      if (this.dragStart)
+        return;
+      const target = e.target;
+      const handle = this.lightHandle;
+      if (!target || !handle)
+        return;
+      if (!handle.contains(target))
+        return;
+      if (target.closest(INTERACTIVE))
+        return;
+      this.activeHandle = handle;
+      this.onDragStart(e);
+    };
     get snapSize() {
       const v = parseInt(this.getAttribute("snap") ?? "1");
       return isNaN(v) || v < 1 ? 1 : v;
@@ -216,6 +328,13 @@
     render() {
       const hasDrag = this.hasAttribute("move");
       const hasResize = this.hasAttribute("resize");
+      const light = hasDrag ? this.lightHandle : null;
+      const showGrip = hasDrag && !light;
+      if (light) {
+        light.style.cursor = "grab";
+        light.style.userSelect = "none";
+        light.style.webkitUserSelect = "none";
+      }
       const prev = this.shadowRoot.querySelector(".panel");
       const savedW = prev?.style.width ?? "";
       const savedH = prev?.style.height ?? "";
@@ -270,7 +389,7 @@
                 ${glassScrollbarStyles(".panel")}
             </style>
             <div class="panel" role="region">
-                ${hasDrag ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
+                ${showGrip ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
                 <slot></slot>
                 ${hasResize ? `
                     <div class="resize-e"  data-edge="e"></div>
@@ -286,19 +405,55 @@
         panel.style.height = savedH;
       if (this.dragOffset.x || this.dragOffset.y)
         this.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
-      if (hasDrag) {
+      if (showGrip) {
         this.shadowRoot.querySelector(".move-handle").addEventListener("mousedown", this.onDragStart);
       }
       if (hasResize) {
         this.shadowRoot.querySelectorAll("[data-edge]").forEach((el) => el.addEventListener("mousedown", this.onResizeStart));
       }
     }
+    get overlayTheme() {
+      if (this.getAttribute("theme") === "light")
+        return "light";
+      if (this.hasAttribute("theme"))
+        return "dark";
+      return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    panelRect() {
+      const el = this.shadowRoot.querySelector(".panel");
+      const r = el ? el.getBoundingClientRect() : this.getBoundingClientRect();
+      return { x: r.left, y: r.top, width: r.width, height: r.height };
+    }
+    emit(name, detail) {
+      this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail }));
+    }
+    updateDropZone(x, y) {
+      let zone = this.panelRect();
+      this.emit("o-drag-move", {
+        x,
+        y,
+        rect: { ...zone },
+        setDropZone: (r) => {
+          zone = r;
+        }
+      });
+      if (zone)
+        showDropZone(zone, this.overlayTheme);
+      else
+        hideDropZone();
+    }
     onDragStart = (e) => {
       e.preventDefault();
-      e.currentTarget.style.cursor = "grabbing";
+      this.activeHandle = this.activeHandle ?? (e.currentTarget instanceof HTMLElement ? e.currentTarget : null);
+      if (this.activeHandle)
+        this.activeHandle.style.cursor = "grabbing";
       this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
-      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
-      showSnapGrid(this.snapSize, r.left, r.top);
+      this.prevZIndex = this.style.zIndex;
+      this.style.zIndex = String(Z_DRAGGED);
+      const r = this.panelRect();
+      showSnapGrid(this.snapSize, r.x, r.y, this.overlayTheme);
+      this.emit("o-drag-start", { x: this.dragOffset.x, y: this.dragOffset.y, rect: r });
+      this.updateDropZone(this.dragOffset.x, this.dragOffset.y);
       document.addEventListener("mousemove", this.onDragMove);
       document.addEventListener("mouseup", this.onDragEnd);
     };
@@ -309,15 +464,25 @@
       const y = this.snapTo(e.screenY - this.dragStart.y);
       this.dragOffset = { x, y };
       this.style.transform = `translate(${x}px, ${y}px)`;
+      this.updateDropZone(x, y);
     };
     onDragEnd = () => {
+      if (!this.dragStart)
+        return;
       this.dragStart = null;
-      const handle = this.shadowRoot.querySelector(".move-handle");
-      if (handle)
-        handle.style.cursor = "grab";
+      if (this.activeHandle)
+        this.activeHandle.style.cursor = "grab";
+      this.activeHandle = null;
       hideSnapGrid();
+      hideDropZone();
+      this.style.zIndex = this.prevZIndex;
       document.removeEventListener("mousemove", this.onDragMove);
       document.removeEventListener("mouseup", this.onDragEnd);
+      this.emit("o-drag-end", {
+        x: this.dragOffset.x,
+        y: this.dragOffset.y,
+        rect: this.panelRect()
+      });
     };
     onResizeStart = (e) => {
       e.preventDefault();
@@ -330,8 +495,14 @@
         h: panel.offsetHeight,
         edge: e.currentTarget.dataset.edge
       };
-      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
-      showSnapGrid(this.snapSize, r.left, r.top);
+      const r = this.panelRect();
+      showSnapGrid(this.snapSize, r.x, r.y, this.overlayTheme);
+      showDropZone(r, this.overlayTheme);
+      this.emit("o-resize-start", {
+        width: this.resizeStart.w,
+        height: this.resizeStart.h,
+        edge: this.resizeStart.edge
+      });
       document.addEventListener("mousemove", this.onResizeMove);
       document.addEventListener("mouseup", this.onResizeEnd);
     };
@@ -346,12 +517,22 @@
         panel.style.width = `${Math.max(120, this.snapTo(w + dx))}px`;
       if (edge === "s" || edge === "se")
         panel.style.height = `${Math.max(40, this.snapTo(h + dy))}px`;
+      showDropZone(this.panelRect(), this.overlayTheme);
+      this.emit("o-resize-move", { width: panel.offsetWidth, height: panel.offsetHeight, edge });
     };
     onResizeEnd = () => {
+      if (!this.resizeStart)
+        return;
       this.resizeStart = null;
       hideSnapGrid();
+      hideDropZone();
       document.removeEventListener("mousemove", this.onResizeMove);
       document.removeEventListener("mouseup", this.onResizeEnd);
+      const panel = this.shadowRoot.querySelector(".panel");
+      this.emit("o-resize-end", {
+        width: panel?.offsetWidth ?? 0,
+        height: panel?.offsetHeight ?? 0
+      });
     };
   }
   customElements.define("o-panel", OWCPanel);
