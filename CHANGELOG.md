@@ -16,6 +16,16 @@
 - Overlays are tagged `data-owc-overlay="grid" | "dropzone"` for styling/targeting.
 
 ### Fixed
+- **`o-panel` handles no longer scroll with the content.** `.panel` was the scrolling
+  box *and* the positioning context for the ⠿ / resize handles, so they drifted as you
+  scrolled. Content now lives in an inner `.content` scroller and the handles are its
+  siblings, pinned to the panel. When `resize` is set, the scroller is inset 6px so the
+  scrollbars don't sit underneath the resize strips.
+- **Scrollbars are visible again.** `glassScrollbarStyles` hard-coded white at 0.12
+  alpha, i.e. invisible on light themes ("this panel has no scrollbar"). Colours are now
+  glass tokens (`--glass-scroll-thumb`, `--glass-scroll-thumb-hover`,
+  `--glass-scroll-track`), the bar is 9px, the track is tinted, and **both axes are
+  sized** so horizontal overflow gets a bar too.
 - Snap grid was effectively invisible on light backgrounds: it drew white lines at
   0.12 alpha regardless of theme. Now theme-aware (dark lines on light themes),
   stronger, with every 5th line emphasised.

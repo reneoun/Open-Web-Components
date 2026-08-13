@@ -61,6 +61,9 @@
   --glass-text-muted: rgba(0,40,0,0.5);
   --glass-text-dim: rgba(0,40,0,0.3);
   --glass-hover: rgba(34,197,94,0.08);
+  --glass-scroll-thumb: rgba(0,40,0,0.28);
+  --glass-scroll-thumb-hover: rgba(0,40,0,0.45);
+  --glass-scroll-track: rgba(0,40,0,0.06);
 `;
   var GLASS_TOKENS = `
   --glass-bg: rgba(255,255,255,0.07);
@@ -72,6 +75,9 @@
   --glass-text-muted: rgba(255,255,255,0.5);
   --glass-text-dim: rgba(255,255,255,0.3);
   --glass-hover: rgba(255,255,255,0.1);
+  --glass-scroll-thumb: rgba(255,255,255,0.28);
+  --glass-scroll-thumb-hover: rgba(255,255,255,0.5);
+  --glass-scroll-track: rgba(255,255,255,0.06);
 `;
   function glassBaseStyles() {
     return `
@@ -88,18 +94,21 @@
     /* Firefox */
     ${selector} {
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      scrollbar-color: var(--glass-scroll-thumb) var(--glass-scroll-track);
     }
     /* Webkit (Chrome, Safari, Edge) */
-    ${selector}::-webkit-scrollbar { width: 6px; height: 6px; }
-    ${selector}::-webkit-scrollbar-track { background: transparent; }
+    ${selector}::-webkit-scrollbar { width: 9px; height: 9px; }
+    ${selector}::-webkit-scrollbar-track {
+      background: var(--glass-scroll-track);
+      border-radius: 5px;
+    }
     ${selector}::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.12);
-      border-radius: 3px;
+      background: var(--glass-scroll-thumb);
+      border-radius: 5px;
       transition: background 0.2s;
     }
     ${selector}::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.3);
+      background: var(--glass-scroll-thumb-hover);
     }
     ${selector}::-webkit-scrollbar-corner { background: transparent; }
   `;
@@ -347,7 +356,6 @@
                     border: 1px solid var(--glass-border);
                     backdrop-filter: blur(var(--glass-blur));
                     -webkit-backdrop-filter: blur(var(--glass-blur));
-                    padding: 16px;
                     margin: 8px;
                     border-radius: 10px;
                     min-width: 120px;
@@ -357,8 +365,22 @@
                     font-family: sans-serif;
                     font-size: 14px;
                     box-sizing: border-box;
+                    /* NOT the scroller: the drag/resize handles are absolutely
+                       positioned in here, and children of a scrolling box scroll
+                       with its content. .content scrolls instead. */
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .content {
+                    padding: 16px;
+                    flex: 1 1 auto;
+                    min-height: 0;      /* let it shrink inside the flex column */
                     overflow: auto;
                 }
+                /* Keep the scrollbars clear of the resize strips, which sit on the
+                   panel's right/bottom edges. */
+                .panel.has-resize > .content { margin-right: 6px; margin-bottom: 6px; }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
                     background: var(--glass-hover); border: 1px solid var(--glass-border);
@@ -386,11 +408,11 @@
                 }
                 .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
                 .resize-se:hover { border-color: var(--glass-text-muted); }
-                ${glassScrollbarStyles(".panel")}
+                ${glassScrollbarStyles(".content")}
             </style>
-            <div class="panel" role="region">
+            <div class="panel${hasResize ? " has-resize" : ""}" role="region">
                 ${showGrip ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
-                <slot></slot>
+                <div class="content"><slot></slot></div>
                 ${hasResize ? `
                     <div class="resize-e"  data-edge="e"></div>
                     <div class="resize-s"  data-edge="s"></div>

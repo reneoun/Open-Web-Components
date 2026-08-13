@@ -261,7 +261,6 @@ class OWCPanel extends GlassElement {
                     border: 1px solid var(--glass-border);
                     backdrop-filter: blur(var(--glass-blur));
                     -webkit-backdrop-filter: blur(var(--glass-blur));
-                    padding: 16px;
                     margin: 8px;
                     border-radius: 10px;
                     min-width: 120px;
@@ -271,8 +270,22 @@ class OWCPanel extends GlassElement {
                     font-family: sans-serif;
                     font-size: 14px;
                     box-sizing: border-box;
+                    /* NOT the scroller: the drag/resize handles are absolutely
+                       positioned in here, and children of a scrolling box scroll
+                       with its content. .content scrolls instead. */
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .content {
+                    padding: 16px;
+                    flex: 1 1 auto;
+                    min-height: 0;      /* let it shrink inside the flex column */
                     overflow: auto;
                 }
+                /* Keep the scrollbars clear of the resize strips, which sit on the
+                   panel's right/bottom edges. */
+                .panel.has-resize > .content { margin-right: 6px; margin-bottom: 6px; }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
                     background: var(--glass-hover); border: 1px solid var(--glass-border);
@@ -300,11 +313,11 @@ class OWCPanel extends GlassElement {
                 }
                 .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
                 .resize-se:hover { border-color: var(--glass-text-muted); }
-                ${glassScrollbarStyles('.panel')}
+                ${glassScrollbarStyles('.content')}
             </style>
-            <div class="panel" role="region">
+            <div class="panel${hasResize ? ' has-resize' : ''}" role="region">
                 ${showGrip  ? '<button class="move-handle" title="Drag to move">⠿</button>' : ''}
-                <slot></slot>
+                <div class="content"><slot></slot></div>
                 ${hasResize ? `
                     <div class="resize-e"  data-edge="e"></div>
                     <div class="resize-s"  data-edge="s"></div>

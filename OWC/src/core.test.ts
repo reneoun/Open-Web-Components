@@ -224,6 +224,68 @@ describe('OWCPanel drag overlays and events', () => {
   })
 })
 
+describe('OWCPanel scrolling vs handles', () => {
+  let el: HTMLElement
+
+  beforeEach(() => {
+    document.body.innerHTML = ''
+    el = document.createElement('o-panel')
+    el.setAttribute('move', '')
+    el.setAttribute('resize', '')
+    el.innerHTML = '<p>content</p>'
+    document.body.appendChild(el)
+  })
+
+  afterEach(() => { document.body.innerHTML = '' })
+
+  it('slots content into a .content scroller', () => {
+    const content = el.shadowRoot!.querySelector('.content')
+    expect(content).not.toBeNull()
+    expect(content!.querySelector('slot')).not.toBeNull()
+  })
+
+  it('keeps the resize handles OUT of the scroller so they do not scroll away', () => {
+    const content = el.shadowRoot!.querySelector('.content')!
+    for (const sel of ['.resize-e', '.resize-s', '.resize-se']) {
+      const handle = el.shadowRoot!.querySelector(sel)!
+      expect(handle).not.toBeNull()
+      expect(content.contains(handle)).toBe(false)          // not inside the scroller
+      expect(handle.parentElement!.classList.contains('panel')).toBe(true)
+    }
+  })
+
+  it('keeps the ⠿ handle out of the scroller too', () => {
+    const content = el.shadowRoot!.querySelector('.content')!
+    const grip = el.shadowRoot!.querySelector('.move-handle')!
+    expect(content.contains(grip)).toBe(false)
+  })
+
+  it('.panel itself does not scroll', () => {
+    const css = el.shadowRoot!.querySelector('style')!.textContent!
+    const panelBlock = css.slice(css.indexOf('.panel {'), css.indexOf('.content {'))
+    expect(panelBlock).toContain('overflow: hidden')
+  })
+
+  it('insets the scroller from the resize strips when resizable', () => {
+    const css = el.shadowRoot!.querySelector('style')!.textContent!
+    expect(css).toContain('.panel.has-resize > .content')
+    expect(el.shadowRoot!.querySelector('.panel')!.classList.contains('has-resize')).toBe(true)
+  })
+
+  it('scrollbars are themed via tokens, not hard-coded white', () => {
+    const css = el.shadowRoot!.querySelector('style')!.textContent!
+    expect(css).toContain('var(--glass-scroll-thumb)')
+    // both axes sized, so horizontal overflow gets a visible bar
+    expect(css).toMatch(/::-webkit-scrollbar \{[^}]*height:/)
+    // the thumb itself must not hard-code a colour (rgba elsewhere is fine — the
+    // glass tokens are literals by definition)
+    const thumb = css.slice(css.indexOf('::-webkit-scrollbar-thumb {'))
+      .slice(0, css.slice(css.indexOf('::-webkit-scrollbar-thumb {')).indexOf('}'))
+    expect(thumb).toContain('var(--glass-scroll-thumb)')
+    expect(thumb).not.toMatch(/rgba\(/)
+  })
+})
+
 describe('OWCPanel handle attribute', () => {
   let el: HTMLElement
 

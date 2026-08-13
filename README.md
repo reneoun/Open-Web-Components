@@ -141,6 +141,13 @@ appears.
 
 The dragged panel is raised above both overlays and restored on release.
 
+**Scrolling.** Panel content sits in an inner `.content` scroller; `.panel` itself does not
+scroll. The ⠿ and resize handles are siblings of that scroller, so they stay pinned to the
+panel instead of drifting as you scroll. Scrollbars are 9px, themed from the glass tokens
+(`--glass-scroll-thumb`, `--glass-scroll-thumb-hover`, `--glass-scroll-track`) and sized on
+both axes, so wide content gets a horizontal bar. If you slot in a container that sets
+`overflow: hidden`, that container swallows the overflow and the panel won't scroll.
+
 **Events:**
 
 | Event | `detail` |

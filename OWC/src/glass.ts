@@ -10,6 +10,9 @@ export const GLASS_TOKENS_LIGHT = `
   --glass-text-muted: rgba(0,40,0,0.5);
   --glass-text-dim: rgba(0,40,0,0.3);
   --glass-hover: rgba(34,197,94,0.08);
+  --glass-scroll-thumb: rgba(0,40,0,0.28);
+  --glass-scroll-thumb-hover: rgba(0,40,0,0.45);
+  --glass-scroll-track: rgba(0,40,0,0.06);
 `;
 
 export const GLASS_TOKENS = `
@@ -22,6 +25,9 @@ export const GLASS_TOKENS = `
   --glass-text-muted: rgba(255,255,255,0.5);
   --glass-text-dim: rgba(255,255,255,0.3);
   --glass-hover: rgba(255,255,255,0.1);
+  --glass-scroll-thumb: rgba(255,255,255,0.28);
+  --glass-scroll-thumb-hover: rgba(255,255,255,0.5);
+  --glass-scroll-track: rgba(255,255,255,0.06);
 `;
 
 export function glassBaseStyles(): string {
@@ -35,23 +41,35 @@ export function glassBaseStyles(): string {
   `;
 }
 
+/**
+ * Scrollbars for a scrolling element. Colours come from the glass tokens, so they
+ * follow the theme — the previous hard-coded white-on-white was invisible in light
+ * themes, which read as "this panel has no scrollbar".
+ *
+ * Styling ::-webkit-scrollbar also opts out of macOS overlay scrollbars, so the
+ * bar stays visible instead of fading out after scrolling stops. Both axes are
+ * sized, so horizontal overflow gets a visible bar too.
+ */
 export function glassScrollbarStyles(selector = ':host'): string {
   return `
     /* Firefox */
     ${selector} {
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      scrollbar-color: var(--glass-scroll-thumb) var(--glass-scroll-track);
     }
     /* Webkit (Chrome, Safari, Edge) */
-    ${selector}::-webkit-scrollbar { width: 6px; height: 6px; }
-    ${selector}::-webkit-scrollbar-track { background: transparent; }
+    ${selector}::-webkit-scrollbar { width: 9px; height: 9px; }
+    ${selector}::-webkit-scrollbar-track {
+      background: var(--glass-scroll-track);
+      border-radius: 5px;
+    }
     ${selector}::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.12);
-      border-radius: 3px;
+      background: var(--glass-scroll-thumb);
+      border-radius: 5px;
       transition: background 0.2s;
     }
     ${selector}::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.3);
+      background: var(--glass-scroll-thumb-hover);
     }
     ${selector}::-webkit-scrollbar-corner { background: transparent; }
   `;
