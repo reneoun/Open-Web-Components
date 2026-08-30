@@ -11,20 +11,36 @@
       /* Page chrome reads the same tokens the components do, so every family x
          mode combination themes the whole page — nav included. */
       body {
-        background: var(--demo-page-bg, var(--owc-glass-page-bg));
+        /* The theme's own ground is ALWAYS the base layer. The tint picker is a
+           translucent wash laid over it, so it can never replace a family's
+           ground or leave one looking broken. */
+        background: var(--demo-page-tint, none), var(--owc-glass-page-bg, linear-gradient(135deg, #059669, #065f46));
         min-height: 100vh;
         padding: 2rem;
         padding-top: 4.5rem;
         font-family: var(--owc-glass-font, sans-serif);
         color: var(--owc-glass-page-text);
         transition: background 0.5s, color 0.3s;
+
+        /* Demo-only semantic colours. Derived from the library's own tokens so
+           they re-resolve automatically for every family x mode — no duplicated
+           prefers-color-scheme logic down here. Mixing toward --owc-glass-page-text
+           pushes each hue lighter on dark grounds and darker on pale ones, which
+           is the direction that keeps it legible either way. */
+        --demo-code-bg:  color-mix(in srgb, var(--owc-glass-page-text) 8%, transparent);
+        --demo-ok:       color-mix(in srgb, #16a34a 60%, var(--owc-glass-page-text));
+        --demo-warn:     color-mix(in srgb, #d97706 60%, var(--owc-glass-page-text));
+        --demo-bad:      color-mix(in srgb, #dc2626 60%, var(--owc-glass-page-text));
+        --demo-ok-soft:  color-mix(in srgb, var(--demo-ok) 16%, transparent);
+        --demo-ok-edge:  color-mix(in srgb, var(--demo-ok) 42%, transparent);
       }
-      /* The page-background picker is a dark-glass flourish; script clears it
-         for the flat families, which need their own neutral ground. */
-      body.theme-blue   { --demo-page-bg: linear-gradient(135deg, #2563eb, #1e40af); }
-      body.theme-green  { --demo-page-bg: linear-gradient(135deg, #059669, #065f46); }
-      body.theme-rose   { --demo-page-bg: linear-gradient(135deg, #e11d48, #9f1239); }
-      body.theme-slate  { --demo-page-bg: linear-gradient(135deg, #334155, #0f172a); }
+      /* Page tint: an optional wash over whatever ground the theme supplies.
+         Works on all six family x mode combinations because it never replaces
+         the ground, it only sits on top of it. "None" is the default. */
+      body.tint-blue   { --demo-page-tint: linear-gradient(135deg, rgba(37,99,235,0.30), rgba(30,64,175,0.30)); }
+      body.tint-green  { --demo-page-tint: linear-gradient(135deg, rgba(5,150,105,0.30), rgba(6,95,70,0.30)); }
+      body.tint-rose   { --demo-page-tint: linear-gradient(135deg, rgba(225,29,72,0.30), rgba(159,18,57,0.30)); }
+      body.tint-slate  { --demo-page-tint: linear-gradient(135deg, rgba(51,65,85,0.30), rgba(15,23,42,0.30)); }
 
       h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
       h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; scroll-margin-top: 52px; }
@@ -32,9 +48,9 @@
       .desc { opacity: 0.6; font-size: 13px; margin: 0 0 10px; }
       .code-wrap { position: relative; margin-top: 10px; }
       .code {
-        background: rgba(0,0,0,0.35);
+        background: var(--demo-code-bg);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 8px;
+        border-radius: var(--owc-glass-radius-lg);
         padding: 12px 16px;
         padding-right: 52px;
         font-family: monospace;
@@ -48,7 +64,7 @@
         top: 8px; right: 8px;
         background: var(--owc-glass-hover);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 5px;
+        border-radius: var(--owc-glass-radius-sm);
         color: var(--owc-glass-text-muted);
         font-size: 11px;
         padding: 3px 8px;
@@ -57,7 +73,7 @@
         font-family: sans-serif;
       }
       .copy-btn:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
-      .copy-btn.copied { background: rgba(100,220,120,0.25); color: #7efa9a; border-color: #7efa9a; }
+      .copy-btn.copied { background: var(--demo-ok-soft); color: var(--demo-ok); border-color: var(--demo-ok-edge); }
 
       /* Sticky nav */
       #nav {
@@ -114,7 +130,7 @@
       .hero {
         background: var(--owc-glass-bg);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 16px;
+        border-radius: var(--owc-glass-radius-2xl);
         padding: 20px 24px;
         margin-bottom: 8px;
         display: flex;
@@ -127,7 +143,7 @@
         display: inline-block;
         background: var(--owc-glass-hover);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 20px;
+        border-radius: var(--owc-glass-radius-pill);
         padding: 2px 10px;
         font-size: 11px;
         color: var(--owc-glass-text-muted);
@@ -146,7 +162,7 @@
       }
       #event-log .entry { padding: 2px 0; border-bottom: 1px solid var(--owc-glass-border); }
       #event-log .ts  { color: var(--owc-glass-text-dim); margin-right: 6px; }
-      #event-log .evname { color: #4ade80; margin-right: 4px; }
+      #event-log .evname { color: var(--demo-ok); margin-right: 4px; }
       #event-log .payload { color: var(--owc-glass-text-muted); }
       #event-log .empty { color: var(--owc-glass-text-dim); font-style: italic; }
 
@@ -155,7 +171,7 @@
         display: inline-block;
         background: var(--owc-glass-hover);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 20px;
+        border-radius: var(--owc-glass-radius-pill);
         padding: 3px 12px;
         font-size: 13px;
         font-weight: 600;
@@ -169,7 +185,7 @@
         margin-top: 12px;
         background: var(--owc-glass-hover);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 10px;
+        border-radius: var(--owc-glass-radius);
         padding: 14px 18px;
         font-size: 14px;
         min-height: 52px;
@@ -182,8 +198,8 @@
       /* o-panel playground */
       .pg-controls { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
       .pg-controls label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; user-select: none; }
-      .pg-controls input[type=checkbox] { width: 14px; height: 14px; cursor: pointer; accent-color: #4ade80; }
-      .pg-controls input[type=range]  { width: 90px; accent-color: #4ade80; }
+      .pg-controls input[type=checkbox] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--demo-ok); }
+      .pg-controls input[type=range]  { width: 90px; accent-color: var(--demo-ok); }
       .pg-preview { min-height: 120px; position: relative; margin: 10px 0; }
 
       /* Stats bar */
@@ -191,7 +207,7 @@
         display: flex; gap: 20px; flex-wrap: wrap;
         background: var(--owc-glass-bg);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 10px;
+        border-radius: var(--owc-glass-radius);
         padding: 10px 16px;
         font-size: 12px;
         margin-bottom: 1rem;
@@ -204,15 +220,15 @@
       #shortcut-overlay {
         display: none;
         position: fixed; inset: 0; z-index: 200;
-        background: rgba(0,0,0,0.45);
-        backdrop-filter: blur(4px);
+        background: var(--owc-glass-scrim);
+        backdrop-filter: var(--owc-glass-scrim-backdrop);
         align-items: center; justify-content: center;
       }
       #shortcut-overlay.open { display: flex; }
       .shortcut-panel {
-        background: rgba(3,40,18,0.95);
-        border: 1px solid var(--owc-glass-border);
-        border-radius: 16px;
+        background: var(--owc-glass-chrome-bg);
+        border: 1px solid var(--owc-glass-chrome-border);
+        border-radius: var(--owc-glass-radius-2xl);
         padding: 24px 28px;
         min-width: 320px;
         max-width: 90vw;
@@ -221,7 +237,7 @@
       .shortcut-panel h3 { margin: 0 0 14px; font-size: 14px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
       .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--owc-glass-border); font-size: 13px; }
       .shortcut-row:last-child { border-bottom: none; }
-      .shortcut-key { background: var(--owc-glass-hover); border: 1px solid var(--owc-glass-border); border-radius: 5px; padding: 2px 7px; font-family: monospace; font-size: 12px; }
+      .shortcut-key { background: var(--owc-glass-hover); border: 1px solid var(--owc-glass-border); border-radius: var(--owc-glass-radius-sm); padding: 2px 7px; font-family: monospace; font-size: 12px; }
       .shortcut-close { float: right; margin-top: -4px; }
 
       /* Scrollspy active nav */
@@ -230,7 +246,7 @@
       /* Scroll progress */
       #scroll-progress {
         position: fixed; top: 44px; left: 0; right: 0; z-index: 101;
-        height: 2px; background: rgba(74,222,128,0.8);
+        height: 2px; background: var(--demo-ok);
         transform-origin: left; transform: scaleX(0);
         transition: transform 0.1s;
       }
@@ -239,7 +255,7 @@
       .kan-item {
         background: var(--owc-glass-bg);
         border: 1px solid var(--owc-glass-border);
-        border-radius: 7px;
+        border-radius: var(--owc-glass-radius-tab);
         padding: 8px 10px;
         margin-bottom: 7px;
         font-size: 13px;
@@ -251,7 +267,7 @@
       .kan-item .kan-btns { display: flex; gap: 3px; flex-shrink: 0; }
       .kan-item .kan-btn {
         background: var(--owc-glass-hover); border: 1px solid var(--owc-glass-border);
-        border-radius: 4px; color: var(--owc-glass-text-muted); font-size: 11px;
+        border-radius: var(--owc-glass-radius-sm); color: var(--owc-glass-text-muted); font-size: 11px;
         padding: 1px 6px; cursor: pointer; transition: background 0.12s;
       }
       .kan-item .kan-btn:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
@@ -340,8 +356,8 @@
           <o-toggle id="tgl-owc-mode" options="Auto,Light,Dark" value="auto"></o-toggle>
         </div>
         <div id="theme-toggle-wrap">
-          <div class="ks-label" style="text-align:right">Page background</div>
-          <o-toggle id="tgl-theme" options="Purple,Blue,Green,Rose,Slate" value="green"></o-toggle>
+          <div class="ks-label" style="text-align:right">Page tint</div>
+          <o-toggle id="tgl-theme" options="None,Blue,Green,Rose,Slate" value="none"></o-toggle>
         </div>
       </div>
     </div>
@@ -498,7 +514,7 @@ toggle.addEventListener("o-change", e => console.log(e.detail))'>Copy</button>
       </div>
       <div id="tab-examples" class="toggle-output" style="display:none">
         <strong>Examples</strong>
-        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">See the full interactive demos on this page. Each section has copy-ready code snippets. Press <kbd style="background:rgba(255,255,255,0.15);padding:1px 5px;border-radius:3px;font-size:11px">?</kbd> for keyboard shortcuts.</p>
+        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">See the full interactive demos on this page. Each section has copy-ready code snippets. Press <kbd style="background:var(--owc-glass-hover);padding:1px 5px;border-radius:var(--owc-glass-radius-xs);font-size:11px">?</kbd> for keyboard shortcuts.</p>
       </div>
     </div>
 
@@ -534,7 +550,7 @@ table.data = [{ name: "Alice" }]'>Copy</button>
       <o-button id="tbl-remove">- Remove last</o-button>
       <o-button id="tbl-randomize">Randomize scores</o-button>
       <o-button id="tbl-reset">Reset</o-button>
-      <div style="width:1px;height:24px;background:rgba(255,255,255,0.2)"></div>
+      <div style="width:1px;height:24px;background:var(--owc-glass-border)"></div>
       <o-button id="tbl-undo" disabled>↩ Undo</o-button>
       <o-button id="tbl-redo" disabled>↪ Redo</o-button>
       <span id="tbl-row-count" style="opacity:0.6;font-size:13px">4 rows</span>
@@ -565,7 +581,7 @@ table.data = [{ name: "Alice" }]'>Copy</button>
     <p class="desc">Drive any visual state from <code>o-toggle</code> — here a live color preview controlled by the selected option.</p>
     <div class="row" style="align-items:center;gap:16px">
       <o-toggle id="color-picker" options="Red,Orange,Yellow,Green,Blue,Purple" value="blue"></o-toggle>
-      <div id="color-swatch" style="width:48px;height:48px;border-radius:10px;background:#3b82f6;transition:background 0.3s;border:2px solid rgba(255,255,255,0.3)"></div>
+      <div id="color-swatch" style="width:48px;height:48px;border-radius:var(--owc-glass-radius);background:#3b82f6;transition:background 0.3s;border:2px solid var(--owc-glass-border)"></div>
     </div>
     <div style="margin-top:8px;opacity:0.6;font-size:13px">Hex: <code id="color-hex">#3b82f6</code></div>
 
@@ -701,7 +717,7 @@ d.addEventListener('o-cancel', () =&gt; console.log('cancelled'))</div>
         <o-button>Right</o-button>
       </o-tooltip>
       <o-tooltip text="Works on any element too" position="top">
-        <span style="padding:6px 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:13px;cursor:default">Plain span</span>
+        <span style="padding:6px 12px;background:var(--owc-glass-hover);border:1px solid var(--owc-glass-border);border-radius:var(--owc-glass-radius-lg);font-size:13px;cursor:default">Plain span</span>
       </o-tooltip>
     </div>
     <div class="code-wrap"><div class="code">&lt;o-tooltip text="Hello!" position="top"&gt;
@@ -778,14 +794,14 @@ dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
         <div class="code">npm install @owc/components</div>
       </div>
       <div data-tab="events" style="font-size:13px;font-family:monospace;line-height:2;opacity:0.85">
-        o-button  → <span style="color:#4ade80">o-click</span><br>
-        o-toggle  → <span style="color:#4ade80">o-change</span> { value, index, prev }<br>
-        o-search  → <span style="color:#4ade80">o-input</span>, <span style="color:#4ade80">o-results</span>, <span style="color:#4ade80">o-select</span><br>
-        o-table   → <span style="color:#4ade80">o-sort</span>, <span style="color:#4ade80">o-row-select</span>, <span style="color:#4ade80">o-cell-change</span><br>
-        o-dialog  → <span style="color:#4ade80">o-submit</span>, <span style="color:#4ade80">o-cancel</span><br>
-        o-note    → <span style="color:#4ade80">o-change</span> { value } / { title, body, tags }<br>
-        o-dropdown → <span style="color:#4ade80">o-select</span> { value, label }<br>
-        o-tabs    → <span style="color:#4ade80">o-change</span> { value, prev }
+        o-button  → <span style="color:var(--demo-ok)">o-click</span><br>
+        o-toggle  → <span style="color:var(--demo-ok)">o-change</span> { value, index, prev }<br>
+        o-search  → <span style="color:var(--demo-ok)">o-input</span>, <span style="color:var(--demo-ok)">o-results</span>, <span style="color:var(--demo-ok)">o-select</span><br>
+        o-table   → <span style="color:var(--demo-ok)">o-sort</span>, <span style="color:var(--demo-ok)">o-row-select</span>, <span style="color:var(--demo-ok)">o-cell-change</span><br>
+        o-dialog  → <span style="color:var(--demo-ok)">o-submit</span>, <span style="color:var(--demo-ok)">o-cancel</span><br>
+        o-note    → <span style="color:var(--demo-ok)">o-change</span> { value } / { title, body, tags }<br>
+        o-dropdown → <span style="color:var(--demo-ok)">o-select</span> { value, label }<br>
+        o-tabs    → <span style="color:var(--demo-ok)">o-change</span> { value, prev }
       </div>
       <div data-tab="theming" style="font-size:14px;line-height:1.7;opacity:0.85">
         <strong style="display:block;margin-bottom:6px">Two independent axes</strong>
@@ -927,7 +943,7 @@ input.addEventListener("o-input", e => console.log(e.detail))'>Copy</button>
     <div style="margin-top:14px">
       <div class="ks-label" style="margin-bottom:6px">Value attribute (drag to set)</div>
       <div class="row" style="gap:12px;align-items:center">
-        <input type="range" id="prog-slider" min="0" max="100" value="0" style="width:200px;accent-color:#4ade80">
+        <input type="range" id="prog-slider" min="0" max="100" value="0" style="width:200px;accent-color:var(--demo-ok)">
         <span id="prog-slider-val" style="font-size:12px;opacity:0.6;font-family:monospace;min-width:32px">0%</span>
       </div>
     </div>
@@ -980,14 +996,14 @@ document.addEventListener('progress-complete', e => {
     <!-- Column visibility -->
     <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="font-size:12px;opacity:0.5;text-transform:uppercase;letter-spacing:0.06em">Columns:</span>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="name"       checked style="accent-color:#4ade80"> Name</label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="company"    checked style="accent-color:#4ade80"> Company</label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="department" checked style="accent-color:#4ade80"> Department</label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="age"        checked style="accent-color:#4ade80"> Age</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="name"       checked style="accent-color:var(--demo-ok)"> Name</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="company"    checked style="accent-color:var(--demo-ok)"> Company</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="department" checked style="accent-color:var(--demo-ok)"> Department</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer"><input type="checkbox" class="col-vis" data-col="age"        checked style="accent-color:var(--demo-ok)"> Age</label>
     </div>
 
     <!-- Batch actions (shown when rows selected) -->
-    <div id="batch-bar" style="display:none;margin-top:8px;padding:8px 12px;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);border-radius:8px;display:none;align-items:center;gap:10px;flex-wrap:wrap">
+    <div id="batch-bar" style="display:none;margin-top:8px;padding:8px 12px;background:var(--demo-ok-soft);border:1px solid var(--demo-ok-edge);border-radius:var(--owc-glass-radius-lg);display:none;align-items:center;gap:10px;flex-wrap:wrap">
       <span id="batch-count" style="font-size:13px;font-weight:600"></span>
       <o-button id="btn-batch-export">Export selected</o-button>
       <o-button id="btn-batch-toast">Notify selected</o-button>
@@ -1015,7 +1031,7 @@ document.addEventListener('progress-complete', e => {
           <strong style="font-size:13px">Selected row</strong>
           <o-button id="btn-close-detail" style="font-size:11px">✕</o-button>
         </div>
-        <pre id="row-detail-json" style="margin:0;font-family:monospace;font-size:12px;color:rgba(255,255,255,0.85);white-space:pre-wrap;word-break:break-word"></pre>
+        <pre id="row-detail-json" style="margin:0;font-family:monospace;font-size:12px;color:var(--owc-glass-text);white-space:pre-wrap;word-break:break-word"></pre>
       </o-panel>
     </div>
 
@@ -1403,26 +1419,27 @@ function render() {
       })
 
       // ── Page background switcher ───────────────────────────────
-      const themeMap = { purple: '', blue: 'theme-blue', green: 'theme-green', rose: 'theme-rose', slate: 'theme-slate' }
+      const themeMap = { none: '', blue: 'tint-blue', green: 'tint-green', rose: 'tint-rose', slate: 'tint-slate' }
       document.getElementById('tgl-theme').addEventListener('o-change', e => {
         // Remember the choice; applyTheme decides whether it is currently visible.
-        pageBg = themeMap[e.detail.value] || ''
+        pageTint = themeMap[e.detail.value] || ''
         applyTheme()
-        logEvent('theme-change', { theme: e.detail.value })
+        logEvent('page-tint', { tint: e.detail.value })
       })
 
       // ── Component theme switcher ───────────────────────────────
       // One attribute on <body> themes every OWC component on the page.
       // ── Theming: two independent axes ──────────────────────────
-      // family = visual language, mode = colour scheme. The page-background
-      // picker only makes sense on dark glass, so it is parked otherwise.
+      // family = visual language, mode = colour scheme. The page tint is a
+      // third, purely decorative layer that sits ON TOP of whatever ground the
+      // theme supplies, so it works on all six combinations and never hides one.
       const badgeEl   = document.querySelector('.hero .badge')
       const badgeText = { glass: 'glassmorphism', pixel: 'pixel-art', office: 'simple office' }
       const modeHint  = document.getElementById('mode-hint')
       const osDark    = window.matchMedia('(prefers-color-scheme: dark)')
       let family = 'glass'
       let mode   = 'auto'
-      let pageBg = 'theme-green'   // remembered choice of the gradient picker
+      let pageTint = ''            // decorative wash; '' means the theme's own ground, untinted
 
       const effectiveMode = () => mode === 'auto' ? (osDark.matches ? 'dark' : 'light') : mode
 
@@ -1433,10 +1450,9 @@ function render() {
         if (mode === 'auto') document.body.removeAttribute('data-owc-mode')
         else document.body.setAttribute('data-owc-mode', mode)
 
-        // Restore the gradient only where it belongs: dark glass.
-        const gradientApplies = family === 'glass' && effectiveMode() === 'dark'
-        document.body.classList.remove('theme-blue','theme-green','theme-rose','theme-slate')
-        if (gradientApplies && pageBg) document.body.classList.add(pageBg)
+        // The tint is a translucent overlay, so it is valid on every family.
+        document.body.classList.remove('tint-blue','tint-green','tint-rose','tint-slate')
+        if (pageTint) document.body.classList.add(pageTint)
 
         if (badgeEl) badgeEl.textContent = badgeText[family] || family
         if (modeHint) modeHint.textContent = mode === 'auto' ? `(OS: ${effectiveMode()})` : ''
@@ -1666,7 +1682,7 @@ function render() {
         { key: 'role',  label: 'Role',  width: 140, sortable: true },
         { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60,
           renderCell: val => {
-            const color = val >= 90 ? '#4ade80' : val >= 80 ? '#facc15' : '#f87171'
+            const color = val >= 90 ? 'var(--demo-ok)' : val >= 80 ? 'var(--demo-warn)' : 'var(--demo-bad)'
             return `<span style="color:${color};font-weight:600">${val}</span>`
           }
         },
@@ -1792,7 +1808,7 @@ function render() {
         { key: 'name',  label: 'Name',  width: 160, sortable: true },
         { key: 'role',  label: 'Role',  width: 140, sortable: true },
         { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60,
-          renderCell: v => `<span style="color:${v>=90?'#4ade80':v>=80?'#facc15':'#f87171'};font-weight:600">${v}</span>`
+          renderCell: v => `<span style="color:${v>=90?'var(--demo-ok)':v>=80?'var(--demo-warn)':'var(--demo-bad)'};font-weight:600">${v}</span>`
         },
       ]
 
@@ -1934,7 +1950,7 @@ function render() {
       richSearch.data = COMMANDS
       richSearch.searchKeys = ['name', 'desc']
       richSearch.valueKey = 'name'
-      richSearch.renderItem = item => `<span style="font-size:16px;margin-right:8px;flex-shrink:0">${item.icon}</span><span style="flex:1"><b>${item.name}</b><br><small style="opacity:0.6">${item.desc}</small></span>${item.shortcut ? `<kbd style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:1px 5px;font-size:10px;font-family:monospace;flex-shrink:0">${item.shortcut}</kbd>` : ''}`
+      richSearch.renderItem = item => `<span style="font-size:16px;margin-right:8px;flex-shrink:0">${item.icon}</span><span style="flex:1"><b>${item.name}</b><br><small style="opacity:0.6">${item.desc}</small></span>${item.shortcut ? `<kbd style="background:var(--owc-glass-hover);border:1px solid var(--owc-glass-border);border-radius:var(--owc-glass-radius-sm);padding:1px 5px;font-size:10px;font-family:monospace;flex-shrink:0">${item.shortcut}</kbd>` : ''}`
       richSearch.addEventListener('o-select', e => {
         richSelectedEl.textContent = `Selected: ${e.detail.item.icon} ${e.detail.item.name}`
         toast(`${e.detail.item.icon} ${e.detail.item.name}`, 'info', { duration: 2000 })
