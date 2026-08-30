@@ -101,20 +101,21 @@ export class OTable extends GlassElement {
         :host { display: block; overflow-x: auto; }
         table {
           border-collapse: collapse;
-          font-family: sans-serif; font-size: 14px;
+          font-family: var(--glass-font); font-size: 14px;
           background: var(--glass-bg);
-          border-radius: 10px; overflow: hidden;
+          border-radius: var(--glass-radius); overflow: hidden;
+          box-shadow: var(--glass-elevation);
         }
         th, td {
           padding: 10px 14px; text-align: left;
-          border-bottom: 1px solid var(--glass-hover);
+          border-bottom: var(--glass-border-width) solid var(--glass-hover);
           color: var(--glass-text); position: relative;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         th {
           background: var(--glass-hover);
           user-select: none;
-          backdrop-filter: blur(var(--glass-blur));
+          backdrop-filter: var(--glass-backdrop);
         }
         th[data-sortable] { cursor: pointer; }
         tbody tr:hover td { background: var(--glass-hover); }
@@ -132,20 +133,20 @@ export class OTable extends GlassElement {
         }
         .cell-input {
           background: var(--glass-hover);
-          border: 1px solid var(--accent-warm);
-          border-radius: 4px;
+          border: var(--glass-border-width) solid var(--accent-warm);
+          border-radius: var(--glass-radius-sm);
           color: var(--glass-text);
           padding: 4px 8px;
           font-size: 13px;
           width: calc(100% - 4px);
           outline: none;
-          font-family: sans-serif;
+          font-family: var(--glass-font);
         }
         .cell-input:focus { border-color: var(--accent-warm); background: var(--glass-border); }
         .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
         .edit-btn, .edit-confirm, .edit-cancel {
           background: none; border: none; cursor: pointer;
-          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: var(--glass-text); border-radius: 3px;
+          font-size: 13px; padding: 2px 4px; opacity: 0.7; color: var(--glass-text); border-radius: var(--glass-radius-xs);
         }
         .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
         .edit-confirm { color: rgba(74,222,128,0.9); }

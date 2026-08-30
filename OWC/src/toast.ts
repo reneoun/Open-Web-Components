@@ -67,13 +67,13 @@ export class OWCToast extends GlassElement {
           min-width: 220px;
           max-width: 360px;
           padding: 10px 36px 10px 14px;
-          border-radius: var(--o-toast-radius, 10px);
+          border-radius: var(--o-toast-radius, var(--glass-radius));
           background: var(--o-toast-bg, var(--glass-bg));
-          border: 1px solid var(--o-toast-border, var(--glass-border));
+          border: var(--glass-border-width) solid var(--o-toast-border, var(--glass-border));
           backdrop-filter: blur(var(--o-toast-blur, var(--glass-blur)));
           -webkit-backdrop-filter: blur(var(--o-toast-blur, var(--glass-blur)));
           color: var(--o-toast-color, var(--glass-text));
-          font-family: sans-serif;
+          font-family: var(--glass-font);
           font-size: 14px;
           border-left: 4px solid var(--_accent);
           box-sizing: border-box;
@@ -88,7 +88,7 @@ export class OWCToast extends GlassElement {
         .close:hover { opacity: 1; }
         .progress {
           position: absolute; bottom: 0; left: 0; height: 3px;
-          background: var(--_accent); border-radius: 0 0 var(--o-toast-radius, 10px) var(--o-toast-radius, 10px);
+          background: var(--_accent); border-radius: 0 0 var(--o-toast-radius, var(--glass-radius)) var(--o-toast-radius, var(--glass-radius));
           width: 100%; transform-origin: left;
           animation: shrink linear both;
           animation-duration: var(--_dur, 3000ms);

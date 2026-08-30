@@ -1,3 +1,4 @@
+import { installGlobalThemeStyles } from './glass'
 import './core'
 import './table'
 import './note'
@@ -28,6 +29,9 @@ export * from './tabs'
 export * from './input'
 export * from './skeleton'
 export * from './progress'
+
+// Page-wide theming: <body data-owc-theme="pixel">
+installGlobalThemeStyles()
 
 // Expose globals for plain <script> usage
 if (typeof window !== 'undefined') {

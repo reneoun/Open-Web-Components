@@ -51,23 +51,24 @@ export class OInput extends GlassElement {
         .wrap { display: flex; flex-direction: column; gap: 4px; }
         label {
           font-size: 11px;
-          font-family: sans-serif;
+          font-family: var(--glass-font);
           color: var(--glass-text-muted);
           text-transform: uppercase;
           letter-spacing: 0.06em;
         }
         input {
           background: var(--glass-bg);
-          border: 1px solid ${borderColor};
-          border-radius: 10px;
+          border: var(--glass-border-width) solid ${borderColor};
+          border-radius: var(--glass-radius);
           padding: 8px 14px;
           color: var(--glass-text);
           font-size: 14px;
-          font-family: sans-serif;
+          font-family: var(--glass-font);
           outline: none;
           width: 100%;
           box-sizing: border-box;
-          backdrop-filter: blur(var(--glass-blur));
+          backdrop-filter: var(--glass-backdrop);
+          box-shadow: var(--glass-elevation);
           transition: border-color 0.15s;
           opacity: ${disabled ? '0.5' : '1'};
           cursor: ${disabled ? 'not-allowed' : 'text'};
@@ -77,7 +78,7 @@ export class OInput extends GlassElement {
         .error-msg {
           font-size: 11px;
           color: rgba(239,68,68,0.9);
-          font-family: sans-serif;
+          font-family: var(--glass-font);
         }
       </style>
       <div class="wrap">

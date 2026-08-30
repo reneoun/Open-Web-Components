@@ -21,6 +21,28 @@
       body.theme-green  { background: linear-gradient(135deg, #059669, #065f46); }
       body.theme-rose   { background: linear-gradient(135deg, #e11d48, #9f1239); }
       body.theme-slate  { background: linear-gradient(135deg, #334155, #0f172a); }
+
+      /* The flat themes need a neutral ground — a glassmorphism gradient fights them. */
+      body[data-owc-theme="pixel"]  { background: #12122b; color: #e8e8ff; }
+      body[data-owc-theme="office"] { background: #eef1f5; color: #1f2933; }
+      body[data-owc-theme="office"] h2,
+      body[data-owc-theme="office"] .desc { color: #5c6b7a; }
+      body[data-owc-theme="pixel"] h1,
+      body[data-owc-theme="pixel"] h2 { font-family: ui-monospace, 'Courier New', monospace; }
+      /* The demo's own chrome assumes a dark ground; repaint it for the light theme. */
+      body[data-owc-theme="office"] .badge {
+        background: #e3e8ef; border-color: #cbd3dd; color: #5c6b7a;
+      }
+      body[data-owc-theme="office"] .code {
+        background: #1f2933; border-color: #1f2933; color: rgba(255,255,255,0.88);
+      }
+      body[data-owc-theme="office"] .stats-bar {
+        background: #fff; border-color: #d5dae1;
+      }
+      body[data-owc-theme="office"] .stats-bar .lbl { color: #5c6b7a; }
+      body[data-owc-theme="pixel"] .code,
+      body[data-owc-theme="pixel"] .stats-bar { border-radius: 0; }
+      body[data-owc-theme="pixel"] .badge { border-radius: 0; }
       h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
       h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; scroll-margin-top: 52px; }
       .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -318,8 +340,12 @@
         <p style="opacity:0.7;margin:6px 0 0;font-size:14px">Zero-dependency web component library. Drop in one script tag.</p>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div id="owc-theme-wrap">
+          <div class="ks-label" style="text-align:right">Component theme</div>
+          <o-toggle id="tgl-owc-theme" options="Glass,Light,Pixel,Office" value="glass"></o-toggle>
+        </div>
         <div id="theme-toggle-wrap">
-          <div class="ks-label" style="text-align:right">Theme</div>
+          <div class="ks-label" style="text-align:right">Page background</div>
           <o-toggle id="tgl-theme" options="Purple,Blue,Green,Rose,Slate" value="green"></o-toggle>
         </div>
       </div>
@@ -767,8 +793,19 @@ dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
         o-tabs    → <span style="color:#4ade80">o-change</span> { value, prev }
       </div>
       <div data-tab="theming" style="font-size:14px;line-height:1.7;opacity:0.85">
+        <strong style="display:block;margin-bottom:6px">Built-in themes</strong>
+        Four themes ship with the library: the default <code>glass</code>, plus <code>light</code>, <code>pixel</code> and <code>office</code>.<br><br>
+        <strong>Whole page</strong> — one attribute themes every component:<br>
+        <code>&lt;body data-owc-theme="pixel"&gt;</code><br><br>
+        <strong>Single component</strong> — the attribute wins over the page theme:<br>
+        <code>&lt;o-button theme="office"&gt;OK&lt;/o-button&gt;</code><br>
+        Use <code>theme="glass"</code> to opt one component back out of a page theme.<br><br>
         <strong style="display:block;margin-bottom:6px">CSS custom properties</strong>
-        All components inherit from <code>GlassElement</code> and use CSS variables: <code>--glass-bg</code>, <code>--glass-border</code>, <code>--glass-blur</code>, <code>--glass-shadow</code>, <code>--glass-text</code>, <code>--glass-hover</code>, <code>--accent-warm</code>. Override on <code>:root</code> or any ancestor to apply a custom theme.
+        Colours: <code>--glass-bg</code>, <code>--glass-border</code>, <code>--glass-hover</code>, <code>--glass-text</code>, <code>--glass-text-muted</code>, <code>--glass-text-dim</code>, <code>--accent-warm</code>, <code>--glass-accent-text</code>.<br>
+        Depth: <code>--glass-blur</code>, <code>--glass-backdrop</code>, <code>--glass-shadow</code>, <code>--glass-elevation</code>, <code>--glass-scrim</code>.<br>
+        Geometry: <code>--glass-border-width</code>, <code>--glass-radius</code> (plus <code>-xs</code> / <code>-sm</code> / <code>-md</code> / <code>-lg</code> / <code>-xl</code> / <code>-2xl</code> / <code>-pill</code>).<br>
+        Type &amp; motion: <code>--glass-font</code>, <code>--glass-press</code>.<br><br>
+        Set any of these on an ancestor prefixed with <code>--owc-</code> (e.g. <code>--owc-glass-radius: 0</code>) to patch a theme page-wide.
       </div>
     </o-tabs>
     <div id="tabs-result" style="margin-top:8px;font-size:13px;opacity:0.6;min-height:18px"></div>
@@ -1355,11 +1392,23 @@ function render() {
         })
       })
 
-      // ── Theme switcher ─────────────────────────────────────────
+      // ── Page background switcher ───────────────────────────────
       const themeMap = { purple: '', blue: 'theme-blue', green: 'theme-green', rose: 'theme-rose', slate: 'theme-slate' }
       document.getElementById('tgl-theme').addEventListener('o-change', e => {
         document.body.className = themeMap[e.detail.value] || ''
         logEvent('theme-change', { theme: e.detail.value })
+      })
+
+      // ── Component theme switcher ───────────────────────────────
+      // One attribute on <body> themes every OWC component on the page.
+      const badgeEl = document.querySelector('.hero .badge')
+      const badgeText = { glass: 'glassmorphism', light: 'light glass', pixel: 'pixel-art', office: 'simple office' }
+      document.getElementById('tgl-owc-theme').addEventListener('o-change', e => {
+        const t = e.detail.value
+        if (t === 'glass') document.body.removeAttribute('data-owc-theme')
+        else document.body.setAttribute('data-owc-theme', t)
+        if (badgeEl) badgeEl.textContent = badgeText[t] || t
+        logEvent('owc-theme-change', { theme: t })
       })
 
       // ── Combined demo ──────────────────────────────────────────

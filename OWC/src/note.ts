@@ -40,9 +40,9 @@ class ONote extends GlassElement {
         .wrap {
           position: relative;
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          border-radius: 12px;
-          backdrop-filter: blur(var(--glass-blur));
+          border: var(--glass-border-width) solid var(--glass-border);
+          border-radius: var(--glass-radius-xl);
+          backdrop-filter: var(--glass-backdrop);
           box-shadow: var(--glass-shadow);
           padding: ${label ? '24px 16px 12px' : '12px 16px'};
           transition: border-color 0.15s;
@@ -51,12 +51,12 @@ class ONote extends GlassElement {
         label {
           position: absolute; top: 8px; left: 16px;
           color: var(--glass-text-muted); font-size: 11px;
-          font-family: sans-serif; pointer-events: none;
+          font-family: var(--glass-font); pointer-events: none;
         }
         textarea {
           display: block; width: 100%;
           background: none; border: none; resize: none; outline: none;
-          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: var(--glass-font);
           min-height: 80px; overflow: hidden;
         }
         .counter { text-align: right; font-size: 11px; color: var(--glass-text-dim); margin-top: 4px; }
@@ -80,35 +80,35 @@ class ONote extends GlassElement {
         }
         .card {
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          border-radius: 12px;
-          backdrop-filter: blur(var(--glass-blur));
+          border: var(--glass-border-width) solid var(--glass-border);
+          border-radius: var(--glass-radius-xl);
+          backdrop-filter: var(--glass-backdrop);
           box-shadow: var(--glass-shadow);
           padding: 16px;
           display: flex; flex-direction: column; gap: 12px;
         }
         .title-input {
           background: none; border: none;
-          border-bottom: 1px solid var(--glass-border);
+          border-bottom: var(--glass-border-width) solid var(--glass-border);
           color: var(--glass-text); font-size: 18px; font-weight: 600;
-          font-family: sans-serif; outline: none; padding-bottom: 8px; width: 100%;
+          font-family: var(--glass-font); outline: none; padding-bottom: 8px; width: 100%;
         }
         .title-input:focus { border-color: var(--accent-warm); }
         .title-input::placeholder { color: var(--glass-text-dim); }
         .body-area {
           background: none; border: none; resize: none; outline: none;
-          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: var(--glass-font);
           min-height: 80px; overflow: hidden; width: 100%;
         }
         .body-area::placeholder { color: var(--glass-text-dim); }
         .tag-area { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
         .chip {
-          background: var(--accent-warm); border-radius: 999px;
-          padding: 2px 10px; font-size: 12px; color: #000; cursor: pointer;
+          background: var(--accent-warm); border-radius: var(--glass-radius-pill);
+          padding: 2px 10px; font-size: 12px; color: var(--glass-accent-text); cursor: pointer;
         }
         .tag-input {
           background: none; border: none; color: var(--glass-text);
-          font-size: 12px; font-family: sans-serif; outline: none; min-width: 80px;
+          font-size: 12px; font-family: var(--glass-font); outline: none; min-width: 80px;
         }
         .tag-input::placeholder { color: var(--glass-text-dim); }
       </style>

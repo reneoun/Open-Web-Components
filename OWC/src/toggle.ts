@@ -137,13 +137,14 @@ export class OToggle extends GlassElement {
         .container {
           display: inline-flex;
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          backdrop-filter: blur(var(--glass-blur));
-          -webkit-backdrop-filter: blur(var(--glass-blur));
-          border-radius: 999px;
+          border: var(--glass-border-width) solid var(--glass-border);
+          backdrop-filter: var(--glass-backdrop);
+          -webkit-backdrop-filter: var(--glass-backdrop);
+          border-radius: var(--glass-radius-pill);
           padding: 3px;
           position: relative;
           user-select: none;
+          box-shadow: var(--glass-elevation);
           --n: ${n};
           --idx: ${idx >= 0 ? idx : 0};
         }
@@ -153,7 +154,7 @@ export class OToggle extends GlassElement {
           left: 3px;
           width: calc((100% - 6px) / var(--n));
           background: var(--glass-border);
-          border-radius: 999px;
+          border-radius: var(--glass-radius-pill);
           transform: translateX(calc(var(--idx) * 100%));
           transition: transform 0.2s ease;
           z-index: 0;
@@ -166,11 +167,11 @@ export class OToggle extends GlassElement {
           text-align: center;
           color: var(--glass-text);
           font-size: 14px;
-          font-family: sans-serif;
+          font-family: var(--glass-font);
           cursor: pointer;
           position: relative;
           z-index: 1;
-          border-radius: 999px;
+          border-radius: var(--glass-radius-pill);
         }
         .segment.active { font-weight: 600; }
       </style>

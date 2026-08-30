@@ -52,18 +52,19 @@ class OWCButton extends GlassElement {
                 button {
                     cursor: pointer;
                     padding: 8px 20px;
-                    border-radius: 10px;
-                    border: 1px solid var(--glass-border);
+                    border-radius: var(--glass-radius);
+                    border: var(--glass-border-width) solid var(--glass-border);
                     background: var(--glass-bg);
-                    backdrop-filter: blur(var(--glass-blur));
-                    -webkit-backdrop-filter: blur(var(--glass-blur));
+                    backdrop-filter: var(--glass-backdrop);
+                    -webkit-backdrop-filter: var(--glass-backdrop);
                     color: var(--o-button-color, var(--glass-text));
                     font-size: 14px;
-                    font-family: sans-serif;
+                    font-family: var(--glass-font);
+                    box-shadow: var(--glass-elevation);
                     transition: background 0.2s, transform 0.1s;
                 }
                 button:hover { background: var(--glass-hover); }
-                button:active { transform: scale(0.97); }
+                button:active { transform: var(--glass-press); }
             </style>
             <button><slot>Button</slot></button>
         `;
@@ -118,36 +119,37 @@ class OWCPanel extends GlassElement {
                 :host { display: inline-block; }
                 .panel {
                     background: var(--glass-bg);
-                    border: 1px solid var(--glass-border);
-                    backdrop-filter: blur(var(--glass-blur));
-                    -webkit-backdrop-filter: blur(var(--glass-blur));
+                    border: var(--glass-border-width) solid var(--glass-border);
+                    backdrop-filter: var(--glass-backdrop);
+                    -webkit-backdrop-filter: var(--glass-backdrop);
                     padding: 16px;
                     margin: 8px;
-                    border-radius: 10px;
+                    border-radius: var(--glass-radius);
                     min-width: 120px;
                     min-height: 40px;
                     position: relative;
                     color: var(--glass-text);
-                    font-family: sans-serif;
+                    font-family: var(--glass-font);
                     font-size: 14px;
+                    box-shadow: var(--glass-elevation);
                     box-sizing: border-box;
                 }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
-                    background: var(--glass-hover); border: 1px solid var(--glass-border);
-                    color: var(--glass-text); border-radius: 6px; cursor: grab; font-size: 14px;
+                    background: var(--glass-hover); border: var(--glass-border-width) solid var(--glass-border);
+                    color: var(--glass-text); border-radius: var(--glass-radius-md); cursor: grab; font-size: 14px;
                     padding: 2px 5px; line-height: 1;
                 }
                 .resize-e {
                     position: absolute; right: 0; top: 20%; bottom: 20%;
                     width: 5px; cursor: ew-resize;
-                    background: var(--glass-hover); border-radius: 0 10px 10px 0;
+                    background: var(--glass-hover); border-radius: 0 var(--glass-radius) var(--glass-radius) 0;
                     transition: background 0.15s;
                 }
                 .resize-s {
                     position: absolute; bottom: 0; left: 20%; right: 20%;
                     height: 5px; cursor: ns-resize;
-                    background: var(--glass-hover); border-radius: 0 0 10px 10px;
+                    background: var(--glass-hover); border-radius: 0 0 var(--glass-radius) var(--glass-radius);
                     transition: background 0.15s;
                 }
                 .resize-se {
@@ -155,7 +157,7 @@ class OWCPanel extends GlassElement {
                     width: 14px; height: 14px; cursor: nwse-resize;
                     border-right: 3px solid var(--glass-border);
                     border-bottom: 3px solid var(--glass-border);
-                    border-radius: 0 0 10px 0;
+                    border-radius: 0 0 var(--glass-radius) 0;
                 }
                 .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
                 .resize-se:hover { border-color: var(--glass-text-muted); }

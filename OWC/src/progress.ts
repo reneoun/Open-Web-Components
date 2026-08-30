@@ -36,8 +36,8 @@ export class OProgress extends GlassElement {
         .bar {
           height: 3px;
           width: 0%;
-          background: rgba(74,222,128,0.85);
-          box-shadow: 0 0 8px rgba(74,222,128,0.5);
+          background: var(--glass-progress);
+          box-shadow: var(--glass-progress-glow);
           transition: width 0.2s ease, opacity 0.3s ease;
           opacity: 1;
         }

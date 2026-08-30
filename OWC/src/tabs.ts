@@ -77,20 +77,21 @@ export class OTabs extends GlassElement {
         .tablist {
           display: flex;
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          border-radius: 10px 10px 0 0;
-          backdrop-filter: blur(var(--glass-blur));
+          border: var(--glass-border-width) solid var(--glass-border);
+          border-radius: var(--glass-radius) var(--glass-radius) 0 0;
+          backdrop-filter: var(--glass-backdrop);
           padding: 4px 4px 0;
           gap: 2px;
+          box-shadow: var(--glass-elevation);
         }
         .tab {
           flex: 1;
           background: none;
           border: none;
-          border-radius: 7px 7px 0 0;
+          border-radius: var(--glass-radius-tab) var(--glass-radius-tab) 0 0;
           color: var(--glass-text-muted);
           font-size: 14px;
-          font-family: sans-serif;
+          font-family: var(--glass-font);
           padding: 8px 16px;
           cursor: pointer;
           transition: background 0.15s, color 0.15s;
@@ -103,10 +104,10 @@ export class OTabs extends GlassElement {
         }
         .panel-area {
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
+          border: var(--glass-border-width) solid var(--glass-border);
           border-top: none;
-          border-radius: 0 0 10px 10px;
-          backdrop-filter: blur(var(--glass-blur));
+          border-radius: 0 0 var(--glass-radius) var(--glass-radius);
+          backdrop-filter: var(--glass-backdrop);
           padding: 16px;
         }
       </style>

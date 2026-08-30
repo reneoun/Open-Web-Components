@@ -23,10 +23,10 @@ export class OSkeleton extends GlassElement {
       }
       .skel {
         background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--skel-r, 6px);
+        border: var(--glass-border-width) solid var(--glass-border);
+        border-radius: var(--skel-r, var(--glass-radius-md));
         animation: o-pulse 1.4s ease-in-out infinite;
-        backdrop-filter: blur(var(--glass-blur));
+        backdrop-filter: var(--glass-backdrop);
       }
     `
   }
@@ -74,7 +74,7 @@ export class OSkeleton extends GlassElement {
         .row {
           display: flex; gap: 12px; align-items: center;
           padding: 6px 0;
-          border-bottom: 1px solid var(--glass-border);
+          border-bottom: var(--glass-border-width) solid var(--glass-border);
         }
         .header .cell { height: 12px; }
         .cell { height: 14px; }
@@ -94,9 +94,10 @@ export class OSkeleton extends GlassElement {
         ${this.pulseCSS()}
         .panel {
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          border-radius: 10px;
-          backdrop-filter: blur(var(--glass-blur));
+          border: var(--glass-border-width) solid var(--glass-border);
+          border-radius: var(--glass-radius);
+          backdrop-filter: var(--glass-backdrop);
+          box-shadow: var(--glass-elevation);
           padding: 16px;
           display: flex; flex-direction: column; gap: 10px;
         }

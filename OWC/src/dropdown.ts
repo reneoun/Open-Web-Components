@@ -98,9 +98,9 @@ export class ODropdown extends GlassElement {
           min-width: 160px;
           margin-top: 4px;
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          border-radius: 10px;
-          backdrop-filter: blur(var(--glass-blur));
+          border: var(--glass-border-width) solid var(--glass-border);
+          border-radius: var(--glass-radius);
+          backdrop-filter: var(--glass-backdrop);
           box-shadow: var(--glass-shadow);
           z-index: 100;
           padding: 4px 0;
@@ -115,7 +115,7 @@ export class ODropdown extends GlassElement {
           padding: 8px 14px;
           color: var(--glass-text);
           font-size: 14px;
-          font-family: sans-serif;
+          font-family: var(--glass-font);
           cursor: pointer;
           outline: none;
           border: none;

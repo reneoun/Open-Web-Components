@@ -141,27 +141,29 @@ export class OSearch extends GlassElement {
         .container {
           display: flex; align-items: center; gap: 8px;
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
-          border-radius: 999px; padding: 8px 16px;
+          border: var(--glass-border-width) solid var(--glass-border);
+          backdrop-filter: var(--glass-backdrop); -webkit-backdrop-filter: var(--glass-backdrop);
+          border-radius: var(--glass-radius-pill); padding: 8px 16px;
+          box-shadow: var(--glass-elevation);
         }
         .icon { opacity: 0.6; flex-shrink: 0; }
         input {
           flex: 1; background: transparent; border: none; outline: none;
-          color: var(--glass-text); font-size: 14px; font-family: sans-serif;
+          color: var(--glass-text); font-size: 14px; font-family: var(--glass-font);
         }
         input::placeholder { color: var(--glass-text-muted); }
         .dropdown {
           display: none; position: absolute;
           top: calc(100% + 6px); left: 0; right: 0;
           background: var(--glass-bg);
-          backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
-          border-radius: 12px; border: 1px solid var(--glass-border);
+          backdrop-filter: var(--glass-backdrop); -webkit-backdrop-filter: var(--glass-backdrop);
+          border-radius: var(--glass-radius-xl); border: var(--glass-border-width) solid var(--glass-border);
           overflow: hidden; z-index: 10;
+          box-shadow: var(--glass-elevation);
         }
         .item {
           padding: 8px 14px; color: var(--glass-text);
-          font-size: 14px; font-family: sans-serif; cursor: pointer;
+          font-size: 14px; font-family: var(--glass-font); cursor: pointer;
         }
         .item:hover { background: var(--glass-hover); }
         .no-results { opacity: 0.5; cursor: default; }

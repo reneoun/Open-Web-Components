@@ -589,22 +589,70 @@ document.addEventListener('progress-complete', e => {
 
 ## Theming
 
-Components default to **white glass** (bright on dark backgrounds). Override per-element with the `theme` attribute:
+Four themes ship with the library:
+
+| Theme | Look |
+|---|---|
+| `glass` *(default)* | White glass — bright, translucent, for dark backgrounds |
+| `light` | Green-tinted glass, for light backgrounds |
+| `pixel` | 8-bit: square corners, chunky outlines, hard offset shadows, monospace |
+| `office` | Flat corporate: white surfaces, one muted blue accent, small radii, no blur |
+
+### Theme the whole page
+
+One attribute themes every component on the page:
 
 ```html
-<o-panel theme="light">Green-tinted glass (good on light backgrounds)</o-panel>
+<body data-owc-theme="pixel">
+  <o-button>Start</o-button>
+  <o-table></o-table>
+</body>
 ```
 
-All components expose CSS custom properties you can override globally or per-component:
+### Theme a single component
+
+The `theme` attribute wins over the page theme, so you can mix:
+
+```html
+<body data-owc-theme="pixel">
+  <o-button>pixel</o-button>
+  <o-button theme="office">office</o-button>
+  <o-button theme="glass">back to the default</o-button>
+</body>
+```
+
+No webfonts are loaded — `pixel` uses a monospace system stack, so the library still makes zero network requests.
+
+### CSS custom properties
+
+Every theme is just a set of these. Override them on `:root` or any ancestor for a custom look:
 
 | Variable | Description |
 |---|---|
 | `--glass-bg` | Panel / input background |
 | `--glass-border` | Border color |
-| `--glass-blur` | Backdrop blur amount |
+| `--glass-hover` | Hover / raised surface |
 | `--glass-text` | Primary text color |
 | `--glass-text-muted` | Secondary text color |
+| `--glass-text-dim` | Placeholder / disabled text |
 | `--accent-warm` | Accent / active color |
+| `--glass-accent-text` | Text drawn *on* the accent color |
+| `--glass-blur` | Backdrop blur amount |
+| `--glass-backdrop` | Full `backdrop-filter` value (`none` disables glass) |
+| `--glass-shadow` | Shadow for floating surfaces (dialog, dropdown, note) |
+| `--glass-elevation` | Shadow for inline surfaces (default `none`) |
+| `--glass-scrim` / `--glass-scrim-backdrop` | Dialog backdrop |
+| `--glass-border-width` | Border thickness |
+| `--glass-radius` | Base corner radius |
+| `--glass-radius-xs` … `-2xl`, `--glass-radius-pill` | The rest of the radius scale |
+| `--glass-font` | Font stack |
+| `--glass-press` | `transform` applied on `:active` |
+
+To patch a theme page-wide rather than replace it, set the same name prefixed with `--owc-` on an ancestor:
+
+```css
+body { --owc-glass-radius: 0; }   /* square corners, everything else untouched */
+```
 
 ---
 

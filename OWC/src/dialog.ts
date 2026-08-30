@@ -79,8 +79,8 @@ class ODialog extends GlassElement {
         .backdrop {
           display: flex;
           position: fixed; inset: 0; z-index: 1000;
-          background: rgba(0,0,0,0.5);
-          backdrop-filter: blur(4px);
+          background: var(--glass-scrim);
+          backdrop-filter: var(--glass-scrim-backdrop);
           align-items: center; justify-content: center;
           opacity: 0;
           visibility: hidden;
@@ -92,9 +92,9 @@ class ODialog extends GlassElement {
         }
         .panel {
           background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          border-radius: 16px;
-          backdrop-filter: blur(var(--glass-blur));
+          border: var(--glass-border-width) solid var(--glass-border);
+          border-radius: var(--glass-radius-2xl);
+          backdrop-filter: var(--glass-backdrop);
           box-shadow: var(--glass-shadow);
           padding: 24px; min-width: 320px; max-width: 90vw;
           color: var(--glass-text);
