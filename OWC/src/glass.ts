@@ -1,39 +1,264 @@
 // Shared design tokens + base class for every OWC component.
 //
-// Theming works two ways:
-//   1. Per component  — <o-button theme="pixel">
-//   2. Whole page     — <body data-owc-theme="pixel">
+// Theming has TWO INDEPENDENT AXES:
 //
-// Page-wide theming works by indirection: the :host block reads every token as
-// var(--owc-<token>, <default>). Custom properties inherit through shadow
-// boundaries, so a --owc-* value set on an ancestor reaches the host and wins
-// over the built-in default. A theme="" attribute writes the token straight
-// onto the host, which beats the inherited value — so a per-component theme
-// still overrides the page theme.
+//   family — the visual language:  glass | pixel | office
+//   mode   — the colour scheme:    light | dark
+//
+// Both can be set per component or page-wide, and mix freely:
+//
+//   <o-card theme="pixel" mode="light">              per component
+//   <body data-owc-theme="office" data-owc-mode="dark">   whole page
+//
+// With no mode set, the mode follows the visitor's OS (prefers-color-scheme).
+// An explicit mode always beats the OS. A per-component attribute always beats
+// the page.
+//
+// Geometry (radii, blur, font, border width) belongs to the family and does not
+// change with mode. Colour belongs to family x mode.
+//
+// HOW IT WORKS
+// The document stylesheet publishes each family's palette as --owc-* custom
+// properties, and publishes BOTH modes side by side (--owc-glass-bg-light and
+// --owc-glass-bg-dark) alongside the resolved --owc-glass-bg. Custom properties
+// inherit through shadow boundaries, so a component's :host can read them.
+// Publishing both modes is what lets <o-card mode="light"> inside a page-level
+// office theme pick up *office* light rather than falling back to glass.
+//
+// LEGACY: theme="light" and theme="dark" predate the mode axis and are pinned
+// aliases for glass+light / glass+dark. They must keep working.
 
 export type ThemeTokens = Record<string, string>;
+export type Mode = 'light' | 'dark';
+export type Family = 'glass' | 'pixel' | 'office';
 
-/** The default "dark glass" look. Every other theme is a patch on top of this. */
-export const BASE_TOKENS: ThemeTokens = {
-  // surfaces
-  'glass-bg': 'rgba(255,255,255,0.07)',
-  'glass-border': 'rgba(255,255,255,0.12)',
-  'glass-hover': 'rgba(255,255,255,0.1)',
-  // text
-  'glass-text': '#fff',
-  'glass-text-muted': 'rgba(255,255,255,0.5)',
-  'glass-text-dim': 'rgba(255,255,255,0.3)',
-  // accent
-  'accent-warm': 'rgba(251,191,36,0.6)',
-  'glass-accent-text': '#000',
-  // depth
+export const MODES: Mode[] = ['light', 'dark'];
+export const FAMILIES: Family[] = ['glass', 'pixel', 'office'];
+
+/**
+ * Which tokens carry colour. Everything else is geometry and is shared by both
+ * modes of a family. Keeping the split explicit is what keeps the generated CSS
+ * small: a mode block only has to re-declare these.
+ */
+export const COLOUR_TOKENS = [
+  'glass-bg', 'glass-border', 'glass-hover',
+  'glass-text', 'glass-text-muted', 'glass-text-dim',
+  'accent-warm', 'glass-accent-text',
+  'glass-shadow', 'glass-elevation', 'glass-scrim', 'glass-indicator',
+  'glass-scroll-thumb', 'glass-scroll-thumb-hover', 'glass-scroll-track',
+  'glass-progress', 'glass-progress-glow',
+  'glass-page-bg', 'glass-page-text', 'glass-chrome-bg', 'glass-chrome-border',
+] as const;
+
+const isColour = (k: string) => (COLOUR_TOKENS as readonly string[]).includes(k);
+
+/**
+ * Geometry per family. Mode-independent by design — switching light/dark must
+ * never move a pixel. `glass` is the empty patch: its geometry IS the base.
+ */
+export const FAMILY_GEOMETRY: Record<Family, ThemeTokens> = {
+  glass: {},
+  pixel: {
+    'glass-blur': '0px',
+    'glass-backdrop': 'none',
+    'glass-scrim-backdrop': 'none',
+    'glass-border-width': '3px',
+    'glass-radius-xs': '0',
+    'glass-radius-sm': '0',
+    'glass-radius-md': '0',
+    'glass-radius-tab': '0',
+    'glass-radius-lg': '0',
+    'glass-radius': '0',
+    'glass-radius-xl': '0',
+    'glass-radius-2xl': '0',
+    'glass-radius-pill': '0',
+    'glass-font': "ui-monospace, 'Courier New', Courier, monospace",
+    'glass-press': 'translate(4px, 4px)',
+    'glass-scroll-size': '12px',
+    'glass-scroll-radius': '0',
+  },
+  office: {
+    'glass-blur': '0px',
+    'glass-backdrop': 'none',
+    'glass-scrim-backdrop': 'none',
+    'glass-border-width': '1px',
+    'glass-radius-xs': '2px',
+    'glass-radius-sm': '2px',
+    'glass-radius-md': '3px',
+    'glass-radius-tab': '3px',
+    'glass-radius-lg': '3px',
+    'glass-radius': '4px',
+    'glass-radius-xl': '4px',
+    'glass-radius-2xl': '6px',
+    'glass-radius-pill': '999px',
+    'glass-font': "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
+    'glass-press': 'none',
+    'glass-scroll-size': '10px',
+    'glass-scroll-radius': '2px',
+  },
+};
+
+/**
+ * Colour per family x mode. Every ratio quoted below is measured, not guessed —
+ * `npm run audit:contrast` recomputes them by compositing each translucent
+ * layer over the one beneath it.
+ *
+ * Targets: body text >= 4.5:1 (WCAG AA), decorative/disabled text and non-text
+ * UI >= 3:1. Panel edges on glass and office are highlight strokes rather than
+ * boundaries that identify a control, so they are deliberately below 3:1.
+ */
+export const FAMILY_COLOURS: Record<Family, Record<Mode, ThemeTokens>> = {
+  glass: {
+    dark: {
+      'glass-bg': 'rgba(255,255,255,0.07)',
+      'glass-border': 'rgba(255,255,255,0.12)',
+      'glass-hover': 'rgba(255,255,255,0.1)',
+      'glass-text': '#fff',
+      'glass-text-muted': 'rgba(255,255,255,0.78)',
+      'glass-text-dim': 'rgba(255,255,255,0.56)',
+      'accent-warm': 'rgba(251,191,36,0.92)',
+      'glass-accent-text': '#1a1200',
+      'glass-shadow': '0 8px 32px rgba(0,0,0,0.3)',
+      'glass-elevation': 'none',
+      'glass-scrim': 'rgba(0,0,0,0.5)',
+      'glass-indicator': 'rgba(255,255,255,0.12)',
+      'glass-scroll-thumb': 'rgba(255,255,255,0.62)',
+      'glass-scroll-thumb-hover': 'rgba(255,255,255,0.8)',
+      'glass-scroll-track': 'rgba(255,255,255,0.06)',
+      'glass-progress': 'rgba(74,222,128,0.85)',
+      'glass-progress-glow': '0 0 8px rgba(74,222,128,0.5)',
+      'glass-page-bg': 'linear-gradient(135deg, #059669, #065f46)',
+      'glass-page-text': '#ffffff',
+      'glass-chrome-bg': 'rgba(3,54,25,0.78)',
+      'glass-chrome-border': 'rgba(255,255,255,0.1)',
+    },
+    light: {
+      'glass-bg': 'rgba(255,255,255,0.62)',
+      'glass-border': 'rgba(4,90,60,0.22)',
+      'glass-hover': 'rgba(255,255,255,0.82)',
+      'glass-text': '#04291b',
+      'glass-text-muted': '#2c5c48',
+      'glass-text-dim': '#4a7d67',
+      'accent-warm': '#046b47',
+      'glass-accent-text': '#ffffff',
+      'glass-shadow': '0 8px 32px rgba(4,60,40,0.12)',
+      'glass-elevation': 'none',
+      'glass-scrim': 'rgba(4,40,28,0.45)',
+      'glass-indicator': 'rgba(4,90,60,0.18)',
+      'glass-scroll-thumb': 'rgba(4,60,40,0.60)',
+      'glass-scroll-thumb-hover': 'rgba(4,60,40,0.78)',
+      'glass-scroll-track': 'rgba(4,60,40,0.08)',
+      'glass-progress': '#047857',
+      'glass-progress-glow': 'none',
+      'glass-page-bg': 'linear-gradient(135deg, #ecfdf5, #d9f2e4)',
+      'glass-page-text': '#04291b',
+      'glass-chrome-bg': 'rgba(233,250,242,0.86)',
+      'glass-chrome-border': 'rgba(4,90,60,0.18)',
+    },
+  },
+  pixel: {
+    dark: {
+      'glass-bg': '#3b4a7a',
+      'glass-border': '#000000',
+      'glass-hover': '#4f6196',
+      'glass-text': '#fff1e8',
+      'glass-text-muted': '#c2c3c7',
+      'glass-text-dim': '#a09cb5',
+      'accent-warm': '#ffec27',
+      'glass-accent-text': '#000000',
+      'glass-shadow': '4px 4px 0 #000000',
+      'glass-elevation': '4px 4px 0 #000000',
+      'glass-scrim': 'rgba(0,0,0,0.82)',
+      'glass-indicator': '#1d2b53',
+      'glass-scroll-thumb': '#c2c3c7',
+      'glass-scroll-thumb-hover': '#ffec27',
+      'glass-scroll-track': '#1d2b53',
+      'glass-progress': '#00e436',
+      'glass-progress-glow': 'none',
+      'glass-page-bg': '#1d2b53',
+      'glass-page-text': '#fff1e8',
+      'glass-chrome-bg': '#000000',
+      'glass-chrome-border': '#000000',
+    },
+    light: {
+      'glass-bg': '#ffffff',
+      'glass-border': '#000000',
+      'glass-hover': '#ffec27',
+      'glass-text': '#000000',
+      'glass-text-muted': '#4a453f',
+      'glass-text-dim': '#6d6660',
+      'accent-warm': '#d1003f',
+      'glass-accent-text': '#ffffff',
+      'glass-shadow': '4px 4px 0 #000000',
+      'glass-elevation': '4px 4px 0 #000000',
+      'glass-scrim': 'rgba(29,43,83,0.7)',
+      'glass-indicator': '#ffec27',
+      'glass-scroll-thumb': '#5f574f',
+      'glass-scroll-thumb-hover': '#d1003f',
+      'glass-scroll-track': '#e8dcd2',
+      'glass-progress': '#008751',
+      'glass-progress-glow': 'none',
+      'glass-page-bg': '#fff1e8',
+      'glass-page-text': '#000000',
+      'glass-chrome-bg': '#ffffff',
+      'glass-chrome-border': '#000000',
+    },
+  },
+  office: {
+    dark: {
+      'glass-bg': '#1b222b',
+      'glass-border': '#333e4a',
+      'glass-hover': '#242d38',
+      'glass-text': '#e6ebf1',
+      'glass-text-muted': '#a3b1c0',
+      'glass-text-dim': '#7e8c9b',
+      'accent-warm': '#5b9fe3',
+      'glass-accent-text': '#06121f',
+      'glass-shadow': '0 1px 3px rgba(0,0,0,0.55)',
+      'glass-elevation': '0 1px 2px rgba(0,0,0,0.4)',
+      'glass-scrim': 'rgba(4,8,12,0.6)',
+      'glass-indicator': '#2f3a47',
+      'glass-scroll-thumb': '#68768a',
+      'glass-scroll-thumb-hover': '#8695a8',
+      'glass-scroll-track': '#1b222b',
+      'glass-progress': '#5b9fe3',
+      'glass-progress-glow': 'none',
+      'glass-page-bg': '#12171d',
+      'glass-page-text': '#e6ebf1',
+      'glass-chrome-bg': '#1b222b',
+      'glass-chrome-border': '#333e4a',
+    },
+    light: {
+      'glass-bg': '#ffffff',
+      'glass-border': '#cbd3dd',
+      'glass-hover': '#f1f4f8',
+      'glass-text': '#1f2933',
+      'glass-text-muted': '#5c6b7a',
+      'glass-text-dim': '#788695',
+      'accent-warm': '#2f6fb0',
+      'glass-accent-text': '#ffffff',
+      'glass-shadow': '0 1px 3px rgba(16,24,40,0.10)',
+      'glass-elevation': '0 1px 2px rgba(16,24,40,0.06)',
+      'glass-scrim': 'rgba(16,24,40,0.40)',
+      'glass-indicator': '#dde4ec',
+      'glass-scroll-thumb': '#7a8794',
+      'glass-scroll-thumb-hover': '#5c6b7a',
+      'glass-scroll-track': '#e7ebf0',
+      'glass-progress': '#2f6fb0',
+      'glass-progress-glow': 'none',
+      'glass-page-bg': '#eef1f5',
+      'glass-page-text': '#1f2933',
+      'glass-chrome-bg': '#ffffff',
+      'glass-chrome-border': '#d5dae1',
+    },
+  },
+};
+
+/** Geometry shared by every family unless a family patches it. */
+export const BASE_GEOMETRY: ThemeTokens = {
   'glass-blur': '12px',
   'glass-backdrop': 'blur(var(--glass-blur))',
-  'glass-shadow': '0 8px 32px rgba(0,0,0,0.3)',
-  'glass-elevation': 'none',
-  'glass-scrim': 'rgba(0,0,0,0.5)',
   'glass-scrim-backdrop': 'blur(4px)',
-  // geometry
   'glass-border-width': '1px',
   'glass-radius-xs': '3px',
   'glass-radius-sm': '4px',
@@ -44,126 +269,32 @@ export const BASE_TOKENS: ThemeTokens = {
   'glass-radius-xl': '12px',
   'glass-radius-2xl': '16px',
   'glass-radius-pill': '999px',
-  // scrollbars
-  'glass-scroll-thumb': 'rgba(255,255,255,0.28)',
-  'glass-scroll-thumb-hover': 'rgba(255,255,255,0.5)',
-  'glass-scroll-track': 'rgba(255,255,255,0.06)',
+  'glass-font': 'sans-serif',
+  'glass-press': 'scale(0.97)',
   'glass-scroll-size': '9px',
   'glass-scroll-radius': '5px',
-  // typography
-  'glass-font': 'sans-serif',
-  // motion
-  'glass-press': 'scale(0.97)',
-  // progress bar
-  'glass-progress': 'rgba(74,222,128,0.85)',
-  'glass-progress-glow': '0 0 8px rgba(74,222,128,0.5)',
 };
 
-/** Light glass — the original theme="light". Colours only; geometry stays glassy. */
-export const LIGHT_OVERRIDES: ThemeTokens = {
-  'glass-bg': 'rgba(34,197,94,0.06)',
-  'glass-border': 'rgba(34,197,94,0.15)',
-  'glass-hover': 'rgba(34,197,94,0.08)',
-  'glass-text': '#1a2e1a',
-  'glass-text-muted': 'rgba(0,40,0,0.5)',
-  'glass-text-dim': 'rgba(0,40,0,0.3)',
-  'accent-warm': 'rgba(22,163,74,0.7)',
-  'glass-shadow': '0 8px 32px rgba(0,0,0,0.06)',
-  'glass-scroll-thumb': 'rgba(0,40,0,0.28)',
-  'glass-scroll-thumb-hover': 'rgba(0,40,0,0.45)',
-  'glass-scroll-track': 'rgba(0,40,0,0.06)',
-};
+/** Resolve one family x mode into a complete token set. */
+export function resolveTheme(family: Family, mode: Mode): ThemeTokens {
+  return { ...BASE_GEOMETRY, ...FAMILY_GEOMETRY[family], ...FAMILY_COLOURS[family][mode] };
+}
+
+/** The default look: glass, dark. Every generated block is a patch on this. */
+export const BASE_TOKENS: ThemeTokens = resolveTheme('glass', 'dark');
 
 /**
- * Pixel-art. Square corners, no blur, chunky black outlines, hard offset
- * shadows and a monospace stack. Deliberately no webfont — the library stays
- * self-contained and makes zero network requests.
+ * Legacy single-axis names. theme="light"/"dark" shipped in v1.0 and are
+ * documented in the README, so they are pinned aliases forever. `glass` is a
+ * family name and follows the OS like any other; `dark`/`light` force a mode.
  */
-export const PIXEL_OVERRIDES: ThemeTokens = {
-  'glass-bg': '#26264d',
-  'glass-border': '#0d0d1a',
-  'glass-hover': '#3d3d73',
-  'glass-text': '#ffffff',
-  'glass-text-muted': '#a5a5d6',
-  'glass-text-dim': '#6b6b9e',
-  'accent-warm': '#ffcc00',
-  'glass-accent-text': '#0d0d1a',
-  'glass-blur': '0px',
-  'glass-backdrop': 'none',
-  'glass-shadow': '4px 4px 0 #0d0d1a',
-  'glass-elevation': '4px 4px 0 #0d0d1a',
-  'glass-scrim': 'rgba(13,13,26,0.8)',
-  'glass-scrim-backdrop': 'none',
-  'glass-border-width': '3px',
-  'glass-radius-xs': '0',
-  'glass-radius-sm': '0',
-  'glass-radius-md': '0',
-  'glass-radius-tab': '0',
-  'glass-radius-lg': '0',
-  'glass-radius': '0',
-  'glass-radius-xl': '0',
-  'glass-radius-2xl': '0',
-  'glass-radius-pill': '0',
-  'glass-font': "ui-monospace, 'Courier New', Courier, monospace",
-  'glass-press': 'translate(4px, 4px)',
-  'glass-progress': '#00e436',
-  'glass-progress-glow': 'none',
-  'glass-scroll-thumb': '#0d0d1a',
-  'glass-scroll-thumb-hover': '#ffcc00',
-  'glass-scroll-track': '#3d3d73',
-  'glass-scroll-size': '12px',
-  'glass-scroll-radius': '0',
+export const LEGACY_ALIASES: Record<string, { family: Family; mode?: Mode }> = {
+  light: { family: 'glass', mode: 'light' },
+  dark: { family: 'glass', mode: 'dark' },
 };
 
-/**
- * Simple office. Flat, neutral and legible — the sort of thing that belongs in
- * an internal business tool. No glass, no blur, one conservative blue accent.
- */
-export const OFFICE_OVERRIDES: ThemeTokens = {
-  'glass-bg': '#ffffff',
-  'glass-border': '#d5dae1',
-  'glass-hover': '#f1f4f8',
-  'glass-text': '#1f2933',
-  'glass-text-muted': '#5c6b7a',
-  'glass-text-dim': '#94a1ae',
-  'accent-warm': '#2f6fb0',
-  'glass-accent-text': '#ffffff',
-  'glass-blur': '0px',
-  'glass-backdrop': 'none',
-  'glass-shadow': '0 1px 3px rgba(16,24,40,0.10)',
-  'glass-elevation': '0 1px 2px rgba(16,24,40,0.06)',
-  'glass-scrim': 'rgba(16,24,40,0.40)',
-  'glass-scrim-backdrop': 'none',
-  'glass-border-width': '1px',
-  'glass-radius-xs': '2px',
-  'glass-radius-sm': '2px',
-  'glass-radius-md': '3px',
-  'glass-radius-tab': '3px',
-  'glass-radius-lg': '3px',
-  'glass-radius': '4px',
-  'glass-radius-xl': '4px',
-  'glass-radius-2xl': '6px',
-  'glass-radius-pill': '999px',
-  'glass-font': "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
-  'glass-press': 'none',
-  'glass-progress': '#2f6fb0',
-  'glass-progress-glow': 'none',
-  'glass-scroll-thumb': '#b6c0cc',
-  'glass-scroll-thumb-hover': '#8c99a8',
-  'glass-scroll-track': '#eef1f5',
-  'glass-scroll-size': '10px',
-  'glass-scroll-radius': '2px',
-};
-
-/** Every named theme. The key is what you pass to theme="" / data-owc-theme="". */
-export const THEMES: Record<string, ThemeTokens> = {
-  light: LIGHT_OVERRIDES,
-  pixel: PIXEL_OVERRIDES,
-  office: OFFICE_OVERRIDES,
-};
-
-/** Aliases that mean "the default look", so a component can opt out of a page theme. */
-const DEFAULT_ALIASES = ['glass', 'dark'];
+const colourPart = (t: ThemeTokens): ThemeTokens =>
+  Object.fromEntries(Object.entries(t).filter(([k]) => isColour(k)));
 
 const declList = (t: ThemeTokens, pad: string) =>
   Object.entries(t).map(([k, v]) => `${pad}--${k}: ${v};`).join('\n');
@@ -171,34 +302,97 @@ const declList = (t: ThemeTokens, pad: string) =>
 const fallbackDeclList = (t: ThemeTokens, pad: string) =>
   Object.entries(t).map(([k, v]) => `${pad}--${k}: var(--owc-${k}, ${v});`).join('\n');
 
-const withDefaults = (o: ThemeTokens): ThemeTokens => ({ ...BASE_TOKENS, ...o });
+// A component with mode= but no theme= should follow the PAGE's family. The page
+// publishes both palettes side by side, so read the mode-suffixed name and fall
+// back to glass if no page theme is set.
+const modeRefDeclList = (mode: Mode, pad: string) =>
+  Object.entries(colourPart(resolveTheme('glass', mode)))
+    .map(([k, v]) => `${pad}--${k}: var(--owc-${k}-${mode}, ${v});`).join('\n');
 
-// Backwards-compatible string exports (these were the original public API).
+// Kept for backwards compatibility — these were the original public API.
 export const GLASS_TOKENS = `\n${declList(BASE_TOKENS, '  ')}\n`;
-export const GLASS_TOKENS_LIGHT = `\n${declList(LIGHT_OVERRIDES, '  ')}\n`;
-export const GLASS_TOKENS_PIXEL = `\n${declList(PIXEL_OVERRIDES, '  ')}\n`;
-export const GLASS_TOKENS_OFFICE = `\n${declList(OFFICE_OVERRIDES, '  ')}\n`;
+export const GLASS_TOKENS_LIGHT = `\n${declList(resolveTheme('glass', 'light'), '  ')}\n`;
+export const GLASS_TOKENS_PIXEL = `\n${declList(resolveTheme('pixel', 'dark'), '  ')}\n`;
+export const GLASS_TOKENS_OFFICE = `\n${declList(resolveTheme('office', 'light'), '  ')}\n`;
+
+/** Tokens in `t` that differ from the dark-glass base — the historical "overrides" shape. */
+const diffFromBase = (t: ThemeTokens): ThemeTokens =>
+  Object.fromEntries(Object.entries(t).filter(([k, v]) => BASE_TOKENS[k] !== v));
+
+// The v1.6 single-axis override maps. Kept so the export surface never shrinks;
+// each is the patch for the mode that name historically meant.
+export const LIGHT_OVERRIDES: ThemeTokens = diffFromBase(resolveTheme('glass', 'light'));
+export const PIXEL_OVERRIDES: ThemeTokens = diffFromBase(resolveTheme('pixel', 'dark'));
+export const OFFICE_OVERRIDES: ThemeTokens = diffFromBase(resolveTheme('office', 'light'));
+
+/** Every selectable theme name, mapped to its complete dark-mode token set. */
+export const THEMES: Record<string, ThemeTokens> = {
+  light: resolveTheme('glass', 'light'),
+  pixel: resolveTheme('pixel', 'dark'),
+  office: resolveTheme('office', 'dark'),
+};
+
+/** Theme attribute values, mapped to a family and (for legacy names) a pinned mode. */
+type ThemeSpec = { family: Family; forced?: Mode };
+const THEME_SPECS: Record<string, ThemeSpec> = {
+  ...Object.fromEntries(FAMILIES.map(f => [f, { family: f } as ThemeSpec])),
+  ...Object.fromEntries(
+    Object.entries(LEGACY_ALIASES).map(([n, a]) => [n, { family: a.family, forced: a.mode }]),
+  ),
+};
 
 /**
  * The <style> preamble every component injects into its shadow root.
- * :host carries the defaults (indirected, so a page theme can reach in);
- * each :host([theme=...]) block carries a *complete* token set, so a
- * per-component theme fully overrides whatever the page set.
+ *
+ * Order matters. Blocks are emitted least- to most-specific, and the
+ * prefers-color-scheme block is guarded with :not([mode]) so an explicit mode
+ * can never lose to the media query — a media query adds no specificity, so
+ * without the guard the two would tie and source order would decide.
  */
 export function glassBaseStyles(): string {
-  const themeBlocks = Object.entries(THEMES)
-    .map(([name, o]) => `    :host([theme="${name}"]) {\n${declList(withDefaults(o), '      ')}\n    }`)
-    .join('\n');
-  const defaultBlock = DEFAULT_ALIASES.map(n => `:host([theme="${n}"])`).join(', ');
-  return `
-    :host {
-${fallbackDeclList(BASE_TOKENS, '      ')}
+  const out: string[] = [];
+
+  // Defaults, indirected so a page theme can reach through the shadow boundary.
+  out.push(`    :host {\n${fallbackDeclList(BASE_TOKENS, '      ')}\n    }`);
+
+  // No attributes at all: follow the OS.
+  out.push(
+    `    @media (prefers-color-scheme: light) {\n` +
+    `      :host(:not([mode]):not([theme])) {\n` +
+    `${fallbackDeclList(colourPart(resolveTheme('glass', 'light')), '        ')}\n` +
+    `      }\n    }`,
+  );
+
+  // mode= without theme=: keep the page's family, swap only its palette.
+  for (const mode of MODES) {
+    out.push(
+      `    :host([mode="${mode}"]:not([theme])) {\n${modeRefDeclList(mode, '      ')}\n    }`,
+    );
+  }
+
+  // An explicit theme= is self-contained: the page must not reach in.
+  for (const [name, spec] of Object.entries(THEME_SPECS)) {
+    const base = spec.forced ?? 'dark';
+    out.push(
+      `    :host([theme="${name}"]) {\n${declList(resolveTheme(spec.family, base), '      ')}\n    }`,
+    );
+    if (!spec.forced) {
+      out.push(
+        `    @media (prefers-color-scheme: light) {\n` +
+        `      :host([theme="${name}"]:not([mode])) {\n` +
+        `${declList(colourPart(resolveTheme(spec.family, 'light')), '        ')}\n` +
+        `      }\n    }`,
+      );
     }
-${themeBlocks}
-    ${defaultBlock} {
-${declList(BASE_TOKENS, '      ')}
+    for (const mode of MODES) {
+      if (mode === base) continue;
+      out.push(
+        `    :host([theme="${name}"][mode="${mode}"]) {\n` +
+        `${declList(colourPart(resolveTheme(spec.family, mode)), '      ')}\n    }`,
+      );
     }
-  `;
+  }
+  return `\n${out.join('\n')}\n  `;
 }
 
 // A token value may itself reference another token (e.g. glass-backdrop uses
@@ -207,16 +401,53 @@ ${declList(BASE_TOKENS, '      ')}
 // references or they would compute to invalid on <body>.
 const toPageScope = (v: string) => v.replace(/var\(--glass-/g, 'var(--owc-glass-');
 
-const pageDeclList = (t: ThemeTokens) =>
-  Object.entries(t).map(([k, v]) => `  --owc-${k}: ${toPageScope(v)};`).join('\n');
+const pageDeclList = (t: ThemeTokens, pad = '  ') =>
+  Object.entries(t).map(([k, v]) => `${pad}--owc-${k}: ${toPageScope(v)};`).join('\n');
 
-/** Document-level CSS backing <body data-owc-theme="..."> page-wide theming. */
+// Publish a palette under mode-suffixed names, so a child's mode= can reach it.
+const pageModeDeclList = (t: ThemeTokens, mode: Mode, pad = '  ') =>
+  Object.entries(colourPart(t)).map(([k, v]) => `${pad}--owc-${k}-${mode}: ${toPageScope(v)};`).join('\n');
+
+// Point the resolved names at one of the two published palettes.
+const pageResolveList = (mode: Mode, pad = '  ') =>
+  (COLOUR_TOKENS as readonly string[])
+    .map(k => `${pad}--owc-${k}: var(--owc-${k}-${mode});`).join('\n');
+
+/** Document-level CSS backing <body data-owc-theme="..." data-owc-mode="...">. */
 export function globalThemeCSS(): string {
-  const blocks = Object.entries(THEMES)
-    .map(([name, o]) => `[data-owc-theme="${name}"] {\n${pageDeclList(withDefaults(o))}\n}`);
-  const aliases = DEFAULT_ALIASES.map(n => `[data-owc-theme="${n}"]`).join(', ');
-  blocks.push(`${aliases} {\n${pageDeclList(BASE_TOKENS)}\n}`);
-  return blocks.join('\n');
+  const out: string[] = [];
+
+  for (const [name, spec] of Object.entries(THEME_SPECS)) {
+    // :root carries the glass family so page chrome has tokens with no attribute set.
+    const sel = name === 'glass'
+      ? `:root, [data-owc-theme="${name}"]`
+      : `[data-owc-theme="${name}"]`;
+    const base = spec.forced ?? 'dark';
+    out.push(
+      `${sel} {\n` +
+      `${pageModeDeclList(resolveTheme(spec.family, 'dark'), 'dark')}\n` +
+      `${pageModeDeclList(resolveTheme(spec.family, 'light'), 'light')}\n` +
+      `${pageDeclList({ ...BASE_GEOMETRY, ...FAMILY_GEOMETRY[spec.family] })}\n` +
+      `${pageResolveList(base)}\n}`,
+    );
+    if (!spec.forced) {
+      const q = name === 'glass'
+        ? `:root:not([data-owc-mode]), [data-owc-theme="${name}"]:not([data-owc-mode])`
+        : `[data-owc-theme="${name}"]:not([data-owc-mode])`;
+      out.push(`@media (prefers-color-scheme: light) {\n${q} {\n${pageResolveList('light', '    ')}\n}\n}`);
+    }
+    for (const mode of MODES) {
+      out.push(
+        `[data-owc-theme="${name}"][data-owc-mode="${mode}"] {\n${pageResolveList(mode)}\n}`,
+      );
+    }
+  }
+
+  // Family-agnostic: data-owc-mode alone swaps whichever palette is inherited.
+  for (const mode of MODES) {
+    out.push(`[data-owc-mode="${mode}"] {\n${pageResolveList(mode)}\n}`);
+  }
+  return out.join('\n');
 }
 
 export const GLOBAL_THEME_STYLE_ID = 'owc-global-themes';

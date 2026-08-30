@@ -651,39 +651,74 @@ document.addEventListener('progress-complete', e => {
 
 ## Theming
 
-Four themes ship with the library:
+Theming has **two independent axes**: a *family* (the visual language) and a *mode*
+(the colour scheme). All six combinations work.
 
-| Theme | Look |
+| Family | Look |
 |---|---|
-| `glass` *(default)* | White glass — bright, translucent, for dark backgrounds |
-| `light` | Green-tinted glass, for light backgrounds |
-| `pixel` | 8-bit: square corners, chunky outlines, hard offset shadows, monospace |
-| `office` | Flat corporate: white surfaces, one muted blue accent, small radii, no blur |
+| `glass` *(default)* | Translucent green-tinted glass, blur, soft shadows |
+| `pixel` | 8-bit: square corners, chunky black outlines, hard offset shadows, monospace |
+| `office` | Flat corporate: neutral surfaces, one muted blue accent, small radii, no blur |
+
+| Mode | Look |
+|---|---|
+| `dark` | Dark ground, light text |
+| `light` | Light ground, dark text |
+
+Geometry — radii, blur, font, border width — belongs to the family and never changes
+with mode, so toggling light/dark cannot move a pixel.
+
+**With no mode set, the mode follows the visitor's OS** (`prefers-color-scheme`).
+An explicit `mode` always beats the OS.
 
 ### Theme the whole page
 
-One attribute themes every component on the page:
-
 ```html
-<body data-owc-theme="pixel">
+<body data-owc-theme="office" data-owc-mode="dark">
   <o-button>Start</o-button>
   <o-table></o-table>
 </body>
 ```
 
+Either attribute is optional: `data-owc-theme` alone follows the OS for its mode, and
+`data-owc-mode` alone keeps the default glass family.
+
 ### Theme a single component
 
-The `theme` attribute wins over the page theme, so you can mix:
+A per-component attribute always wins over the page:
 
 ```html
-<body data-owc-theme="pixel">
-  <o-button>pixel</o-button>
+<body data-owc-theme="pixel" data-owc-mode="dark">
+  <o-button>pixel, dark</o-button>
+  <o-button mode="light">pixel, light</o-button>       <!-- keeps the page family -->
   <o-button theme="office">office</o-button>
   <o-button theme="glass">back to the default</o-button>
 </body>
 ```
 
-No webfonts are loaded — `pixel` uses a monospace system stack, so the library still makes zero network requests.
+`mode` on its own keeps whatever family the page set and swaps only its palette.
+
+### Legacy names
+
+`theme="light"` and `theme="dark"` shipped in v1.0 and still work — they are pinned
+aliases for glass + light and glass + dark, and are unaffected by the OS setting.
+
+No webfonts are loaded — `pixel` uses a monospace system stack, so the library still
+makes zero network requests.
+
+### Contrast
+
+Every family x mode is checked against WCAG AA by the test suite: body text at 4.5:1,
+and decorative text, accents, progress bars and scrollbar thumbs at 3:1. Ratios are
+measured by compositing each translucent layer over the one beneath it, which is the
+only way a translucent token means anything. Run it with:
+
+```bash
+npm run audit:contrast
+```
+
+Panel edges on `glass` and `office` are highlight strokes rather than boundaries that
+identify a control, so they sit below 3:1 by design.
 
 ### CSS custom properties
 
@@ -709,6 +744,12 @@ Every theme is just a set of these. Override them on `:root` or any ancestor for
 | `--glass-radius-xs` … `-2xl`, `--glass-radius-pill` | The rest of the radius scale |
 | `--glass-font` | Font stack |
 | `--glass-press` | `transform` applied on `:active` |
+| `--glass-indicator` | Fill behind the selected `o-toggle` segment |
+| `--glass-scroll-thumb` / `-hover` / `--glass-scroll-track` | Scrollbar colours |
+| `--glass-scroll-size` / `--glass-scroll-radius` | Scrollbar geometry |
+| `--glass-progress` / `--glass-progress-glow` | Progress bar fill and glow |
+| `--glass-page-bg` / `--glass-page-text` | Page background and text (page chrome) |
+| `--glass-chrome-bg` / `--glass-chrome-border` | Nav / toolbar chrome |
 
 To patch a theme page-wide rather than replace it, set the same name prefixed with `--owc-` on an ancestor:
 

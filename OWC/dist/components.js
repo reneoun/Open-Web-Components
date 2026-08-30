@@ -31,6 +31,7 @@
   var exports_src = {};
   __export(exports_src, {
     toast: () => toast,
+    resolveTheme: () => resolveTheme,
     installGlobalThemeStyles: () => installGlobalThemeStyles,
     globalThemeCSS: () => globalThemeCSS,
     glassScrollbarStyles: () => glassScrollbarStyles,
@@ -50,31 +51,240 @@
     OInput: () => OInput,
     OFFICE_OVERRIDES: () => OFFICE_OVERRIDES,
     ODropdown: () => ODropdown,
+    MODES: () => MODES,
     LIGHT_OVERRIDES: () => LIGHT_OVERRIDES,
+    LEGACY_ALIASES: () => LEGACY_ALIASES,
     GlassElement: () => GlassElement,
     GLOBAL_THEME_STYLE_ID: () => GLOBAL_THEME_STYLE_ID,
     GLASS_TOKENS_PIXEL: () => GLASS_TOKENS_PIXEL,
     GLASS_TOKENS_OFFICE: () => GLASS_TOKENS_OFFICE,
     GLASS_TOKENS_LIGHT: () => GLASS_TOKENS_LIGHT,
     GLASS_TOKENS: () => GLASS_TOKENS,
-    BASE_TOKENS: () => BASE_TOKENS
+    FAMILY_GEOMETRY: () => FAMILY_GEOMETRY,
+    FAMILY_COLOURS: () => FAMILY_COLOURS,
+    FAMILIES: () => FAMILIES,
+    COLOUR_TOKENS: () => COLOUR_TOKENS,
+    BASE_TOKENS: () => BASE_TOKENS,
+    BASE_GEOMETRY: () => BASE_GEOMETRY
   });
 
   // src/glass.ts
-  var BASE_TOKENS = {
-    "glass-bg": "rgba(255,255,255,0.07)",
-    "glass-border": "rgba(255,255,255,0.12)",
-    "glass-hover": "rgba(255,255,255,0.1)",
-    "glass-text": "#fff",
-    "glass-text-muted": "rgba(255,255,255,0.5)",
-    "glass-text-dim": "rgba(255,255,255,0.3)",
-    "accent-warm": "rgba(251,191,36,0.6)",
-    "glass-accent-text": "#000",
+  var MODES = ["light", "dark"];
+  var FAMILIES = ["glass", "pixel", "office"];
+  var COLOUR_TOKENS = [
+    "glass-bg",
+    "glass-border",
+    "glass-hover",
+    "glass-text",
+    "glass-text-muted",
+    "glass-text-dim",
+    "accent-warm",
+    "glass-accent-text",
+    "glass-shadow",
+    "glass-elevation",
+    "glass-scrim",
+    "glass-indicator",
+    "glass-scroll-thumb",
+    "glass-scroll-thumb-hover",
+    "glass-scroll-track",
+    "glass-progress",
+    "glass-progress-glow",
+    "glass-page-bg",
+    "glass-page-text",
+    "glass-chrome-bg",
+    "glass-chrome-border"
+  ];
+  var isColour = (k) => COLOUR_TOKENS.includes(k);
+  var FAMILY_GEOMETRY = {
+    glass: {},
+    pixel: {
+      "glass-blur": "0px",
+      "glass-backdrop": "none",
+      "glass-scrim-backdrop": "none",
+      "glass-border-width": "3px",
+      "glass-radius-xs": "0",
+      "glass-radius-sm": "0",
+      "glass-radius-md": "0",
+      "glass-radius-tab": "0",
+      "glass-radius-lg": "0",
+      "glass-radius": "0",
+      "glass-radius-xl": "0",
+      "glass-radius-2xl": "0",
+      "glass-radius-pill": "0",
+      "glass-font": "ui-monospace, 'Courier New', Courier, monospace",
+      "glass-press": "translate(4px, 4px)",
+      "glass-scroll-size": "12px",
+      "glass-scroll-radius": "0"
+    },
+    office: {
+      "glass-blur": "0px",
+      "glass-backdrop": "none",
+      "glass-scrim-backdrop": "none",
+      "glass-border-width": "1px",
+      "glass-radius-xs": "2px",
+      "glass-radius-sm": "2px",
+      "glass-radius-md": "3px",
+      "glass-radius-tab": "3px",
+      "glass-radius-lg": "3px",
+      "glass-radius": "4px",
+      "glass-radius-xl": "4px",
+      "glass-radius-2xl": "6px",
+      "glass-radius-pill": "999px",
+      "glass-font": "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
+      "glass-press": "none",
+      "glass-scroll-size": "10px",
+      "glass-scroll-radius": "2px"
+    }
+  };
+  var FAMILY_COLOURS = {
+    glass: {
+      dark: {
+        "glass-bg": "rgba(255,255,255,0.07)",
+        "glass-border": "rgba(255,255,255,0.12)",
+        "glass-hover": "rgba(255,255,255,0.1)",
+        "glass-text": "#fff",
+        "glass-text-muted": "rgba(255,255,255,0.78)",
+        "glass-text-dim": "rgba(255,255,255,0.56)",
+        "accent-warm": "rgba(251,191,36,0.92)",
+        "glass-accent-text": "#1a1200",
+        "glass-shadow": "0 8px 32px rgba(0,0,0,0.3)",
+        "glass-elevation": "none",
+        "glass-scrim": "rgba(0,0,0,0.5)",
+        "glass-indicator": "rgba(255,255,255,0.12)",
+        "glass-scroll-thumb": "rgba(255,255,255,0.62)",
+        "glass-scroll-thumb-hover": "rgba(255,255,255,0.8)",
+        "glass-scroll-track": "rgba(255,255,255,0.06)",
+        "glass-progress": "rgba(74,222,128,0.85)",
+        "glass-progress-glow": "0 0 8px rgba(74,222,128,0.5)",
+        "glass-page-bg": "linear-gradient(135deg, #059669, #065f46)",
+        "glass-page-text": "#ffffff",
+        "glass-chrome-bg": "rgba(3,54,25,0.78)",
+        "glass-chrome-border": "rgba(255,255,255,0.1)"
+      },
+      light: {
+        "glass-bg": "rgba(255,255,255,0.62)",
+        "glass-border": "rgba(4,90,60,0.22)",
+        "glass-hover": "rgba(255,255,255,0.82)",
+        "glass-text": "#04291b",
+        "glass-text-muted": "#2c5c48",
+        "glass-text-dim": "#4a7d67",
+        "accent-warm": "#046b47",
+        "glass-accent-text": "#ffffff",
+        "glass-shadow": "0 8px 32px rgba(4,60,40,0.12)",
+        "glass-elevation": "none",
+        "glass-scrim": "rgba(4,40,28,0.45)",
+        "glass-indicator": "rgba(4,90,60,0.18)",
+        "glass-scroll-thumb": "rgba(4,60,40,0.60)",
+        "glass-scroll-thumb-hover": "rgba(4,60,40,0.78)",
+        "glass-scroll-track": "rgba(4,60,40,0.08)",
+        "glass-progress": "#047857",
+        "glass-progress-glow": "none",
+        "glass-page-bg": "linear-gradient(135deg, #ecfdf5, #d9f2e4)",
+        "glass-page-text": "#04291b",
+        "glass-chrome-bg": "rgba(233,250,242,0.86)",
+        "glass-chrome-border": "rgba(4,90,60,0.18)"
+      }
+    },
+    pixel: {
+      dark: {
+        "glass-bg": "#3b4a7a",
+        "glass-border": "#000000",
+        "glass-hover": "#4f6196",
+        "glass-text": "#fff1e8",
+        "glass-text-muted": "#c2c3c7",
+        "glass-text-dim": "#a09cb5",
+        "accent-warm": "#ffec27",
+        "glass-accent-text": "#000000",
+        "glass-shadow": "4px 4px 0 #000000",
+        "glass-elevation": "4px 4px 0 #000000",
+        "glass-scrim": "rgba(0,0,0,0.82)",
+        "glass-indicator": "#1d2b53",
+        "glass-scroll-thumb": "#c2c3c7",
+        "glass-scroll-thumb-hover": "#ffec27",
+        "glass-scroll-track": "#1d2b53",
+        "glass-progress": "#00e436",
+        "glass-progress-glow": "none",
+        "glass-page-bg": "#1d2b53",
+        "glass-page-text": "#fff1e8",
+        "glass-chrome-bg": "#000000",
+        "glass-chrome-border": "#000000"
+      },
+      light: {
+        "glass-bg": "#ffffff",
+        "glass-border": "#000000",
+        "glass-hover": "#ffec27",
+        "glass-text": "#000000",
+        "glass-text-muted": "#4a453f",
+        "glass-text-dim": "#6d6660",
+        "accent-warm": "#d1003f",
+        "glass-accent-text": "#ffffff",
+        "glass-shadow": "4px 4px 0 #000000",
+        "glass-elevation": "4px 4px 0 #000000",
+        "glass-scrim": "rgba(29,43,83,0.7)",
+        "glass-indicator": "#ffec27",
+        "glass-scroll-thumb": "#5f574f",
+        "glass-scroll-thumb-hover": "#d1003f",
+        "glass-scroll-track": "#e8dcd2",
+        "glass-progress": "#008751",
+        "glass-progress-glow": "none",
+        "glass-page-bg": "#fff1e8",
+        "glass-page-text": "#000000",
+        "glass-chrome-bg": "#ffffff",
+        "glass-chrome-border": "#000000"
+      }
+    },
+    office: {
+      dark: {
+        "glass-bg": "#1b222b",
+        "glass-border": "#333e4a",
+        "glass-hover": "#242d38",
+        "glass-text": "#e6ebf1",
+        "glass-text-muted": "#a3b1c0",
+        "glass-text-dim": "#7e8c9b",
+        "accent-warm": "#5b9fe3",
+        "glass-accent-text": "#06121f",
+        "glass-shadow": "0 1px 3px rgba(0,0,0,0.55)",
+        "glass-elevation": "0 1px 2px rgba(0,0,0,0.4)",
+        "glass-scrim": "rgba(4,8,12,0.6)",
+        "glass-indicator": "#2f3a47",
+        "glass-scroll-thumb": "#68768a",
+        "glass-scroll-thumb-hover": "#8695a8",
+        "glass-scroll-track": "#1b222b",
+        "glass-progress": "#5b9fe3",
+        "glass-progress-glow": "none",
+        "glass-page-bg": "#12171d",
+        "glass-page-text": "#e6ebf1",
+        "glass-chrome-bg": "#1b222b",
+        "glass-chrome-border": "#333e4a"
+      },
+      light: {
+        "glass-bg": "#ffffff",
+        "glass-border": "#cbd3dd",
+        "glass-hover": "#f1f4f8",
+        "glass-text": "#1f2933",
+        "glass-text-muted": "#5c6b7a",
+        "glass-text-dim": "#788695",
+        "accent-warm": "#2f6fb0",
+        "glass-accent-text": "#ffffff",
+        "glass-shadow": "0 1px 3px rgba(16,24,40,0.10)",
+        "glass-elevation": "0 1px 2px rgba(16,24,40,0.06)",
+        "glass-scrim": "rgba(16,24,40,0.40)",
+        "glass-indicator": "#dde4ec",
+        "glass-scroll-thumb": "#7a8794",
+        "glass-scroll-thumb-hover": "#5c6b7a",
+        "glass-scroll-track": "#e7ebf0",
+        "glass-progress": "#2f6fb0",
+        "glass-progress-glow": "none",
+        "glass-page-bg": "#eef1f5",
+        "glass-page-text": "#1f2933",
+        "glass-chrome-bg": "#ffffff",
+        "glass-chrome-border": "#d5dae1"
+      }
+    }
+  };
+  var BASE_GEOMETRY = {
     "glass-blur": "12px",
     "glass-backdrop": "blur(var(--glass-blur))",
-    "glass-shadow": "0 8px 32px rgba(0,0,0,0.3)",
-    "glass-elevation": "none",
-    "glass-scrim": "rgba(0,0,0,0.5)",
     "glass-scrim-backdrop": "blur(4px)",
     "glass-border-width": "1px",
     "glass-radius-xs": "3px",
@@ -86,150 +296,129 @@
     "glass-radius-xl": "12px",
     "glass-radius-2xl": "16px",
     "glass-radius-pill": "999px",
-    "glass-scroll-thumb": "rgba(255,255,255,0.28)",
-    "glass-scroll-thumb-hover": "rgba(255,255,255,0.5)",
-    "glass-scroll-track": "rgba(255,255,255,0.06)",
-    "glass-scroll-size": "9px",
-    "glass-scroll-radius": "5px",
     "glass-font": "sans-serif",
     "glass-press": "scale(0.97)",
-    "glass-progress": "rgba(74,222,128,0.85)",
-    "glass-progress-glow": "0 0 8px rgba(74,222,128,0.5)"
+    "glass-scroll-size": "9px",
+    "glass-scroll-radius": "5px"
   };
-  var LIGHT_OVERRIDES = {
-    "glass-bg": "rgba(34,197,94,0.06)",
-    "glass-border": "rgba(34,197,94,0.15)",
-    "glass-hover": "rgba(34,197,94,0.08)",
-    "glass-text": "#1a2e1a",
-    "glass-text-muted": "rgba(0,40,0,0.5)",
-    "glass-text-dim": "rgba(0,40,0,0.3)",
-    "accent-warm": "rgba(22,163,74,0.7)",
-    "glass-shadow": "0 8px 32px rgba(0,0,0,0.06)",
-    "glass-scroll-thumb": "rgba(0,40,0,0.28)",
-    "glass-scroll-thumb-hover": "rgba(0,40,0,0.45)",
-    "glass-scroll-track": "rgba(0,40,0,0.06)"
+  function resolveTheme(family, mode) {
+    return { ...BASE_GEOMETRY, ...FAMILY_GEOMETRY[family], ...FAMILY_COLOURS[family][mode] };
+  }
+  var BASE_TOKENS = resolveTheme("glass", "dark");
+  var LEGACY_ALIASES = {
+    light: { family: "glass", mode: "light" },
+    dark: { family: "glass", mode: "dark" }
   };
-  var PIXEL_OVERRIDES = {
-    "glass-bg": "#26264d",
-    "glass-border": "#0d0d1a",
-    "glass-hover": "#3d3d73",
-    "glass-text": "#ffffff",
-    "glass-text-muted": "#a5a5d6",
-    "glass-text-dim": "#6b6b9e",
-    "accent-warm": "#ffcc00",
-    "glass-accent-text": "#0d0d1a",
-    "glass-blur": "0px",
-    "glass-backdrop": "none",
-    "glass-shadow": "4px 4px 0 #0d0d1a",
-    "glass-elevation": "4px 4px 0 #0d0d1a",
-    "glass-scrim": "rgba(13,13,26,0.8)",
-    "glass-scrim-backdrop": "none",
-    "glass-border-width": "3px",
-    "glass-radius-xs": "0",
-    "glass-radius-sm": "0",
-    "glass-radius-md": "0",
-    "glass-radius-tab": "0",
-    "glass-radius-lg": "0",
-    "glass-radius": "0",
-    "glass-radius-xl": "0",
-    "glass-radius-2xl": "0",
-    "glass-radius-pill": "0",
-    "glass-font": "ui-monospace, 'Courier New', Courier, monospace",
-    "glass-press": "translate(4px, 4px)",
-    "glass-progress": "#00e436",
-    "glass-progress-glow": "none",
-    "glass-scroll-thumb": "#0d0d1a",
-    "glass-scroll-thumb-hover": "#ffcc00",
-    "glass-scroll-track": "#3d3d73",
-    "glass-scroll-size": "12px",
-    "glass-scroll-radius": "0"
-  };
-  var OFFICE_OVERRIDES = {
-    "glass-bg": "#ffffff",
-    "glass-border": "#d5dae1",
-    "glass-hover": "#f1f4f8",
-    "glass-text": "#1f2933",
-    "glass-text-muted": "#5c6b7a",
-    "glass-text-dim": "#94a1ae",
-    "accent-warm": "#2f6fb0",
-    "glass-accent-text": "#ffffff",
-    "glass-blur": "0px",
-    "glass-backdrop": "none",
-    "glass-shadow": "0 1px 3px rgba(16,24,40,0.10)",
-    "glass-elevation": "0 1px 2px rgba(16,24,40,0.06)",
-    "glass-scrim": "rgba(16,24,40,0.40)",
-    "glass-scrim-backdrop": "none",
-    "glass-border-width": "1px",
-    "glass-radius-xs": "2px",
-    "glass-radius-sm": "2px",
-    "glass-radius-md": "3px",
-    "glass-radius-tab": "3px",
-    "glass-radius-lg": "3px",
-    "glass-radius": "4px",
-    "glass-radius-xl": "4px",
-    "glass-radius-2xl": "6px",
-    "glass-radius-pill": "999px",
-    "glass-font": "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
-    "glass-press": "none",
-    "glass-progress": "#2f6fb0",
-    "glass-progress-glow": "none",
-    "glass-scroll-thumb": "#b6c0cc",
-    "glass-scroll-thumb-hover": "#8c99a8",
-    "glass-scroll-track": "#eef1f5",
-    "glass-scroll-size": "10px",
-    "glass-scroll-radius": "2px"
-  };
-  var THEMES = {
-    light: LIGHT_OVERRIDES,
-    pixel: PIXEL_OVERRIDES,
-    office: OFFICE_OVERRIDES
-  };
-  var DEFAULT_ALIASES = ["glass", "dark"];
+  var colourPart = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => isColour(k)));
   var declList = (t, pad) => Object.entries(t).map(([k, v]) => `${pad}--${k}: ${v};`).join(`
 `);
   var fallbackDeclList = (t, pad) => Object.entries(t).map(([k, v]) => `${pad}--${k}: var(--owc-${k}, ${v});`).join(`
 `);
-  var withDefaults = (o) => ({ ...BASE_TOKENS, ...o });
+  var modeRefDeclList = (mode, pad) => Object.entries(colourPart(resolveTheme("glass", mode))).map(([k, v]) => `${pad}--${k}: var(--owc-${k}-${mode}, ${v});`).join(`
+`);
   var GLASS_TOKENS = `
 ${declList(BASE_TOKENS, "  ")}
 `;
   var GLASS_TOKENS_LIGHT = `
-${declList(LIGHT_OVERRIDES, "  ")}
+${declList(resolveTheme("glass", "light"), "  ")}
 `;
   var GLASS_TOKENS_PIXEL = `
-${declList(PIXEL_OVERRIDES, "  ")}
+${declList(resolveTheme("pixel", "dark"), "  ")}
 `;
   var GLASS_TOKENS_OFFICE = `
-${declList(OFFICE_OVERRIDES, "  ")}
+${declList(resolveTheme("office", "light"), "  ")}
 `;
+  var diffFromBase = (t) => Object.fromEntries(Object.entries(t).filter(([k, v]) => BASE_TOKENS[k] !== v));
+  var LIGHT_OVERRIDES = diffFromBase(resolveTheme("glass", "light"));
+  var PIXEL_OVERRIDES = diffFromBase(resolveTheme("pixel", "dark"));
+  var OFFICE_OVERRIDES = diffFromBase(resolveTheme("office", "light"));
+  var THEMES = {
+    light: resolveTheme("glass", "light"),
+    pixel: resolveTheme("pixel", "dark"),
+    office: resolveTheme("office", "dark")
+  };
+  var THEME_SPECS = {
+    ...Object.fromEntries(FAMILIES.map((f) => [f, { family: f }])),
+    ...Object.fromEntries(Object.entries(LEGACY_ALIASES).map(([n, a]) => [n, { family: a.family, forced: a.mode }]))
+  };
   function glassBaseStyles() {
-    const themeBlocks = Object.entries(THEMES).map(([name, o]) => `    :host([theme="${name}"]) {
-${declList(withDefaults(o), "      ")}
-    }`).join(`
-`);
-    const defaultBlock = DEFAULT_ALIASES.map((n) => `:host([theme="${n}"])`).join(", ");
-    return `
-    :host {
+    const out = [];
+    out.push(`    :host {
 ${fallbackDeclList(BASE_TOKENS, "      ")}
+    }`);
+    out.push(`    @media (prefers-color-scheme: light) {
+` + `      :host(:not([mode]):not([theme])) {
+` + `${fallbackDeclList(colourPart(resolveTheme("glass", "light")), "        ")}
+` + `      }
+    }`);
+    for (const mode of MODES) {
+      out.push(`    :host([mode="${mode}"]:not([theme])) {
+${modeRefDeclList(mode, "      ")}
+    }`);
     }
-${themeBlocks}
-    ${defaultBlock} {
-${declList(BASE_TOKENS, "      ")}
+    for (const [name, spec] of Object.entries(THEME_SPECS)) {
+      const base = spec.forced ?? "dark";
+      out.push(`    :host([theme="${name}"]) {
+${declList(resolveTheme(spec.family, base), "      ")}
+    }`);
+      if (!spec.forced) {
+        out.push(`    @media (prefers-color-scheme: light) {
+` + `      :host([theme="${name}"]:not([mode])) {
+` + `${declList(colourPart(resolveTheme(spec.family, "light")), "        ")}
+` + `      }
+    }`);
+      }
+      for (const mode of MODES) {
+        if (mode === base)
+          continue;
+        out.push(`    :host([theme="${name}"][mode="${mode}"]) {
+` + `${declList(colourPart(resolveTheme(spec.family, mode)), "      ")}
+    }`);
+      }
     }
+    return `
+${out.join(`
+`)}
   `;
   }
   var toPageScope = (v) => v.replace(/var\(--glass-/g, "var(--owc-glass-");
-  var pageDeclList = (t) => Object.entries(t).map(([k, v]) => `  --owc-${k}: ${toPageScope(v)};`).join(`
+  var pageDeclList = (t, pad = "  ") => Object.entries(t).map(([k, v]) => `${pad}--owc-${k}: ${toPageScope(v)};`).join(`
+`);
+  var pageModeDeclList = (t, mode, pad = "  ") => Object.entries(colourPart(t)).map(([k, v]) => `${pad}--owc-${k}-${mode}: ${toPageScope(v)};`).join(`
+`);
+  var pageResolveList = (mode, pad = "  ") => COLOUR_TOKENS.map((k) => `${pad}--owc-${k}: var(--owc-${k}-${mode});`).join(`
 `);
   function globalThemeCSS() {
-    const blocks = Object.entries(THEMES).map(([name, o]) => `[data-owc-theme="${name}"] {
-${pageDeclList(withDefaults(o))}
+    const out = [];
+    for (const [name, spec] of Object.entries(THEME_SPECS)) {
+      const sel = name === "glass" ? `:root, [data-owc-theme="${name}"]` : `[data-owc-theme="${name}"]`;
+      const base = spec.forced ?? "dark";
+      out.push(`${sel} {
+` + `${pageModeDeclList(resolveTheme(spec.family, "dark"), "dark")}
+` + `${pageModeDeclList(resolveTheme(spec.family, "light"), "light")}
+` + `${pageDeclList({ ...BASE_GEOMETRY, ...FAMILY_GEOMETRY[spec.family] })}
+` + `${pageResolveList(base)}
 }`);
-    const aliases = DEFAULT_ALIASES.map((n) => `[data-owc-theme="${n}"]`).join(", ");
-    blocks.push(`${aliases} {
-${pageDeclList(BASE_TOKENS)}
+      if (!spec.forced) {
+        const q = name === "glass" ? `:root:not([data-owc-mode]), [data-owc-theme="${name}"]:not([data-owc-mode])` : `[data-owc-theme="${name}"]:not([data-owc-mode])`;
+        out.push(`@media (prefers-color-scheme: light) {
+${q} {
+${pageResolveList("light", "    ")}
+}
 }`);
-    return blocks.join(`
+      }
+      for (const mode of MODES) {
+        out.push(`[data-owc-theme="${name}"][data-owc-mode="${mode}"] {
+${pageResolveList(mode)}
+}`);
+      }
+    }
+    for (const mode of MODES) {
+      out.push(`[data-owc-mode="${mode}"] {
+${pageResolveList(mode)}
+}`);
+    }
+    return out.join(`
 `);
   }
   var GLOBAL_THEME_STYLE_ID = "owc-global-themes";
@@ -1988,7 +2177,7 @@ ${pageDeclList(BASE_TOKENS)}
           top: 3px; bottom: 3px;
           left: 3px;
           width: calc((100% - 6px) / var(--n));
-          background: var(--glass-border);
+          background: var(--glass-indicator);
           border-radius: var(--glass-radius-pill);
           transform: translateX(calc(var(--idx) * 100%));
           transition: transform 0.2s ease;

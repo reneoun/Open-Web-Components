@@ -8,41 +8,24 @@
     <style>
       html { scroll-behavior: smooth; }
       * { box-sizing: border-box; }
+      /* Page chrome reads the same tokens the components do, so every family x
+         mode combination themes the whole page — nav included. */
       body {
-        background: linear-gradient(135deg, #059669, #065f46);
+        background: var(--demo-page-bg, var(--owc-glass-page-bg));
         min-height: 100vh;
         padding: 2rem;
         padding-top: 4.5rem;
-        font-family: sans-serif;
-        color: #fff;
-        transition: background 0.5s;
+        font-family: var(--owc-glass-font, sans-serif);
+        color: var(--owc-glass-page-text);
+        transition: background 0.5s, color 0.3s;
       }
-      body.theme-blue   { background: linear-gradient(135deg, #2563eb, #1e40af); }
-      body.theme-green  { background: linear-gradient(135deg, #059669, #065f46); }
-      body.theme-rose   { background: linear-gradient(135deg, #e11d48, #9f1239); }
-      body.theme-slate  { background: linear-gradient(135deg, #334155, #0f172a); }
+      /* The page-background picker is a dark-glass flourish; script clears it
+         for the flat families, which need their own neutral ground. */
+      body.theme-blue   { --demo-page-bg: linear-gradient(135deg, #2563eb, #1e40af); }
+      body.theme-green  { --demo-page-bg: linear-gradient(135deg, #059669, #065f46); }
+      body.theme-rose   { --demo-page-bg: linear-gradient(135deg, #e11d48, #9f1239); }
+      body.theme-slate  { --demo-page-bg: linear-gradient(135deg, #334155, #0f172a); }
 
-      /* The flat themes need a neutral ground — a glassmorphism gradient fights them. */
-      body[data-owc-theme="pixel"]  { background: #12122b; color: #e8e8ff; }
-      body[data-owc-theme="office"] { background: #eef1f5; color: #1f2933; }
-      body[data-owc-theme="office"] h2,
-      body[data-owc-theme="office"] .desc { color: #5c6b7a; }
-      body[data-owc-theme="pixel"] h1,
-      body[data-owc-theme="pixel"] h2 { font-family: ui-monospace, 'Courier New', monospace; }
-      /* The demo's own chrome assumes a dark ground; repaint it for the light theme. */
-      body[data-owc-theme="office"] .badge {
-        background: #e3e8ef; border-color: #cbd3dd; color: #5c6b7a;
-      }
-      body[data-owc-theme="office"] .code {
-        background: #1f2933; border-color: #1f2933; color: rgba(255,255,255,0.88);
-      }
-      body[data-owc-theme="office"] .stats-bar {
-        background: #fff; border-color: #d5dae1;
-      }
-      body[data-owc-theme="office"] .stats-bar .lbl { color: #5c6b7a; }
-      body[data-owc-theme="pixel"] .code,
-      body[data-owc-theme="pixel"] .stats-bar { border-radius: 0; }
-      body[data-owc-theme="pixel"] .badge { border-radius: 0; }
       h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
       h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; scroll-margin-top: 52px; }
       .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -50,30 +33,30 @@
       .code-wrap { position: relative; margin-top: 10px; }
       .code {
         background: rgba(0,0,0,0.35);
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 8px;
         padding: 12px 16px;
         padding-right: 52px;
         font-family: monospace;
         font-size: 12px;
-        color: rgba(255,255,255,0.85);
+        color: var(--owc-glass-text);
         overflow-x: auto;
         white-space: pre;
       }
       .copy-btn {
         position: absolute;
         top: 8px; right: 8px;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.2);
+        background: var(--owc-glass-hover);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 5px;
-        color: rgba(255,255,255,0.7);
+        color: var(--owc-glass-text-muted);
         font-size: 11px;
         padding: 3px 8px;
         cursor: pointer;
         transition: background 0.15s, color 0.15s;
         font-family: sans-serif;
       }
-      .copy-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+      .copy-btn:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
       .copy-btn.copied { background: rgba(100,220,120,0.25); color: #7efa9a; border-color: #7efa9a; }
 
       /* Sticky nav */
@@ -81,10 +64,10 @@
         position: fixed;
         top: 0; left: 0; right: 0;
         z-index: 100;
-        background: rgba(3,54,25,0.78);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        background: var(--owc-glass-chrome-bg);
+        backdrop-filter: var(--owc-glass-backdrop);
+        -webkit-backdrop-filter: var(--owc-glass-backdrop);
+        border-bottom: var(--owc-glass-border-width) solid var(--owc-glass-chrome-border);
         padding: 0 2rem;
         height: 44px;
         display: flex;
@@ -93,44 +76,44 @@
         overflow-x: auto;
         /* Glass scrollbar */
         scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.15) transparent;
+        scrollbar-color: var(--owc-glass-scroll-thumb) transparent;
       }
       #nav::-webkit-scrollbar { width: 6px; height: 6px; }
       #nav::-webkit-scrollbar-track { background: transparent; }
-      #nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
-      #nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+      #nav::-webkit-scrollbar-thumb { background: var(--owc-glass-scroll-thumb); border-radius: var(--owc-glass-scroll-radius); }
+      #nav::-webkit-scrollbar-thumb:hover { background: var(--owc-glass-scroll-thumb-hover); }
       #nav::-webkit-scrollbar-corner { background: transparent; }
       #nav a {
-        color: rgba(255,255,255,0.65);
+        color: var(--owc-glass-text-muted);
         text-decoration: none;
         font-size: 12px;
         padding: 4px 10px;
-        border-radius: 20px;
+        border-radius: var(--owc-glass-radius-pill);
         white-space: nowrap;
         transition: background 0.15s, color 0.15s;
       }
-      #nav a:hover { background: rgba(255,255,255,0.12); color: #fff; }
-      #nav span.sep { color: rgba(255,255,255,0.2); font-size: 10px; flex-shrink: 0; }
+      #nav a:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
+      #nav span.sep { color: var(--owc-glass-text-dim); font-size: 10px; flex-shrink: 0; }
       #nav .gh-link {
         margin-left: auto;
         display: flex;
         align-items: center;
         gap: 6px;
-        color: rgba(255,255,255,0.55);
+        color: var(--owc-glass-text-muted);
         text-decoration: none;
         font-size: 12px;
         padding: 4px 10px;
-        border-radius: 20px;
-        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: var(--owc-glass-radius-pill);
+        border: 1px solid var(--owc-glass-border);
         flex-shrink: 0;
         transition: background 0.15s, color 0.15s;
       }
-      #nav .gh-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+      #nav .gh-link:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
 
       /* Header card */
       .hero {
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.12);
+        background: var(--owc-glass-bg);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 16px;
         padding: 20px 24px;
         margin-bottom: 8px;
@@ -142,12 +125,12 @@
       }
       .hero .badge {
         display: inline-block;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.2);
+        background: var(--owc-glass-hover);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 20px;
         padding: 2px 10px;
         font-size: 11px;
-        color: rgba(255,255,255,0.7);
+        color: var(--owc-glass-text-muted);
         margin-left: 8px;
         vertical-align: middle;
       }
@@ -158,20 +141,20 @@
         overflow-y: auto;
         font-family: monospace;
         font-size: 11px;
-        color: rgba(255,255,255,0.8);
+        color: var(--owc-glass-text);
         line-height: 1.6;
       }
-      #event-log .entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-      #event-log .ts  { color: rgba(255,255,255,0.35); margin-right: 6px; }
+      #event-log .entry { padding: 2px 0; border-bottom: 1px solid var(--owc-glass-border); }
+      #event-log .ts  { color: var(--owc-glass-text-dim); margin-right: 6px; }
       #event-log .evname { color: #4ade80; margin-right: 4px; }
-      #event-log .payload { color: rgba(255,255,255,0.6); }
-      #event-log .empty { color: rgba(255,255,255,0.3); font-style: italic; }
+      #event-log .payload { color: var(--owc-glass-text-muted); }
+      #event-log .empty { color: var(--owc-glass-text-dim); font-style: italic; }
 
       /* Counter badge */
       .counter-badge {
         display: inline-block;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.2);
+        background: var(--owc-glass-hover);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 20px;
         padding: 3px 12px;
         font-size: 13px;
@@ -184,8 +167,8 @@
       /* Toggle output */
       .toggle-output {
         margin-top: 12px;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.15);
+        background: var(--owc-glass-hover);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 10px;
         padding: 14px 18px;
         font-size: 14px;
@@ -206,8 +189,8 @@
       /* Stats bar */
       .stats-bar {
         display: flex; gap: 20px; flex-wrap: wrap;
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: var(--owc-glass-bg);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 10px;
         padding: 10px 16px;
         font-size: 12px;
@@ -228,21 +211,21 @@
       #shortcut-overlay.open { display: flex; }
       .shortcut-panel {
         background: rgba(3,40,18,0.95);
-        border: 1px solid rgba(255,255,255,0.18);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 16px;
         padding: 24px 28px;
         min-width: 320px;
         max-width: 90vw;
-        color: #fff;
+        color: var(--owc-glass-text);
       }
       .shortcut-panel h3 { margin: 0 0 14px; font-size: 14px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
-      .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+      .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--owc-glass-border); font-size: 13px; }
       .shortcut-row:last-child { border-bottom: none; }
-      .shortcut-key { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; padding: 2px 7px; font-family: monospace; font-size: 12px; }
+      .shortcut-key { background: var(--owc-glass-hover); border: 1px solid var(--owc-glass-border); border-radius: 5px; padding: 2px 7px; font-family: monospace; font-size: 12px; }
       .shortcut-close { float: right; margin-top: -4px; }
 
       /* Scrollspy active nav */
-      #nav a.active { background: rgba(255,255,255,0.15); color: #fff; }
+      #nav a.active { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
 
       /* Scroll progress */
       #scroll-progress {
@@ -254,8 +237,8 @@
 
       /* Kanban item */
       .kan-item {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
+        background: var(--owc-glass-bg);
+        border: 1px solid var(--owc-glass-border);
         border-radius: 7px;
         padding: 8px 10px;
         margin-bottom: 7px;
@@ -267,18 +250,18 @@
       }
       .kan-item .kan-btns { display: flex; gap: 3px; flex-shrink: 0; }
       .kan-item .kan-btn {
-        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 4px; color: rgba(255,255,255,0.7); font-size: 11px;
+        background: var(--owc-glass-hover); border: 1px solid var(--owc-glass-border);
+        border-radius: 4px; color: var(--owc-glass-text-muted); font-size: 11px;
         padding: 1px 6px; cursor: pointer; transition: background 0.12s;
       }
-      .kan-item .kan-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+      .kan-item .kan-btn:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
       .kan-item .kan-btn:disabled { opacity: 0.2; cursor: default; }
 
       /* Footer */
       footer {
         margin-top: 4rem;
         padding-top: 2rem;
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid var(--owc-glass-border);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -349,8 +332,12 @@
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <div id="owc-theme-wrap">
-          <div class="ks-label" style="text-align:right">Component theme</div>
-          <o-toggle id="tgl-owc-theme" options="Glass,Light,Pixel,Office" value="glass"></o-toggle>
+          <div class="ks-label" style="text-align:right">Theme family</div>
+          <o-toggle id="tgl-owc-theme" options="Glass,Pixel,Office" value="glass"></o-toggle>
+        </div>
+        <div id="owc-mode-wrap">
+          <div class="ks-label" style="text-align:right">Colour mode <span id="mode-hint" style="opacity:0.65"></span></div>
+          <o-toggle id="tgl-owc-mode" options="Auto,Light,Dark" value="auto"></o-toggle>
         </div>
         <div id="theme-toggle-wrap">
           <div class="ks-label" style="text-align:right">Page background</div>
@@ -801,17 +788,32 @@ dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
         o-tabs    → <span style="color:#4ade80">o-change</span> { value, prev }
       </div>
       <div data-tab="theming" style="font-size:14px;line-height:1.7;opacity:0.85">
-        <strong style="display:block;margin-bottom:6px">Built-in themes</strong>
-        Four themes ship with the library: the default <code>glass</code>, plus <code>light</code>, <code>pixel</code> and <code>office</code>.<br><br>
-        <strong>Whole page</strong> — one attribute themes every component:<br>
-        <code>&lt;body data-owc-theme="pixel"&gt;</code><br><br>
-        <strong>Single component</strong> — the attribute wins over the page theme:<br>
-        <code>&lt;o-button theme="office"&gt;OK&lt;/o-button&gt;</code><br>
-        Use <code>theme="glass"</code> to opt one component back out of a page theme.<br><br>
+        <strong style="display:block;margin-bottom:6px">Two independent axes</strong>
+        A theme is a <em>family</em> (the visual language) crossed with a <em>mode</em> (the colour
+        scheme). All six combinations work:<br><br>
+        Families: <code>glass</code>, <code>pixel</code>, <code>office</code> &nbsp;&times;&nbsp;
+        Modes: <code>light</code>, <code>dark</code><br><br>
+        Geometry — radii, blur, font, border width — belongs to the family and never changes
+        with mode, so toggling light/dark cannot move a pixel.<br><br>
+        <strong>Whole page</strong> — one or both attributes:<br>
+        <code>&lt;body data-owc-theme="office" data-owc-mode="dark"&gt;</code><br><br>
+        <strong>Single component</strong> — always wins over the page:<br>
+        <code>&lt;o-button theme="pixel" mode="light"&gt;OK&lt;/o-button&gt;</code><br>
+        <code>mode</code> on its own keeps the page's family and swaps only its palette.<br><br>
+        <strong>With no mode set, the mode follows the visitor's OS</strong>
+        (<code>prefers-color-scheme</code>). An explicit <code>mode</code> always beats the OS.<br><br>
+        <strong style="display:block;margin-bottom:6px">Legacy names</strong>
+        <code>theme="light"</code> and <code>theme="dark"</code> shipped in v1.0 and still work —
+        they are pinned aliases for glass&nbsp;+&nbsp;light and glass&nbsp;+&nbsp;dark.<br><br>
+        <strong style="display:block;margin-bottom:6px">Contrast</strong>
+        Every family &times; mode is checked against WCAG AA by the test suite: body text at
+        4.5:1 and decorative text, accents and scrollbars at 3:1, measured by compositing each
+        translucent layer over the one beneath it.<br><br>
         <strong style="display:block;margin-bottom:6px">CSS custom properties</strong>
         Colours: <code>--glass-bg</code>, <code>--glass-border</code>, <code>--glass-hover</code>, <code>--glass-text</code>, <code>--glass-text-muted</code>, <code>--glass-text-dim</code>, <code>--accent-warm</code>, <code>--glass-accent-text</code>.<br>
         Depth: <code>--glass-blur</code>, <code>--glass-backdrop</code>, <code>--glass-shadow</code>, <code>--glass-elevation</code>, <code>--glass-scrim</code>.<br>
         Geometry: <code>--glass-border-width</code>, <code>--glass-radius</code> (plus <code>-xs</code> / <code>-sm</code> / <code>-md</code> / <code>-lg</code> / <code>-xl</code> / <code>-2xl</code> / <code>-pill</code>).<br>
+        Page chrome: <code>--glass-page-bg</code>, <code>--glass-page-text</code>, <code>--glass-chrome-bg</code>, <code>--glass-chrome-border</code>.<br>
         Type &amp; motion: <code>--glass-font</code>, <code>--glass-press</code>.<br><br>
         Set any of these on an ancestor prefixed with <code>--owc-</code> (e.g. <code>--owc-glass-radius: 0</code>) to patch a theme page-wide.
       </div>
@@ -1403,21 +1405,56 @@ function render() {
       // ── Page background switcher ───────────────────────────────
       const themeMap = { purple: '', blue: 'theme-blue', green: 'theme-green', rose: 'theme-rose', slate: 'theme-slate' }
       document.getElementById('tgl-theme').addEventListener('o-change', e => {
-        document.body.className = themeMap[e.detail.value] || ''
+        // Remember the choice; applyTheme decides whether it is currently visible.
+        pageBg = themeMap[e.detail.value] || ''
+        applyTheme()
         logEvent('theme-change', { theme: e.detail.value })
       })
 
       // ── Component theme switcher ───────────────────────────────
       // One attribute on <body> themes every OWC component on the page.
-      const badgeEl = document.querySelector('.hero .badge')
-      const badgeText = { glass: 'glassmorphism', light: 'light glass', pixel: 'pixel-art', office: 'simple office' }
+      // ── Theming: two independent axes ──────────────────────────
+      // family = visual language, mode = colour scheme. The page-background
+      // picker only makes sense on dark glass, so it is parked otherwise.
+      const badgeEl   = document.querySelector('.hero .badge')
+      const badgeText = { glass: 'glassmorphism', pixel: 'pixel-art', office: 'simple office' }
+      const modeHint  = document.getElementById('mode-hint')
+      const osDark    = window.matchMedia('(prefers-color-scheme: dark)')
+      let family = 'glass'
+      let mode   = 'auto'
+      let pageBg = 'theme-green'   // remembered choice of the gradient picker
+
+      const effectiveMode = () => mode === 'auto' ? (osDark.matches ? 'dark' : 'light') : mode
+
+      function applyTheme() {
+        if (family === 'glass') document.body.removeAttribute('data-owc-theme')
+        else document.body.setAttribute('data-owc-theme', family)
+
+        if (mode === 'auto') document.body.removeAttribute('data-owc-mode')
+        else document.body.setAttribute('data-owc-mode', mode)
+
+        // Restore the gradient only where it belongs: dark glass.
+        const gradientApplies = family === 'glass' && effectiveMode() === 'dark'
+        document.body.classList.remove('theme-blue','theme-green','theme-rose','theme-slate')
+        if (gradientApplies && pageBg) document.body.classList.add(pageBg)
+
+        if (badgeEl) badgeEl.textContent = badgeText[family] || family
+        if (modeHint) modeHint.textContent = mode === 'auto' ? `(OS: ${effectiveMode()})` : ''
+      }
+
       document.getElementById('tgl-owc-theme').addEventListener('o-change', e => {
-        const t = e.detail.value
-        if (t === 'glass') document.body.removeAttribute('data-owc-theme')
-        else document.body.setAttribute('data-owc-theme', t)
-        if (badgeEl) badgeEl.textContent = badgeText[t] || t
-        logEvent('owc-theme-change', { theme: t })
+        family = e.detail.value
+        applyTheme()
+        logEvent('owc-theme-change', { family, mode })
       })
+      document.getElementById('tgl-owc-mode').addEventListener('o-change', e => {
+        mode = e.detail.value
+        applyTheme()
+        logEvent('owc-mode-change', { family, mode })
+      })
+      // Following the OS means reacting when the OS changes.
+      osDark.addEventListener('change', () => { if (mode === 'auto') applyTheme() })
+      applyTheme()
 
       // ── Combined demo ──────────────────────────────────────────
       const COLUMNS = [

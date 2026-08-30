@@ -153,7 +153,7 @@ export class OToggle extends GlassElement {
           top: 3px; bottom: 3px;
           left: 3px;
           width: calc((100% - 6px) / var(--n));
-          background: var(--glass-border);
+          background: var(--glass-indicator);
           border-radius: var(--glass-radius-pill);
           transform: translateX(calc(var(--idx) * 100%));
           transition: transform 0.2s ease;
