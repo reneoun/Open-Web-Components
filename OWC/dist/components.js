@@ -33,6 +33,7 @@
     toast: () => toast,
     installGlobalThemeStyles: () => installGlobalThemeStyles,
     globalThemeCSS: () => globalThemeCSS,
+    glassScrollbarStyles: () => glassScrollbarStyles,
     glassBaseStyles: () => glassBaseStyles,
     asyncPlus: () => asyncPlus,
     THEMES: () => THEMES,
@@ -44,6 +45,7 @@
     OTable: () => OTable,
     OSkeleton: () => OSkeleton,
     OSearch: () => OSearch,
+    OScroll: () => OScroll,
     OProgress: () => OProgress,
     OInput: () => OInput,
     OFFICE_OVERRIDES: () => OFFICE_OVERRIDES,
@@ -84,6 +86,11 @@
     "glass-radius-xl": "12px",
     "glass-radius-2xl": "16px",
     "glass-radius-pill": "999px",
+    "glass-scroll-thumb": "rgba(255,255,255,0.28)",
+    "glass-scroll-thumb-hover": "rgba(255,255,255,0.5)",
+    "glass-scroll-track": "rgba(255,255,255,0.06)",
+    "glass-scroll-size": "9px",
+    "glass-scroll-radius": "5px",
     "glass-font": "sans-serif",
     "glass-press": "scale(0.97)",
     "glass-progress": "rgba(74,222,128,0.85)",
@@ -97,7 +104,10 @@
     "glass-text-muted": "rgba(0,40,0,0.5)",
     "glass-text-dim": "rgba(0,40,0,0.3)",
     "accent-warm": "rgba(22,163,74,0.7)",
-    "glass-shadow": "0 8px 32px rgba(0,0,0,0.06)"
+    "glass-shadow": "0 8px 32px rgba(0,0,0,0.06)",
+    "glass-scroll-thumb": "rgba(0,40,0,0.28)",
+    "glass-scroll-thumb-hover": "rgba(0,40,0,0.45)",
+    "glass-scroll-track": "rgba(0,40,0,0.06)"
   };
   var PIXEL_OVERRIDES = {
     "glass-bg": "#26264d",
@@ -127,7 +137,12 @@
     "glass-font": "ui-monospace, 'Courier New', Courier, monospace",
     "glass-press": "translate(4px, 4px)",
     "glass-progress": "#00e436",
-    "glass-progress-glow": "none"
+    "glass-progress-glow": "none",
+    "glass-scroll-thumb": "#0d0d1a",
+    "glass-scroll-thumb-hover": "#ffcc00",
+    "glass-scroll-track": "#3d3d73",
+    "glass-scroll-size": "12px",
+    "glass-scroll-radius": "0"
   };
   var OFFICE_OVERRIDES = {
     "glass-bg": "#ffffff",
@@ -157,7 +172,12 @@
     "glass-font": "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
     "glass-press": "none",
     "glass-progress": "#2f6fb0",
-    "glass-progress-glow": "none"
+    "glass-progress-glow": "none",
+    "glass-scroll-thumb": "#b6c0cc",
+    "glass-scroll-thumb-hover": "#8c99a8",
+    "glass-scroll-track": "#eef1f5",
+    "glass-scroll-size": "10px",
+    "glass-scroll-radius": "2px"
   };
   var THEMES = {
     light: LIGHT_OVERRIDES,
@@ -225,6 +245,33 @@ ${pageDeclList(BASE_TOKENS)}
     d.head.appendChild(style);
     return true;
   }
+  function glassScrollbarStyles(selector = ":host") {
+    return `
+    /* Firefox */
+    ${selector} {
+      scrollbar-width: thin;
+      scrollbar-color: var(--glass-scroll-thumb) var(--glass-scroll-track);
+    }
+    /* Webkit (Chrome, Safari, Edge) */
+    ${selector}::-webkit-scrollbar {
+      width: var(--glass-scroll-size);
+      height: var(--glass-scroll-size);
+    }
+    ${selector}::-webkit-scrollbar-track {
+      background: var(--glass-scroll-track);
+      border-radius: var(--glass-scroll-radius);
+    }
+    ${selector}::-webkit-scrollbar-thumb {
+      background: var(--glass-scroll-thumb);
+      border-radius: var(--glass-scroll-radius);
+      transition: background 0.2s;
+    }
+    ${selector}::-webkit-scrollbar-thumb:hover {
+      background: var(--glass-scroll-thumb-hover);
+    }
+    ${selector}::-webkit-scrollbar-corner { background: transparent; }
+  `;
+  }
 
   class GlassElement extends HTMLElement {
     constructor() {
@@ -235,33 +282,61 @@ ${pageDeclList(BASE_TOKENS)}
 
   // src/core.ts
   console.log("Open Web Components (OWC) Core Module Loaded - René Oun");
+  var OVERLAY_COLORS = {
+    dark: {
+      gridMinor: "rgba(255,255,255,0.22)",
+      gridMajor: "rgba(255,255,255,0.40)",
+      zoneLine: "rgba(251,191,36,0.85)",
+      zoneFill: "rgba(251,191,36,0.12)"
+    },
+    light: {
+      gridMinor: "rgba(0,0,0,0.16)",
+      gridMajor: "rgba(0,0,0,0.30)",
+      zoneLine: "rgba(22,163,74,0.85)",
+      zoneFill: "rgba(22,163,74,0.14)"
+    }
+  };
+  var Z_GRID = 9997;
+  var Z_ZONE = 9998;
+  var Z_DRAGGED = 9999;
+  function makeOverlay(z, kind) {
+    const el = document.createElement("div");
+    el.setAttribute("data-owc-overlay", kind);
+    el.setAttribute("aria-hidden", "true");
+    Object.assign(el.style, {
+      position: "fixed",
+      pointerEvents: "none",
+      zIndex: String(z),
+      transition: "opacity 160ms ease",
+      opacity: "0"
+    });
+    document.body.appendChild(el);
+    return el;
+  }
   var _gridEl = null;
   var _gridFadeOut = null;
-  function showSnapGrid(snap, offsetX = 0, offsetY = 0) {
+  function showSnapGrid(snap, offsetX = 0, offsetY = 0, theme = "dark") {
     if (snap < 8)
       return;
     if (_gridFadeOut) {
       clearTimeout(_gridFadeOut);
       _gridFadeOut = null;
     }
-    if (!_gridEl) {
-      _gridEl = document.createElement("div");
-      Object.assign(_gridEl.style, {
-        position: "fixed",
-        inset: "0",
-        pointerEvents: "none",
-        zIndex: "9998",
-        transition: "opacity 200ms ease",
-        opacity: "0"
-      });
-      document.body.appendChild(_gridEl);
+    if (!_gridEl || !_gridEl.isConnected) {
+      _gridEl = makeOverlay(Z_GRID, "grid");
+      _gridEl.style.inset = "0";
     }
+    const c = OVERLAY_COLORS[theme];
     _gridEl.style.backgroundImage = [
-      `linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)`,
-      `linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)`
+      `linear-gradient(${c.gridMajor} 1px, transparent 1px)`,
+      `linear-gradient(90deg, ${c.gridMajor} 1px, transparent 1px)`,
+      `linear-gradient(${c.gridMinor} 1px, transparent 1px)`,
+      `linear-gradient(90deg, ${c.gridMinor} 1px, transparent 1px)`
     ].join(",");
-    _gridEl.style.backgroundSize = `${snap}px ${snap}px`;
-    _gridEl.style.backgroundPosition = `${offsetX % snap}px ${offsetY % snap}px`;
+    _gridEl.style.backgroundSize = `${snap * 5}px ${snap * 5}px, ${snap * 5}px ${snap * 5}px, ${snap}px ${snap}px, ${snap}px ${snap}px`;
+    const ox = (offsetX % snap + snap) % snap;
+    const oy = (offsetY % snap + snap) % snap;
+    _gridEl.style.backgroundPosition = `${ox}px ${oy}px, ${ox}px ${oy}px, ${ox}px ${oy}px, ${ox}px ${oy}px`;
     _gridEl.offsetHeight;
     _gridEl.style.opacity = "1";
   }
@@ -275,6 +350,43 @@ ${pageDeclList(BASE_TOKENS)}
       if (_gridEl === el)
         _gridEl = null;
       _gridFadeOut = null;
+    }, 220);
+  }
+  var _zoneEl = null;
+  var _zoneFadeOut = null;
+  function showDropZone(rect, theme = "dark") {
+    if (_zoneFadeOut) {
+      clearTimeout(_zoneFadeOut);
+      _zoneFadeOut = null;
+    }
+    if (!_zoneEl || !_zoneEl.isConnected)
+      _zoneEl = makeOverlay(Z_ZONE, "dropzone");
+    const c = OVERLAY_COLORS[theme];
+    Object.assign(_zoneEl.style, {
+      left: `${Math.round(rect.x)}px`,
+      top: `${Math.round(rect.y)}px`,
+      width: `${Math.round(rect.width)}px`,
+      height: `${Math.round(rect.height)}px`,
+      borderStyle: "dashed",
+      borderWidth: "2px",
+      borderColor: c.zoneLine,
+      borderRadius: "10px",
+      background: c.zoneFill,
+      boxSizing: "border-box"
+    });
+    _zoneEl.offsetHeight;
+    _zoneEl.style.opacity = "1";
+  }
+  function hideDropZone() {
+    if (!_zoneEl)
+      return;
+    _zoneEl.style.opacity = "0";
+    const el = _zoneEl;
+    _zoneFadeOut = setTimeout(() => {
+      el.remove();
+      if (_zoneEl === el)
+        _zoneEl = null;
+      _zoneFadeOut = null;
     }, 220);
   }
 
@@ -309,24 +421,71 @@ ${pageDeclList(BASE_TOKENS)}
       });
     }
   }
+  var INTERACTIVE = "select,button,input,textarea,a,label,summary,[contenteditable]";
 
   class OWCPanel extends GlassElement {
     static get observedAttributes() {
-      return ["move", "snap", "resize"];
+      return ["move", "snap", "resize", "handle"];
     }
     dragStart = null;
     dragOffset = { x: 0, y: 0 };
     resizeStart = null;
+    prevZIndex = "";
+    activeHandle = null;
+    handleWatcher = null;
     constructor() {
       super();
     }
     connectedCallback() {
       this.render();
+      this.addEventListener("mousedown", this.onHostMouseDown);
+      this.watchForHandle();
+    }
+    disconnectedCallback() {
+      this.removeEventListener("mousedown", this.onHostMouseDown);
+      this.handleWatcher?.disconnect();
+      this.handleWatcher = null;
     }
     attributeChangedCallback() {
-      if (this.isConnected)
+      if (this.isConnected) {
         this.render();
+        this.watchForHandle();
+      }
     }
+    get lightHandle() {
+      const sel = this.getAttribute("handle");
+      return sel ? this.querySelector(sel) : null;
+    }
+    watchForHandle() {
+      this.handleWatcher?.disconnect();
+      this.handleWatcher = null;
+      if (!this.getAttribute("handle") || this.lightHandle)
+        return;
+      this.handleWatcher = new MutationObserver(() => {
+        if (this.lightHandle) {
+          this.handleWatcher?.disconnect();
+          this.handleWatcher = null;
+          this.render();
+        }
+      });
+      this.handleWatcher.observe(this, { childList: true, subtree: true });
+    }
+    onHostMouseDown = (e) => {
+      if (!this.hasAttribute("move") || !this.getAttribute("handle"))
+        return;
+      if (this.dragStart)
+        return;
+      const target = e.target;
+      const handle = this.lightHandle;
+      if (!target || !handle)
+        return;
+      if (!handle.contains(target))
+        return;
+      if (target.closest(INTERACTIVE))
+        return;
+      this.activeHandle = handle;
+      this.onDragStart(e);
+    };
     get snapSize() {
       const v = parseInt(this.getAttribute("snap") ?? "1");
       return isNaN(v) || v < 1 ? 1 : v;
@@ -338,6 +497,13 @@ ${pageDeclList(BASE_TOKENS)}
     render() {
       const hasDrag = this.hasAttribute("move");
       const hasResize = this.hasAttribute("resize");
+      const light = hasDrag ? this.lightHandle : null;
+      const showGrip = hasDrag && !light;
+      if (light) {
+        light.style.cursor = "grab";
+        light.style.userSelect = "none";
+        light.style.webkitUserSelect = "none";
+      }
       const prev = this.shadowRoot.querySelector(".panel");
       const savedW = prev?.style.width ?? "";
       const savedH = prev?.style.height ?? "";
@@ -350,7 +516,6 @@ ${pageDeclList(BASE_TOKENS)}
                     border: var(--glass-border-width) solid var(--glass-border);
                     backdrop-filter: var(--glass-backdrop);
                     -webkit-backdrop-filter: var(--glass-backdrop);
-                    padding: 16px;
                     margin: 8px;
                     border-radius: var(--glass-radius);
                     min-width: 120px;
@@ -361,7 +526,22 @@ ${pageDeclList(BASE_TOKENS)}
                     font-size: 14px;
                     box-shadow: var(--glass-elevation);
                     box-sizing: border-box;
+                    /* NOT the scroller: the drag/resize handles are absolutely
+                       positioned in here, and children of a scrolling box scroll
+                       with its content. .content scrolls instead. */
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
                 }
+                .content {
+                    padding: 16px;
+                    flex: 1 1 auto;
+                    min-height: 0;      /* let it shrink inside the flex column */
+                    overflow: auto;
+                }
+                /* Keep the scrollbars clear of the resize strips, which sit on the
+                   panel's right/bottom edges. */
+                .panel.has-resize > .content { margin-right: 6px; margin-bottom: 6px; }
                 .move-handle {
                     position: absolute; top: 6px; right: 8px;
                     background: var(--glass-hover); border: var(--glass-border-width) solid var(--glass-border);
@@ -389,10 +569,11 @@ ${pageDeclList(BASE_TOKENS)}
                 }
                 .resize-e:hover, .resize-s:hover { background: var(--glass-border); }
                 .resize-se:hover { border-color: var(--glass-text-muted); }
+                ${glassScrollbarStyles(".content")}
             </style>
-            <div class="panel" role="region">
-                ${hasDrag ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
-                <slot></slot>
+            <div class="panel${hasResize ? " has-resize" : ""}" role="region">
+                ${showGrip ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
+                <div class="content"><slot></slot></div>
                 ${hasResize ? `
                     <div class="resize-e"  data-edge="e"></div>
                     <div class="resize-s"  data-edge="s"></div>
@@ -407,19 +588,55 @@ ${pageDeclList(BASE_TOKENS)}
         panel.style.height = savedH;
       if (this.dragOffset.x || this.dragOffset.y)
         this.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
-      if (hasDrag) {
+      if (showGrip) {
         this.shadowRoot.querySelector(".move-handle").addEventListener("mousedown", this.onDragStart);
       }
       if (hasResize) {
         this.shadowRoot.querySelectorAll("[data-edge]").forEach((el) => el.addEventListener("mousedown", this.onResizeStart));
       }
     }
+    get overlayTheme() {
+      if (this.getAttribute("theme") === "light")
+        return "light";
+      if (this.hasAttribute("theme"))
+        return "dark";
+      return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    panelRect() {
+      const el = this.shadowRoot.querySelector(".panel");
+      const r = el ? el.getBoundingClientRect() : this.getBoundingClientRect();
+      return { x: r.left, y: r.top, width: r.width, height: r.height };
+    }
+    emit(name, detail) {
+      this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail }));
+    }
+    updateDropZone(x, y) {
+      let zone = this.panelRect();
+      this.emit("o-drag-move", {
+        x,
+        y,
+        rect: { ...zone },
+        setDropZone: (r) => {
+          zone = r;
+        }
+      });
+      if (zone)
+        showDropZone(zone, this.overlayTheme);
+      else
+        hideDropZone();
+    }
     onDragStart = (e) => {
       e.preventDefault();
-      e.currentTarget.style.cursor = "grabbing";
+      this.activeHandle = this.activeHandle ?? (e.currentTarget instanceof HTMLElement ? e.currentTarget : null);
+      if (this.activeHandle)
+        this.activeHandle.style.cursor = "grabbing";
       this.dragStart = { x: e.screenX - this.dragOffset.x, y: e.screenY - this.dragOffset.y };
-      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
-      showSnapGrid(this.snapSize, r.left, r.top);
+      this.prevZIndex = this.style.zIndex;
+      this.style.zIndex = String(Z_DRAGGED);
+      const r = this.panelRect();
+      showSnapGrid(this.snapSize, r.x, r.y, this.overlayTheme);
+      this.emit("o-drag-start", { x: this.dragOffset.x, y: this.dragOffset.y, rect: r });
+      this.updateDropZone(this.dragOffset.x, this.dragOffset.y);
       document.addEventListener("mousemove", this.onDragMove);
       document.addEventListener("mouseup", this.onDragEnd);
     };
@@ -430,15 +647,25 @@ ${pageDeclList(BASE_TOKENS)}
       const y = this.snapTo(e.screenY - this.dragStart.y);
       this.dragOffset = { x, y };
       this.style.transform = `translate(${x}px, ${y}px)`;
+      this.updateDropZone(x, y);
     };
     onDragEnd = () => {
+      if (!this.dragStart)
+        return;
       this.dragStart = null;
-      const handle = this.shadowRoot.querySelector(".move-handle");
-      if (handle)
-        handle.style.cursor = "grab";
+      if (this.activeHandle)
+        this.activeHandle.style.cursor = "grab";
+      this.activeHandle = null;
       hideSnapGrid();
+      hideDropZone();
+      this.style.zIndex = this.prevZIndex;
       document.removeEventListener("mousemove", this.onDragMove);
       document.removeEventListener("mouseup", this.onDragEnd);
+      this.emit("o-drag-end", {
+        x: this.dragOffset.x,
+        y: this.dragOffset.y,
+        rect: this.panelRect()
+      });
     };
     onResizeStart = (e) => {
       e.preventDefault();
@@ -451,8 +678,14 @@ ${pageDeclList(BASE_TOKENS)}
         h: panel.offsetHeight,
         edge: e.currentTarget.dataset.edge
       };
-      const r = this.shadowRoot.querySelector(".panel").getBoundingClientRect();
-      showSnapGrid(this.snapSize, r.left, r.top);
+      const r = this.panelRect();
+      showSnapGrid(this.snapSize, r.x, r.y, this.overlayTheme);
+      showDropZone(r, this.overlayTheme);
+      this.emit("o-resize-start", {
+        width: this.resizeStart.w,
+        height: this.resizeStart.h,
+        edge: this.resizeStart.edge
+      });
       document.addEventListener("mousemove", this.onResizeMove);
       document.addEventListener("mouseup", this.onResizeEnd);
     };
@@ -467,12 +700,22 @@ ${pageDeclList(BASE_TOKENS)}
         panel.style.width = `${Math.max(120, this.snapTo(w + dx))}px`;
       if (edge === "s" || edge === "se")
         panel.style.height = `${Math.max(40, this.snapTo(h + dy))}px`;
+      showDropZone(this.panelRect(), this.overlayTheme);
+      this.emit("o-resize-move", { width: panel.offsetWidth, height: panel.offsetHeight, edge });
     };
     onResizeEnd = () => {
+      if (!this.resizeStart)
+        return;
       this.resizeStart = null;
       hideSnapGrid();
+      hideDropZone();
       document.removeEventListener("mousemove", this.onResizeMove);
       document.removeEventListener("mouseup", this.onResizeEnd);
+      const panel = this.shadowRoot.querySelector(".panel");
+      this.emit("o-resize-end", {
+        width: panel?.offsetWidth ?? 0,
+        height: panel?.offsetHeight ?? 0
+      });
     };
   }
   customElements.define("o-panel", OWCPanel);
@@ -571,6 +814,7 @@ ${pageDeclList(BASE_TOKENS)}
       <style>
         ${glassBaseStyles()}
         :host { display: block; overflow-x: auto; }
+        ${glassScrollbarStyles(":host")}
         table {
           border-collapse: collapse;
           font-family: var(--glass-font); font-size: 14px;
@@ -623,6 +867,13 @@ ${pageDeclList(BASE_TOKENS)}
         .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
         .edit-confirm { color: rgba(74,222,128,0.9); }
         .edit-cancel { color: rgba(248,113,113,0.9); }
+        tr.editing-highlight td { border-left: 3px solid var(--accent-warm); background: rgba(251,191,36,0.06); }
+        tr.edit-row td { background: var(--glass-bg); border-left: 3px solid var(--accent-warm); padding: 12px 14px; }
+        .edit-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        .edit-field { display: flex; flex-direction: column; gap: 4px; }
+        .edit-field label { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
+        .edit-form .cell-input { width: 140px; }
+        .edit-form-actions { display: flex; gap: 4px; align-items: center; margin-left: auto; }
       </style>
       ${(() => {
         const hasClickEditable = this._columns.some((c) => c.editable === "click");
@@ -652,9 +903,11 @@ ${pageDeclList(BASE_TOKENS)}
     }
     renderRow(row, rowIndex, hasClickEditable) {
       const checked = this._selectedRows.has(row) ? " checked" : "";
-      const selectedClass = this._selectedRows.has(row) ? ' class="selected"' : "";
+      const isSelected = this._selectedRows.has(row);
       const checkbox = this.selectable ? `<td><input type="checkbox" data-select-row${checked} aria-label="Select row"></td>` : "";
       const isEditing = this._editingRows.has(row);
+      const trClasses = [isSelected ? "selected" : "", isEditing ? "editing-highlight" : ""].filter(Boolean).join(" ");
+      const trClassAttr = trClasses ? ` class="${trClasses}"` : "";
       let editTd = "";
       if (this.editable && hasClickEditable) {
         editTd = isEditing ? `<td class="edit-actions">
@@ -665,13 +918,35 @@ ${pageDeclList(BASE_TOKENS)}
            </td>`;
       }
       const cells = this._columns.map((c) => {
-        if (this.editable && c.editable && (c.editable === "always" || isEditing)) {
+        if (this.editable && c.editable === "always") {
           const val = String(row[c.key] ?? "").replace(/"/g, "&quot;");
           return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`;
         }
         return `<td>${row[c.key] ?? ""}</td>`;
       }).join("");
-      return `<tr${selectedClass} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`;
+      let result = `<tr${trClassAttr} data-row-index="${rowIndex}">${checkbox}${cells}${editTd}</tr>`;
+      if (isEditing) {
+        const totalCols = this._columns.length + (this.selectable ? 1 : 0) + (hasClickEditable ? 1 : 0);
+        const fields = this._columns.filter((c) => c.editable === "click").map((c) => {
+          const val = String(row[c.key] ?? "").replace(/"/g, "&quot;");
+          return `<div class="edit-field">
+            <label>${c.label}</label>
+            <input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" />
+          </div>`;
+        }).join("");
+        result += `<tr class="edit-row" data-edit-for="${rowIndex}">
+        <td colspan="${totalCols}">
+          <div class="edit-form">
+            ${fields}
+            <div class="edit-form-actions">
+              <button class="edit-confirm" data-row-index="${rowIndex}" title="Confirm">✓</button>
+              <button class="edit-cancel" data-row-index="${rowIndex}" title="Cancel">✗</button>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+      }
+      return result;
     }
     getSortedData() {
       if (!this._sortCol || this._sortDir === "none")
@@ -830,6 +1105,14 @@ ${pageDeclList(BASE_TOKENS)}
             e.stopPropagation();
             const rowIndex = parseInt(btn.dataset.rowIndex);
             const row = this.getSortedData()[rowIndex];
+            this._editingRows.forEach((r) => {
+              const orig = this._rowOriginals.get(r);
+              if (orig) {
+                Object.assign(r, orig);
+                this._rowOriginals.delete(r);
+              }
+            });
+            this._editingRows.clear();
             this._rowOriginals.set(row, { ...row });
             this._editingRows.add(row);
             this.render();
@@ -842,7 +1125,7 @@ ${pageDeclList(BASE_TOKENS)}
             const row = this.getSortedData()[rowIndex];
             const original = this._rowOriginals.get(row) ?? {};
             const changes = {};
-            this.shadowRoot.querySelectorAll(`tr[data-row-index="${rowIndex}"] input.cell-input`).forEach((input) => {
+            this.shadowRoot.querySelectorAll(`tr[data-edit-for="${rowIndex}"] input.cell-input`).forEach((input) => {
               const k = input.dataset.key;
               const col = this._columns.find((c) => c.key === k);
               if (col?.editable === "click") {
@@ -942,6 +1225,7 @@ ${pageDeclList(BASE_TOKENS)}
           min-height: 80px; overflow: hidden;
         }
         .counter { text-align: right; font-size: 11px; color: var(--glass-text-dim); margin-top: 4px; }
+        ${glassScrollbarStyles("textarea")}
       </style>
       <div class="wrap">
         ${label ? `<label>${label}</label>` : ""}
@@ -991,6 +1275,7 @@ ${pageDeclList(BASE_TOKENS)}
           font-size: 12px; font-family: var(--glass-font); outline: none; min-width: 80px;
         }
         .tag-input::placeholder { color: var(--glass-text-dim); }
+        ${glassScrollbarStyles(".body-area")}
       </style>
       <div class="card">
         <input class="title-input" placeholder="Title" />
@@ -2535,6 +2820,42 @@ ${pageDeclList(BASE_TOKENS)}
     }
   }
   customElements.define("o-skeleton", OSkeleton);
+
+  // src/scroll.ts
+  class OScroll extends GlassElement {
+    static get observedAttributes() {
+      return ["direction"];
+    }
+    connectedCallback() {
+      this.render();
+    }
+    attributeChangedCallback() {
+      if (this.isConnected)
+        this.render();
+    }
+    render() {
+      const dir = this.getAttribute("direction") || "y";
+      const overflowX = dir === "x" || dir === "both" ? "auto" : "hidden";
+      const overflowY = dir === "y" || dir === "both" ? "auto" : "hidden";
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host {
+          display: block;
+        }
+        .scroll-area {
+          overflow-x: ${overflowX};
+          overflow-y: ${overflowY};
+          width: 100%;
+          height: 100%;
+        }
+        ${glassScrollbarStyles(".scroll-area")}
+      </style>
+      <div class="scroll-area"><slot></slot></div>
+    `;
+    }
+  }
+  customElements.define("o-scroll", OScroll);
 
   // src/index.ts
   installGlobalThemeStyles();

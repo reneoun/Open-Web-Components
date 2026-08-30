@@ -3,6 +3,7 @@ import {
   BASE_TOKENS, LIGHT_OVERRIDES, PIXEL_OVERRIDES, OFFICE_OVERRIDES, THEMES,
   GLASS_TOKENS, GLASS_TOKENS_LIGHT, GLASS_TOKENS_PIXEL, GLASS_TOKENS_OFFICE,
   glassBaseStyles, globalThemeCSS, installGlobalThemeStyles, GLOBAL_THEME_STYLE_ID,
+  glassScrollbarStyles,
 } from './glass'
 
 const css = glassBaseStyles()
@@ -212,5 +213,67 @@ describe('components consume the tokens', () => {
       expect(rules, `${tag} hardcodes sans-serif`).not.toContain('font-family: sans-serif')
       expect(style.match(/border-radius:\s*\d+px/), `${tag} hardcodes a radius`).toBeNull()
     }
+  })
+})
+
+// The scrollbar tokens arrived with upstream's o-scroll work while the theme
+// refactor was in flight. These pin the merge: upstream's colours must survive
+// byte-for-byte, and the new themes must supply their own instead of inheriting
+// a white-on-white bar that reads as "this panel has no scrollbar".
+describe('scrollbar tokens', () => {
+  const sheet = glassScrollbarStyles('.scroll-area')
+
+  it('keeps upstream dark-glass scrollbar colours untouched', () => {
+    expect(BASE_TOKENS['glass-scroll-thumb']).toBe('rgba(255,255,255,0.28)')
+    expect(BASE_TOKENS['glass-scroll-thumb-hover']).toBe('rgba(255,255,255,0.5)')
+    expect(BASE_TOKENS['glass-scroll-track']).toBe('rgba(255,255,255,0.06)')
+  })
+
+  it('keeps upstream light-theme scrollbar colours untouched', () => {
+    expect(LIGHT_OVERRIDES['glass-scroll-thumb']).toBe('rgba(0,40,0,0.28)')
+    expect(LIGHT_OVERRIDES['glass-scroll-thumb-hover']).toBe('rgba(0,40,0,0.45)')
+    expect(LIGHT_OVERRIDES['glass-scroll-track']).toBe('rgba(0,40,0,0.06)')
+  })
+
+  it('preserves the original 9px/5px geometry as the default', () => {
+    expect(BASE_TOKENS['glass-scroll-size']).toBe('9px')
+    expect(BASE_TOKENS['glass-scroll-radius']).toBe('5px')
+  })
+
+  it('gives pixel a square, chunky bar', () => {
+    expect(PIXEL_OVERRIDES['glass-scroll-radius']).toBe('0')
+    expect(PIXEL_OVERRIDES['glass-scroll-size']).toBe('12px')
+  })
+
+  it('gives office a restrained grey bar', () => {
+    expect(OFFICE_OVERRIDES['glass-scroll-radius']).toBe('2px')
+    expect(OFFICE_OVERRIDES['glass-scroll-thumb']).toBe('#b6c0cc')
+  })
+
+  it('every theme defines all three scrollbar colours', () => {
+    for (const [name, t] of Object.entries(THEMES)) {
+      for (const k of ['glass-scroll-thumb', 'glass-scroll-thumb-hover', 'glass-scroll-track']) {
+        expect(t[k], `${name} is missing --${k}`).toBeTruthy()
+      }
+    }
+  })
+
+  it('drives the generated CSS from tokens, never hard-coded px', () => {
+    expect(sheet).toContain('var(--glass-scroll-thumb)')
+    expect(sheet).toContain('var(--glass-scroll-size)')
+    expect(sheet).toContain('var(--glass-scroll-radius)')
+    expect(sheet).not.toMatch(/width:\s*9px/)
+    expect(sheet).not.toMatch(/border-radius:\s*5px/)
+  })
+
+  it('scopes every rule to the selector it was given', () => {
+    expect(sheet).toContain('.scroll-area::-webkit-scrollbar')
+    expect(sheet).not.toContain(':host::-webkit-scrollbar')
+  })
+
+  it('reaches the page-wide stylesheet too', () => {
+    const page = globalThemeCSS()
+    expect(page).toContain('--owc-glass-scroll-thumb')
+    expect(page).toContain('--owc-glass-scroll-size')
   })
 })
