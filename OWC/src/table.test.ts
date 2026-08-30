@@ -252,21 +252,51 @@ describe('OTable', () => {
       expect(input).toBeNull()
     })
 
-    it('click edit button shows input for click-editable column', () => {
+    it('click edit button shows edit form row below', () => {
       el.shadowRoot.querySelector('.edit-btn').click()
-      const keys = [...el.shadowRoot.querySelectorAll<HTMLInputElement>('input.cell-input')]
+      const editRow = el.shadowRoot.querySelector('tr.edit-row')
+      expect(editRow).not.toBeNull()
+      const keys = [...editRow.querySelectorAll<HTMLInputElement>('input.cell-input')]
         .map(i => i.dataset.key)
       expect(keys).toContain('role')
     })
 
-    it('click edit button shows confirm button', () => {
+    it('click edit button highlights original row', () => {
       el.shadowRoot.querySelector('.edit-btn').click()
-      expect(el.shadowRoot.querySelector('.edit-confirm')).not.toBeNull()
+      const origRow = el.shadowRoot.querySelector('tr.editing-highlight')
+      expect(origRow).not.toBeNull()
     })
 
-    it('click edit button shows cancel button', () => {
+    it('original row stays read-only when editing (click-editable cells)', () => {
       el.shadowRoot.querySelector('.edit-btn').click()
-      expect(el.shadowRoot.querySelector('.edit-cancel')).not.toBeNull()
+      const origRow = el.shadowRoot.querySelector('tr[data-row-index="0"]')
+      const roleInput = origRow.querySelector('input.cell-input[data-key="role"]')
+      expect(roleInput).toBeNull()
+    })
+
+    it('click edit button shows confirm button in edit form row', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const editRow = el.shadowRoot.querySelector('tr.edit-row')
+      expect(editRow.querySelector('.edit-confirm')).not.toBeNull()
+    })
+
+    it('click edit button shows cancel button in edit form row', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const editRow = el.shadowRoot.querySelector('tr.edit-row')
+      expect(editRow.querySelector('.edit-cancel')).not.toBeNull()
+    })
+
+    it('only one row editable at a time', () => {
+      el.data = [
+        { name: 'Alice', role: 'Eng', status: 'Active' },
+        { name: 'Bob', role: 'Design', status: 'Away' }
+      ]
+      el.shadowRoot.querySelector('.edit-btn').click()
+      expect(el.shadowRoot.querySelectorAll('tr.edit-row').length).toBe(1)
+      // After re-render, second row's edit btn is now the only .edit-btn
+      el.shadowRoot.querySelector('.edit-btn').click()
+      expect(el.shadowRoot.querySelectorAll('tr.edit-row').length).toBe(1)
+      expect(el.shadowRoot.querySelector('tr.edit-row').dataset.editFor).toBe('1')
     })
 
     it('fires o-cell-change on blur when always-editable value changed', () => {
@@ -295,20 +325,30 @@ describe('OTable', () => {
       let detail: any = null
       el.addEventListener('o-row-change', (e: any) => { detail = e.detail })
       el.shadowRoot.querySelector('.edit-btn').click()
-      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
+      const editRow = el.shadowRoot.querySelector('tr.edit-row')
+      const input = editRow.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
       input.value = 'Design'
-      el.shadowRoot.querySelector('.edit-confirm').click()
+      editRow.querySelector('.edit-confirm').click()
       expect(detail).not.toBeNull()
       expect(detail.changes).toEqual({ role: 'Design' })
       expect(detail.rowIndex).toBe(0)
       expect(detail.row).toEqual({ name: 'Alice', role: 'Design', status: 'Active' })
     })
 
-    it('cancel restores original row values', () => {
+    it('confirm removes edit form row', () => {
       el.shadowRoot.querySelector('.edit-btn').click()
-      const input = el.shadowRoot.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
+      expect(el.shadowRoot.querySelector('tr.edit-row')).not.toBeNull()
+      el.shadowRoot.querySelector('tr.edit-row .edit-confirm').click()
+      expect(el.shadowRoot.querySelector('tr.edit-row')).toBeNull()
+    })
+
+    it('cancel restores original row values and removes edit row', () => {
+      el.shadowRoot.querySelector('.edit-btn').click()
+      const editRow = el.shadowRoot.querySelector('tr.edit-row')
+      const input = editRow.querySelector<HTMLInputElement>('input.cell-input[data-key="role"]')!
       input.value = 'Design'
-      el.shadowRoot.querySelector('.edit-cancel').click()
+      editRow.querySelector('.edit-cancel').click()
+      expect(el.shadowRoot.querySelector('tr.edit-row')).toBeNull()
       const cells = [...el.shadowRoot.querySelectorAll('tbody tr td')]
       expect(cells[1].textContent).toBe('Eng')
     })

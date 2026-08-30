@@ -1,4 +1,4 @@
-import { GlassElement, glassBaseStyles } from './glass'
+import { GlassElement, glassBaseStyles, glassScrollbarStyles } from './glass'
 
 class ONote extends GlassElement {
   static get observedAttributes() {
@@ -60,6 +60,7 @@ class ONote extends GlassElement {
           min-height: 80px; overflow: hidden;
         }
         .counter { text-align: right; font-size: 11px; color: var(--glass-text-dim); margin-top: 4px; }
+        ${glassScrollbarStyles('textarea')}
       </style>
       <div class="wrap">
         ${label ? `<label>${label}</label>` : ''}
@@ -111,6 +112,7 @@ class ONote extends GlassElement {
           font-size: 12px; font-family: var(--glass-font); outline: none; min-width: 80px;
         }
         .tag-input::placeholder { color: var(--glass-text-dim); }
+        ${glassScrollbarStyles('.body-area')}
       </style>
       <div class="card">
         <input class="title-input" placeholder="Title" />

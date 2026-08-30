@@ -44,6 +44,12 @@ export const BASE_TOKENS: ThemeTokens = {
   'glass-radius-xl': '12px',
   'glass-radius-2xl': '16px',
   'glass-radius-pill': '999px',
+  // scrollbars
+  'glass-scroll-thumb': 'rgba(255,255,255,0.28)',
+  'glass-scroll-thumb-hover': 'rgba(255,255,255,0.5)',
+  'glass-scroll-track': 'rgba(255,255,255,0.06)',
+  'glass-scroll-size': '9px',
+  'glass-scroll-radius': '5px',
   // typography
   'glass-font': 'sans-serif',
   // motion
@@ -63,6 +69,9 @@ export const LIGHT_OVERRIDES: ThemeTokens = {
   'glass-text-dim': 'rgba(0,40,0,0.3)',
   'accent-warm': 'rgba(22,163,74,0.7)',
   'glass-shadow': '0 8px 32px rgba(0,0,0,0.06)',
+  'glass-scroll-thumb': 'rgba(0,40,0,0.28)',
+  'glass-scroll-thumb-hover': 'rgba(0,40,0,0.45)',
+  'glass-scroll-track': 'rgba(0,40,0,0.06)',
 };
 
 /**
@@ -99,6 +108,11 @@ export const PIXEL_OVERRIDES: ThemeTokens = {
   'glass-press': 'translate(4px, 4px)',
   'glass-progress': '#00e436',
   'glass-progress-glow': 'none',
+  'glass-scroll-thumb': '#0d0d1a',
+  'glass-scroll-thumb-hover': '#ffcc00',
+  'glass-scroll-track': '#3d3d73',
+  'glass-scroll-size': '12px',
+  'glass-scroll-radius': '0',
 };
 
 /**
@@ -134,6 +148,11 @@ export const OFFICE_OVERRIDES: ThemeTokens = {
   'glass-press': 'none',
   'glass-progress': '#2f6fb0',
   'glass-progress-glow': 'none',
+  'glass-scroll-thumb': '#b6c0cc',
+  'glass-scroll-thumb-hover': '#8c99a8',
+  'glass-scroll-track': '#eef1f5',
+  'glass-scroll-size': '10px',
+  'glass-scroll-radius': '2px',
 };
 
 /** Every named theme. The key is what you pass to theme="" / data-owc-theme="". */
@@ -212,6 +231,43 @@ export function installGlobalThemeStyles(doc?: Document): boolean {
   style.textContent = globalThemeCSS();
   d.head.appendChild(style);
   return true;
+}
+
+/**
+ * Scrollbars for a scrolling element. Colours come from the glass tokens, so they
+ * follow the theme — the previous hard-coded white-on-white was invisible in light
+ * themes, which read as "this panel has no scrollbar".
+ *
+ * Styling ::-webkit-scrollbar also opts out of macOS overlay scrollbars, so the
+ * bar stays visible instead of fading out after scrolling stops. Both axes are
+ * sized, so horizontal overflow gets a visible bar too.
+ */
+export function glassScrollbarStyles(selector = ':host'): string {
+  return `
+    /* Firefox */
+    ${selector} {
+      scrollbar-width: thin;
+      scrollbar-color: var(--glass-scroll-thumb) var(--glass-scroll-track);
+    }
+    /* Webkit (Chrome, Safari, Edge) */
+    ${selector}::-webkit-scrollbar {
+      width: var(--glass-scroll-size);
+      height: var(--glass-scroll-size);
+    }
+    ${selector}::-webkit-scrollbar-track {
+      background: var(--glass-scroll-track);
+      border-radius: var(--glass-scroll-radius);
+    }
+    ${selector}::-webkit-scrollbar-thumb {
+      background: var(--glass-scroll-thumb);
+      border-radius: var(--glass-scroll-radius);
+      transition: background 0.2s;
+    }
+    ${selector}::-webkit-scrollbar-thumb:hover {
+      background: var(--glass-scroll-thumb-hover);
+    }
+    ${selector}::-webkit-scrollbar-corner { background: transparent; }
+  `;
 }
 
 export class GlassElement extends HTMLElement {

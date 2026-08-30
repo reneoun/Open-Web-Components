@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Web Components</title>
-    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.5.0/OWC/dist/components.js"></script>
     <style>
       html { scroll-behavior: smooth; }
       * { box-sizing: border-box; }
@@ -91,7 +91,15 @@
         align-items: center;
         gap: 4px;
         overflow-x: auto;
+        /* Glass scrollbar */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.15) transparent;
       }
+      #nav::-webkit-scrollbar { width: 6px; height: 6px; }
+      #nav::-webkit-scrollbar-track { background: transparent; }
+      #nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+      #nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+      #nav::-webkit-scrollbar-corner { background: transparent; }
       #nav a {
         color: rgba(255,255,255,0.65);
         text-decoration: none;
@@ -352,8 +360,8 @@
     </div>
 
     <div class="code-wrap" style="margin:12px 0 0;display:inline-block">
-      <div class="code" style="display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
-      <button class="copy-btn" data-copy='<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"></script>'>Copy</button>
+      <div class="code" style="display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.5.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+      <button class="copy-btn" data-copy='<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.5.0/OWC/dist/components.js"></script>'>Copy</button>
     </div>
 
     <!-- Stats bar -->
@@ -612,7 +620,7 @@ search.searchKeys = ["name"]'>Copy</button>
 
     <!-- o-table editable -->
     <h2 id="section-editable">o-table — editable cells</h2>
-    <p class="desc">Inline cell editing. <code>editable="always"</code> shows a persistent input; <code>editable="click"</code> reveals inputs per-row via a pencil button.</p>
+    <p class="desc"><code>editable="always"</code> renders inline inputs. <code>editable="click"</code> opens a form row below the original with label:input pairs. Press ✏️ to edit, ✓ to confirm, ✗ to cancel.</p>
     <o-table id="editable-table" editable></o-table>
     <div id="editable-log" style="margin-top:8px;font-size:12px;opacity:0.6;font-family:monospace;min-height:18px"></div>
     <div class="code-wrap"><div class="code">&lt;o-table editable&gt;&lt;/o-table&gt;
@@ -620,9 +628,9 @@ search.searchKeys = ["name"]'>Copy</button>
 table.columns = [
   { key: 'name', label: 'Name', width: 160, editable: 'always' },
   { key: 'role', label: 'Role', width: 140, editable: 'click'  },
+  { key: 'dept', label: 'Dept', width: 140, editable: 'click'  },
 ]
-table.data = [{ name: 'Alice', role: 'Engineer' }]
-
+// Click ✏️ → form row appears below with editable fields
 table.addEventListener('o-cell-change', e =&gt; console.log(e.detail))
 table.addEventListener('o-row-change',  e =&gt; console.log(e.detail))</div>
       <button class="copy-btn">Copy</button>
@@ -778,7 +786,7 @@ dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
       </div>
       <div data-tab="install" style="font-size:14px;line-height:1.7">
         <div class="ks-label">Via CDN</div>
-        <div class="code" style="margin-bottom:10px">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@92fff59d961dde46aa54e4f4a08a8b8ab7aeab97/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+        <div class="code" style="margin-bottom:10px">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.5.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
         <div class="ks-label">Via npm</div>
         <div class="code">npm install @owc/components</div>
       </div>
@@ -1981,12 +1989,13 @@ function render() {
       editableTable.columns = [
         { key: 'name',   label: 'Name',   width: 160, editable: 'always' },
         { key: 'role',   label: 'Role',   width: 140, editable: 'click'  },
+        { key: 'dept',   label: 'Dept',   width: 140, editable: 'click'  },
         { key: 'status', label: 'Status', width: 100 },
       ]
       editableTable.data = [
-        { name: 'Alice', role: 'Engineer',  status: 'Active'   },
-        { name: 'Bob',   role: 'Designer',  status: 'On leave' },
-        { name: 'Carol', role: 'Manager',   status: 'Active'   },
+        { name: 'Alice', role: 'Engineer',  dept: 'Platform', status: 'Active'   },
+        { name: 'Bob',   role: 'Designer',  dept: 'Product',  status: 'On leave' },
+        { name: 'Carol', role: 'Manager',   dept: 'Ops',      status: 'Active'   },
       ]
       editableTable.addEventListener('o-cell-change', e => {
         editableLog.textContent = `o-cell-change → key: "${e.detail.key}", value: "${e.detail.value}", row ${e.detail.rowIndex}`
