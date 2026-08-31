@@ -1457,6 +1457,18 @@ ${pageResolveList(mode)}
           user-select: none;
           backdrop-filter: var(--glass-backdrop);
         }
+        /* backdrop-filter promotes a th to its own compositing layer, and that
+           layer does not honour the table's border-radius + overflow clip. With
+           square corners the header then paints over the rounded border arc, so
+           the top corners read lighter than the rest of the edge. Giving the two
+           corner headers the table's inner radius keeps the layer on the same
+           curve. max() guards pixel, whose radius is 0 and border is 3px. */
+        thead tr th:first-child {
+          border-top-left-radius: max(0px, calc(var(--glass-radius) - var(--glass-border-width)));
+        }
+        thead tr th:last-child {
+          border-top-right-radius: max(0px, calc(var(--glass-radius) - var(--glass-border-width)));
+        }
         th[data-sortable] { cursor: pointer; }
         tbody tr:hover td { background: var(--glass-hover); }
         .sort-icon { float: right; opacity: 0.5; }

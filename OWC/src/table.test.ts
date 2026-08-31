@@ -462,3 +462,44 @@ describe('row separators', () => {
     t.remove()
   })
 })
+
+describe('rounded corner headers', () => {
+  // happy-dom has no compositor, so the visual defect cannot be asserted here —
+  // the proof is in the browser pass, which measured the top-corner border arc
+  // at +37 luminance against the straight edge on glass-light before this fix
+  // and 0 after. What IS pinnable is the CSS contract behind it: backdrop-filter
+  // promotes a th to its own layer that ignores the table's border-radius +
+  // overflow clip, so the two corner headers must carry the table's inner radius
+  // themselves or their square corners paint over the arc.
+  const css = () => {
+    const t = document.createElement('o-table') as any
+    document.body.appendChild(t)
+    t.columns = [{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }]
+    t.data = [{ name: 'Ada', role: 'Eng' }]
+    const style = t.shadowRoot.querySelector('style').textContent as string
+    document.body.removeChild(t)
+    return style
+  }
+
+  it('rounds the first and last header cells to the table inner radius', () => {
+    const s = css()
+    expect(s).toContain('thead tr th:first-child')
+    expect(s).toContain('thead tr th:last-child')
+    expect(s).toMatch(/border-top-left-radius:\s*max\(/)
+    expect(s).toMatch(/border-top-right-radius:\s*max\(/)
+  })
+
+  it('derives the inner radius from the table radius minus its border', () => {
+    const s = css()
+    const block = s.slice(s.indexOf('thead tr th:first-child'))
+    expect(block).toMatch(/calc\(var\(--glass-radius\)\s*-\s*var\(--glass-border-width\)\)/)
+  })
+
+  it('clamps at zero so a 0-radius theme cannot go negative', () => {
+    // pixel has --glass-radius 0 and --glass-border-width 3px; without max()
+    // the calc resolves to -3px, which is invalid.
+    const s = css()
+    const block = s.slice(s.indexOf('thead tr th:first-child'))
+    expect(block).toMatch(/max\(\s*0px\s*,/)
+  })
+})
