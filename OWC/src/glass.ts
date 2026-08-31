@@ -49,6 +49,14 @@ export const COLOUR_TOKENS = [
   'glass-progress', 'glass-progress-glow',
   'glass-positive', 'glass-negative',
   'glass-page-bg', 'glass-page-text', 'glass-chrome-bg', 'glass-chrome-border',
+  // Charts: a dedicated plate plus six categorical series slots. The plate
+  // exists because a chart cannot sit on the glass panel — that surface
+  // composites to a saturated mid-green where every series colour lands
+  // near 1:1 contrast. Series slots are assigned in fixed order, never
+  // cycled, and each set is validated per surface (see docs in README).
+  'glass-chart-surface', 'glass-grid',
+  'glass-series-1', 'glass-series-2', 'glass-series-3',
+  'glass-series-4', 'glass-series-5', 'glass-series-6',
 ] as const;
 
 const isColour = (k: string) => (COLOUR_TOKENS as readonly string[]).includes(k);
@@ -134,6 +142,14 @@ export const FAMILY_COLOURS: Record<Family, Record<Mode, ThemeTokens>> = {
       'glass-page-text': '#ffffff',
       'glass-chrome-bg': 'rgba(3,54,25,0.78)',
       'glass-chrome-border': 'rgba(255,255,255,0.1)',
+      'glass-chart-surface': '#0a2c20',
+      'glass-grid': '#16402f',
+      'glass-series-1': '#009e5e',
+      'glass-series-2': '#a44996',
+      'glass-series-3': '#ad8300',
+      'glass-series-4': '#c2262d',
+      'glass-series-5': '#3c89e9',
+      'glass-series-6': '#c84704',
     },
     light: {
       'glass-bg': 'rgba(255,255,255,0.62)',
@@ -159,6 +175,14 @@ export const FAMILY_COLOURS: Record<Family, Record<Mode, ThemeTokens>> = {
       'glass-page-text': '#04291b',
       'glass-chrome-bg': 'rgba(233,250,242,0.86)',
       'glass-chrome-border': 'rgba(4,90,60,0.18)',
+      'glass-chart-surface': '#f4fcf8',
+      'glass-grid': '#dceee6',
+      'glass-series-1': '#06b472',
+      'glass-series-2': '#539fff',
+      'glass-series-3': '#b18600',
+      'glass-series-4': '#d677c5',
+      'glass-series-5': '#a22000',
+      'glass-series-6': '#ff6a65',
     },
   },
   pixel: {
@@ -186,6 +210,14 @@ export const FAMILY_COLOURS: Record<Family, Record<Mode, ThemeTokens>> = {
       'glass-page-text': '#fff1e8',
       'glass-chrome-bg': '#000000',
       'glass-chrome-border': '#000000',
+      'glass-chart-surface': '#0d0d1a',
+      'glass-grid': '#24243d',
+      'glass-series-1': '#0065b2',
+      'glass-series-2': '#9b4600',
+      'glass-series-3': '#009f00',
+      'glass-series-4': '#de5a8c',
+      'glass-series-5': '#a59100',
+      'glass-series-6': '#c0002b',
     },
     light: {
       'glass-bg': '#ffffff',
@@ -211,6 +243,14 @@ export const FAMILY_COLOURS: Record<Family, Record<Mode, ThemeTokens>> = {
       'glass-page-text': '#000000',
       'glass-chrome-bg': '#ffffff',
       'glass-chrome-border': '#000000',
+      'glass-chart-surface': '#ffffff',
+      'glass-grid': '#e6ded4',
+      'glass-series-1': '#3dbbff',
+      'glass-series-2': '#ee9300',
+      'glass-series-3': '#cb0033',
+      'glass-series-4': '#00ca00',
+      'glass-series-5': '#f06a9b',
+      'glass-series-6': '#a89400',
     },
   },
   office: {
@@ -238,6 +278,14 @@ export const FAMILY_COLOURS: Record<Family, Record<Mode, ThemeTokens>> = {
       'glass-page-text': '#e6ebf1',
       'glass-chrome-bg': '#1b222b',
       'glass-chrome-border': '#333e4a',
+      'glass-chart-surface': '#1b222b',
+      'glass-grid': '#2b3440',
+      'glass-series-1': '#196ac7',
+      'glass-series-2': '#cf4e12',
+      'glass-series-3': '#584cba',
+      'glass-series-4': '#ba7100',
+      'glass-series-5': '#009c69',
+      'glass-series-6': '#a23c67',
     },
     light: {
       'glass-bg': '#ffffff',
@@ -263,6 +311,14 @@ export const FAMILY_COLOURS: Record<Family, Record<Mode, ThemeTokens>> = {
       'glass-page-text': '#1f2933',
       'glass-chrome-bg': '#ffffff',
       'glass-chrome-border': '#d5dae1',
+      'glass-chart-surface': '#ffffff',
+      'glass-grid': '#e4e8ee',
+      'glass-series-1': '#004ea9',
+      'glass-series-2': '#ff8552',
+      'glass-series-3': '#008755',
+      'glass-series-4': '#eba000',
+      'glass-series-5': '#ce648d',
+      'glass-series-6': '#4c3ca9',
     },
   },
 };

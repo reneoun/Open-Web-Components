@@ -58,6 +58,10 @@ import '@owc/components'
 | [`o-dropzone`](#o-dropzone) | Grid landing area that movable panels snap into |
 | [`o-collapse`](#o-collapse) | Nestable collapsible panel, with group-wide bulk control |
 | [`o-sidebar`](#o-sidebar) | Collapsible side panel that can be fixed; collapses to an icon rail |
+| [`o-tree`](#o-tree) | Collapsible tree, from nested markup or a data array |
+| [`o-bar`](#o-bar) | Bar / column chart for comparing magnitude |
+| [`o-line`](#o-line) | Line chart for trend over time, with a snapping crosshair |
+| [`o-pie`](#o-pie) | Part-to-whole share, capped at six slices |
 
 **Utility:**
 
@@ -801,6 +805,83 @@ Below `breakpoint` the sidebar overlays instead of reserving a gutter and the
 offset drops to `0px`, so a narrow screen keeps its full content width.
 
 ---
+
+### `o-tree`
+
+A collapsible tree. Give it a nested `.data` array, or write `<o-tree-node>`
+markup — either way the whole tree renders inside one shadow root, so
+`tree` / `treeitem` / `group` stays a valid accessibility tree. (Putting each
+item in its own shadow root breaks the structure a screen reader walks.)
+
+```html
+<o-tree selectable label="Project files"></o-tree>
+
+<!-- or declaratively -->
+<o-tree>
+  <o-tree-node label="src" open>
+    <o-tree-node label="index.ts"></o-tree-node>
+  </o-tree-node>
+</o-tree>
+```
+
+```js
+tree.data = [
+  { label: 'src', open: true, children: [{ label: 'index.ts' }] },
+  { label: 'README.md' },
+]
+tree.expandAll(); tree.collapseAll()
+tree.addEventListener('o-tree-select', e => e.detail.label)   // + .path, .node
+tree.addEventListener('o-tree-toggle', e => e.detail.open)
+```
+
+Attributes: `selectable`, `label`, `no-lines`. Keyboard follows the WAI-ARIA
+tree pattern with a roving tabindex — the tree is one tab stop, and
+<kbd>↑</kbd> <kbd>↓</kbd> <kbd>→</kbd> <kbd>←</kbd> <kbd>Home</kbd>
+<kbd>End</kbd> <kbd>Enter</kbd> move within it.
+
+### Charts — `o-bar`, `o-line`, `o-pie`
+
+All three take a `.data` array plus attributes naming the fields, and share
+`chart-title`, `description` and `height`. Every chart ships a hover/focus
+readout and a **table view**, so a value is never reachable only by hovering.
+
+```html
+<o-bar  x="month" y="revenue" chart-title="Revenue by month"></o-bar>
+<o-bar  x="month" series="new,returning" stacked></o-bar>
+<o-line x="day" series="visitors,signups"></o-line>
+<o-pie  label="os" value="users" donut></o-pie>
+```
+
+```js
+bar.data  = [{ month: 'Jan', revenue: 128, new: 41, returning: 87 }]
+line.data = [{ day: 'Mon', visitors: 820, signups: 41 }]
+pie.data  = [{ os: 'macOS', users: 4820 }]
+```
+
+`o-bar` adds `series`, `stacked`, `horizontal`; `o-line` adds `series`, `area`;
+`o-pie` adds `donut` and `max-slices`.
+
+**Colour is theme-driven and deliberately constrained.** Series wear
+`--glass-series-1..6`, defined per family × mode, so charts are correct in all
+six theme combinations for the same reason every other component is. A few
+rules are enforced in the components rather than left to the caller:
+
+- **A single series takes one colour for every bar.** Colouring nominal bars by
+  their own value spends the identity channel re-encoding what bar length
+  already shows.
+- **Slots are assigned in fixed order and never cycled.** A seventh category
+  folds into `Other` instead of inventing a hue that would be
+  indistinguishable to a colour-blind reader.
+- **Colour follows the entity, not its rank** — hiding a series never repaints
+  the survivors.
+- **One y-scale, never two.** Two measures of different magnitude belong in two
+  charts, not on a second axis.
+- Charts render on `--glass-chart-surface`, a dedicated plate. The glass panel
+  composites to a saturated mid-green where every series colour lands near 1:1
+  contrast, which is not a surface you can put marks on.
+
+Each palette was validated per theme surface for lightness band, chroma floor,
+colour-vision separation and contrast — not chosen by eye.
 
 ### `o-skeleton`
 

@@ -418,6 +418,7 @@
       <a href="#section-panel">o-panel</a>
       <a href="#section-dropzone">Drop-zone</a>
       <a href="#section-collapse">o-collapse</a>
+      <a href="#section-tree">o-tree</a>
       <a href="#section-tabs">o-tabs</a>
       <a href="#section-note">o-note</a>
       <span class="sep">·</span>
@@ -427,6 +428,9 @@
       <a href="#section-multisearch">Multi-search</a>
       <a href="#section-skeleton">o-skeleton</a>
       <a href="#section-progress">o-progress</a>
+      <a href="#section-bar">o-bar</a>
+      <a href="#section-line">o-line</a>
+      <a href="#section-pie">o-pie</a>
       <span class="sep">·</span>
       <span class="nav-cat">Search</span>
       <a href="#section-search">o-search</a>
@@ -784,6 +788,36 @@ group.addEventListener('o-collapse-toggle', e =&gt; {
   &lt;/o-collapse&gt;
 &lt;/o-collapse-group&gt;">Copy</button>
     </div>
+<!-- o-tree -->
+    <h2 id="section-tree">o-tree</h2>
+    <p class="desc">A collapsible tree. Feed it a nested <code>.data</code> array or write <code>&lt;o-tree-node&gt;</code> markup — both render through one shadow root so <code>tree</code> / <code>treeitem</code> / <code>group</code> stays a valid accessibility tree. Full arrow-key navigation with a roving tabindex, so the whole tree is one tab stop.</p>
+    <div class="row" style="margin-bottom:10px">
+      <o-button id="tr-expand">Expand all</o-button>
+      <o-button id="tr-collapse">Collapse all</o-button>
+    </div>
+    <o-tree id="demo-tree" selectable label="Project files" style="max-width:420px"></o-tree>
+    <div style="margin-top:8px;font-size:13px;opacity:0.6" id="tr-state">Click a file, or focus the tree and use ↑ ↓ → ←</div>
+    <div class="code-wrap"><div class="code">&lt;o-tree selectable label="Project files"&gt;&lt;/o-tree&gt;
+
+tree.data = [
+  { label: 'src', open: true, children: [
+    { label: 'components', children: [{ label: 'button.ts' }] },
+    { label: 'index.ts' },
+  ]},
+  { label: 'README.md' },
+]
+
+tree.expandAll(); tree.collapseAll()
+
+tree.addEventListener('o-tree-select', e =&gt; {
+  console.log(e.detail.label, e.detail.path)   // 'button.ts', [0,0,0]
+})</div>
+      <button class="copy-btn" data-copy="&lt;o-tree selectable label=&quot;Files&quot;&gt;
+  &lt;o-tree-node label=&quot;src&quot; open&gt;
+    &lt;o-tree-node label=&quot;index.ts&quot;&gt;&lt;/o-tree-node&gt;
+  &lt;/o-tree-node&gt;
+&lt;/o-tree&gt;">Copy</button>
+    </div>
 <!-- o-tabs -->
     <h2 id="section-tabs">o-tabs</h2>
     <p class="desc">Glassmorphic tab bar. Add <code>slot="tab"</code> children with <code>data-value</code> for the tab headers, and <code>data-tab</code> on panel elements for content. Fires <code>o-change</code> with <code>{ value, prev }</code>. Arrow-key navigable.</p>
@@ -1070,6 +1104,63 @@ document.addEventListener('progress-complete', e => {
 })</div>
       <button class="copy-btn">Copy</button>
     </div>
+    <o-collapse open label="Charts">
+<!-- o-bar -->
+    <h2 id="section-bar">o-bar</h2>
+    <p class="desc">Columns for comparing magnitude. A single series wears one colour for every bar — colouring bars by their own value would spend the identity channel re-encoding what bar length already shows. Add <code>series</code> for grouped or <code>stacked</code> bars, <code>horizontal</code> to flip it. Hover or focus a column for the readout; every value is also in the table view.</p>
+    <o-bar id="demo-bar" x="month" y="revenue" chart-title="Revenue by month" description="Net of refunds, thousands of euro" style="max-width:560px"></o-bar>
+    <div style="height:12px"></div>
+    <o-bar id="demo-bar2" x="month" series="new,returning" stacked chart-title="Customers by month" description="Stacked — the gap between segments is the surface, not a border" style="max-width:560px"></o-bar>
+    <div class="code-wrap"><div class="code">&lt;o-bar x="month" y="revenue" chart-title="Revenue by month"&gt;&lt;/o-bar&gt;
+
+bar.data = [
+  { month: 'Jan', revenue: 128, new: 41, returning: 87 },
+  { month: 'Feb', revenue: 156, new: 52, returning: 104 },
+]
+
+&lt;!-- grouped or stacked --&gt;
+&lt;o-bar x="month" series="new,returning" stacked&gt;&lt;/o-bar&gt;
+&lt;o-bar x="month" y="revenue" horizontal&gt;&lt;/o-bar&gt;</div>
+      <button class="copy-btn" data-copy="&lt;o-bar x=&quot;month&quot; y=&quot;revenue&quot; chart-title=&quot;Revenue&quot;&gt;&lt;/o-bar&gt;">Copy</button>
+    </div>
+
+<!-- o-line -->
+    <h2 id="section-line">o-line</h2>
+    <p class="desc">Trend over time. The crosshair snaps to the nearest point and one tooltip reports every series at that x — you aim at a date, never at a 2px stroke. Focus the plot and use ← → for the same readout by keyboard. Add <code>area</code> for a single-series wash.</p>
+    <o-line id="demo-line" x="day" series="visitors,signups" chart-title="Traffic this week" description="Two series, one y-scale — never a second axis" style="max-width:560px"></o-line>
+    <div class="code-wrap"><div class="code">&lt;o-line x="day" series="visitors,signups"
+        chart-title="Traffic this week"&gt;&lt;/o-line&gt;
+
+line.data = [
+  { day: 'Mon', visitors: 820, signups: 41 },
+  { day: 'Tue', visitors: 932, signups: 55 },
+]
+
+&lt;!-- single series with an area wash --&gt;
+&lt;o-line x="day" y="visitors" area&gt;&lt;/o-line&gt;</div>
+      <button class="copy-btn" data-copy="&lt;o-line x=&quot;day&quot; series=&quot;visitors,signups&quot;&gt;&lt;/o-line&gt;">Copy</button>
+    </div>
+
+<!-- o-pie -->
+    <h2 id="section-pie">o-pie</h2>
+    <p class="desc">Part-to-whole, at a glance — and deliberately constrained, because that is all a pie does well. It caps at six slices and folds the tail into <code>Other</code> rather than inventing a seventh colour. For comparing close values, reach for <code>o-bar</code> instead. Add <code>donut</code> for a total in the middle.</p>
+    <div class="row" style="gap:12px;align-items:flex-start">
+      <o-pie id="demo-pie" label="os" value="users" chart-title="Sessions by platform" style="flex:1;min-width:260px;max-width:340px"></o-pie>
+      <o-pie id="demo-pie2" label="os" value="users" donut chart-title="Same data, donut" style="flex:1;min-width:260px;max-width:340px"></o-pie>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;o-pie label="os" value="users" chart-title="Sessions by platform"&gt;&lt;/o-pie&gt;
+
+pie.data = [
+  { os: 'macOS', users: 4820 },
+  { os: 'Windows', users: 3910 },
+  { os: 'Linux', users: 1340 },
+]
+
+&lt;!-- donut, and a tighter cap --&gt;
+&lt;o-pie label="os" value="users" donut max-slices="4"&gt;&lt;/o-pie&gt;</div>
+      <button class="copy-btn" data-copy="&lt;o-pie label=&quot;os&quot; value=&quot;users&quot;&gt;&lt;/o-pie&gt;">Copy</button>
+    </div>
+    </o-collapse>
     </o-collapse>
     <o-collapse open label="Input & Search">
     <o-collapse open label="o-search">
@@ -1618,6 +1709,69 @@ btnExport.addEventListener('o-click', () => {
         logEvent('collapse:toggle', { label: e.detail.label, open: e.detail.open })
       })
       cdRender()
+
+      // ── o-tree ──────────────────────────────────────────────────
+      const demoTree = document.getElementById('demo-tree')
+      demoTree.data = [
+        { label: 'src', icon: '\u{1F4C1}', open: true, children: [
+          { label: 'components', icon: '\u{1F4C1}', children: [
+            { label: 'button.ts', icon: '\u{1F4C4}' },
+            { label: 'table.ts', icon: '\u{1F4C4}' },
+            { label: 'chartkit.ts', icon: '\u{1F4C4}' },
+          ]},
+          { label: 'themes', icon: '\u{1F4C1}', children: [
+            { label: 'glass.ts', icon: '\u{1F4C4}' },
+            { label: 'tokens.css', icon: '\u{1F4C4}' },
+          ]},
+          { label: 'index.ts', icon: '\u{1F4C4}' },
+        ]},
+        { label: 'docs', icon: '\u{1F4C1}', children: [
+          { label: 'getting-started.md', icon: '\u{1F4C4}' },
+          { label: 'theming.md', icon: '\u{1F4C4}' },
+        ]},
+        { label: 'README.md', icon: '\u{1F4C4}' },
+        { label: 'package.json', icon: '\u{1F4C4}' },
+      ]
+      const trState = document.getElementById('tr-state')
+      document.getElementById('tr-expand').addEventListener('o-click', () => demoTree.expandAll())
+      document.getElementById('tr-collapse').addEventListener('o-click', () => demoTree.collapseAll())
+      demoTree.addEventListener('o-tree-select', e => {
+        trState.textContent = `Selected ${e.detail.label} (path ${e.detail.path.join('.')})`
+        logEvent('tree:select', { label: e.detail.label, path: e.detail.path.join('.') })
+      })
+      demoTree.addEventListener('o-tree-toggle', e => {
+        logEvent('tree:toggle', { label: e.detail.node.label, open: e.detail.open })
+      })
+
+      // ── charts ──────────────────────────────────────────────────
+      const months = [
+        { month: 'Jan', revenue: 128, new: 41, returning: 87 },
+        { month: 'Feb', revenue: 156, new: 52, returning: 104 },
+        { month: 'Mar', revenue: 141, new: 38, returning: 103 },
+        { month: 'Apr', revenue: 189, new: 66, returning: 123 },
+        { month: 'May', revenue: 203, new: 71, returning: 132 },
+        { month: 'Jun', revenue: 176, new: 49, returning: 127 },
+      ]
+      document.getElementById('demo-bar').data = months
+      document.getElementById('demo-bar2').data = months
+      document.getElementById('demo-line').data = [
+        { day: 'Mon', visitors: 820, signups: 41 },
+        { day: 'Tue', visitors: 932, signups: 55 },
+        { day: 'Wed', visitors: 1041, signups: 62 },
+        { day: 'Thu', visitors: 980, signups: 48 },
+        { day: 'Fri', visitors: 1180, signups: 77 },
+        { day: 'Sat', visitors: 640, signups: 29 },
+        { day: 'Sun', visitors: 590, signups: 24 },
+      ]
+      const platforms = [
+        { os: 'macOS', users: 4820 },
+        { os: 'Windows', users: 3910 },
+        { os: 'Linux', users: 1340 },
+        { os: 'iOS', users: 980 },
+        { os: 'Android', users: 610 },
+      ]
+      document.getElementById('demo-pie').data = platforms
+      document.getElementById('demo-pie2').data = platforms
 
       // ── Sidebar rail — category initials stay navigable ────────
       // On the rail the links are hidden, so each category header becomes a

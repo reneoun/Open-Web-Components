@@ -31,17 +31,29 @@
   var exports_src = {};
   __export(exports_src, {
     toast: () => toast,
+    svgNS: () => svgNS,
+    seriesVar: () => seriesVar,
     resolveTheme: () => resolveTheme,
     pageWindow: () => pageWindow,
     pageScrollbarStyles: () => pageScrollbarStyles,
+    num: () => num,
+    niceTicks: () => niceTicks,
     installGlobalThemeStyles: () => installGlobalThemeStyles,
     globalThemeCSS: () => globalThemeCSS,
     glassScrollbarStyles: () => glassScrollbarStyles,
     glassBaseStyles: () => glassBaseStyles,
+    fmt: () => fmt,
+    field: () => field,
+    el: () => el,
+    chartBaseStyles: () => chartBaseStyles,
+    barPath: () => barPath,
     asyncPlus: () => asyncPlus,
     THEMES: () => THEMES,
+    SERIES_SLOTS: () => SERIES_SLOTS,
     PIXEL_OVERRIDES: () => PIXEL_OVERRIDES,
     OWCToast: () => OWCToast,
+    OTreeNode: () => OTreeNode,
+    OTree: () => OTree,
     OTooltip: () => OTooltip,
     OToggle: () => OToggle,
     OTabs: () => OTabs,
@@ -51,13 +63,17 @@
     OSearch: () => OSearch,
     OScroll: () => OScroll,
     OProgress: () => OProgress,
+    OPie: () => OPie,
     OPaginator: () => OPaginator,
+    OLine: () => OLine,
     OInput: () => OInput,
     OFFICE_OVERRIDES: () => OFFICE_OVERRIDES,
     ODropdown: () => ODropdown,
     ODropZone: () => ODropZone,
     OCollapseGroup: () => OCollapseGroup,
     OCollapse: () => OCollapse,
+    OChartElement: () => OChartElement,
+    OBar: () => OBar,
     MODES: () => MODES,
     LIGHT_OVERRIDES: () => LIGHT_OVERRIDES,
     LEGACY_ALIASES: () => LEGACY_ALIASES,
@@ -101,7 +117,15 @@
     "glass-page-bg",
     "glass-page-text",
     "glass-chrome-bg",
-    "glass-chrome-border"
+    "glass-chrome-border",
+    "glass-chart-surface",
+    "glass-grid",
+    "glass-series-1",
+    "glass-series-2",
+    "glass-series-3",
+    "glass-series-4",
+    "glass-series-5",
+    "glass-series-6"
   ];
   var isColour = (k) => COLOUR_TOKENS.includes(k);
   var FAMILY_GEOMETRY = {
@@ -170,7 +194,15 @@
         "glass-page-bg": "linear-gradient(135deg, #059669, #065f46)",
         "glass-page-text": "#ffffff",
         "glass-chrome-bg": "rgba(3,54,25,0.78)",
-        "glass-chrome-border": "rgba(255,255,255,0.1)"
+        "glass-chrome-border": "rgba(255,255,255,0.1)",
+        "glass-chart-surface": "#0a2c20",
+        "glass-grid": "#16402f",
+        "glass-series-1": "#009e5e",
+        "glass-series-2": "#a44996",
+        "glass-series-3": "#ad8300",
+        "glass-series-4": "#c2262d",
+        "glass-series-5": "#3c89e9",
+        "glass-series-6": "#c84704"
       },
       light: {
         "glass-bg": "rgba(255,255,255,0.62)",
@@ -195,7 +227,15 @@
         "glass-page-bg": "linear-gradient(135deg, #ecfdf5, #d9f2e4)",
         "glass-page-text": "#04291b",
         "glass-chrome-bg": "rgba(233,250,242,0.86)",
-        "glass-chrome-border": "rgba(4,90,60,0.18)"
+        "glass-chrome-border": "rgba(4,90,60,0.18)",
+        "glass-chart-surface": "#f4fcf8",
+        "glass-grid": "#dceee6",
+        "glass-series-1": "#06b472",
+        "glass-series-2": "#539fff",
+        "glass-series-3": "#b18600",
+        "glass-series-4": "#d677c5",
+        "glass-series-5": "#a22000",
+        "glass-series-6": "#ff6a65"
       }
     },
     pixel: {
@@ -222,7 +262,15 @@
         "glass-page-bg": "#1d2b53",
         "glass-page-text": "#fff1e8",
         "glass-chrome-bg": "#000000",
-        "glass-chrome-border": "#000000"
+        "glass-chrome-border": "#000000",
+        "glass-chart-surface": "#0d0d1a",
+        "glass-grid": "#24243d",
+        "glass-series-1": "#0065b2",
+        "glass-series-2": "#9b4600",
+        "glass-series-3": "#009f00",
+        "glass-series-4": "#de5a8c",
+        "glass-series-5": "#a59100",
+        "glass-series-6": "#c0002b"
       },
       light: {
         "glass-bg": "#ffffff",
@@ -247,7 +295,15 @@
         "glass-page-bg": "#fff1e8",
         "glass-page-text": "#000000",
         "glass-chrome-bg": "#ffffff",
-        "glass-chrome-border": "#000000"
+        "glass-chrome-border": "#000000",
+        "glass-chart-surface": "#ffffff",
+        "glass-grid": "#e6ded4",
+        "glass-series-1": "#3dbbff",
+        "glass-series-2": "#ee9300",
+        "glass-series-3": "#cb0033",
+        "glass-series-4": "#00ca00",
+        "glass-series-5": "#f06a9b",
+        "glass-series-6": "#a89400"
       }
     },
     office: {
@@ -274,7 +330,15 @@
         "glass-page-bg": "#12171d",
         "glass-page-text": "#e6ebf1",
         "glass-chrome-bg": "#1b222b",
-        "glass-chrome-border": "#333e4a"
+        "glass-chrome-border": "#333e4a",
+        "glass-chart-surface": "#1b222b",
+        "glass-grid": "#2b3440",
+        "glass-series-1": "#196ac7",
+        "glass-series-2": "#cf4e12",
+        "glass-series-3": "#584cba",
+        "glass-series-4": "#ba7100",
+        "glass-series-5": "#009c69",
+        "glass-series-6": "#a23c67"
       },
       light: {
         "glass-bg": "#ffffff",
@@ -299,7 +363,15 @@
         "glass-page-bg": "#eef1f5",
         "glass-page-text": "#1f2933",
         "glass-chrome-bg": "#ffffff",
-        "glass-chrome-border": "#d5dae1"
+        "glass-chrome-border": "#d5dae1",
+        "glass-chart-surface": "#ffffff",
+        "glass-grid": "#e4e8ee",
+        "glass-series-1": "#004ea9",
+        "glass-series-2": "#ff8552",
+        "glass-series-3": "#008755",
+        "glass-series-4": "#eba000",
+        "glass-series-5": "#ce648d",
+        "glass-series-6": "#4c3ca9"
       }
     }
   };
@@ -3275,6 +3347,1340 @@ ${pageResolveList(mode)}
   }
   customElements.define("o-skeleton", OSkeleton);
 
+  // src/tree.ts
+  class OTreeNode extends HTMLElement {
+    static get observedAttributes() {
+      return ["label", "open", "icon"];
+    }
+    attributeChangedCallback() {
+      this.closest("o-tree")?.dispatchEvent(new CustomEvent("o-tree-config"));
+    }
+  }
+  var key = (p) => p.join(".");
+
+  class OTree extends GlassElement {
+    static get observedAttributes() {
+      return ["selectable", "label", "lines"];
+    }
+    _data = null;
+    _open = new Set;
+    _seeded = false;
+    _selected = null;
+    _focus = null;
+    get selectable() {
+      return this.hasAttribute("selectable");
+    }
+    set selectable(v) {
+      v ? this.setAttribute("selectable", "") : this.removeAttribute("selectable");
+    }
+    get lines() {
+      return !this.hasAttribute("no-lines");
+    }
+    get data() {
+      return this._data ?? this.fromMarkup();
+    }
+    set data(v) {
+      this._data = Array.isArray(v) ? v : [];
+      this._seeded = false;
+      this.render();
+    }
+    fromMarkup() {
+      const walk = (parent) => Array.from(parent.children).filter((c) => c.tagName === "O-TREE-NODE").map((c) => {
+        const kids = walk(c);
+        return {
+          label: c.getAttribute("label") ?? c.textContent?.trim() ?? "",
+          icon: c.getAttribute("icon") ?? undefined,
+          open: c.hasAttribute("open"),
+          ...kids.length ? { children: kids } : {}
+        };
+      });
+      return walk(this);
+    }
+    _mo = null;
+    connectedCallback() {
+      this.addEventListener("o-tree-config", () => this.render());
+      this.render();
+      queueMicrotask(() => {
+        if (!this._data)
+          this.render();
+      });
+      if (typeof MutationObserver !== "undefined") {
+        this._mo = new MutationObserver(() => {
+          if (!this._data)
+            this.render();
+        });
+        this._mo.observe(this, { childList: true, subtree: true, attributes: true });
+      }
+    }
+    disconnectedCallback() {
+      this._mo?.disconnect();
+      this._mo = null;
+    }
+    attributeChangedCallback() {
+      this.render();
+    }
+    seed(nodes, path = []) {
+      nodes.forEach((n, i) => {
+        const p = [...path, i];
+        if (n.open)
+          this._open.add(key(p));
+        if (n.children)
+          this.seed(n.children, p);
+      });
+    }
+    allBranches(nodes, path = [], out = []) {
+      nodes.forEach((n, i) => {
+        const p = [...path, i];
+        if (n.children?.length) {
+          out.push(key(p));
+          this.allBranches(n.children, p, out);
+        }
+      });
+      return out;
+    }
+    expandAll() {
+      this.allBranches(this.data).forEach((k) => this._open.add(k));
+      this.render();
+    }
+    collapseAll() {
+      this._open.clear();
+      this.render();
+    }
+    toggle(path, force) {
+      const k = key(path);
+      const next = force === undefined ? !this._open.has(k) : force;
+      next ? this._open.add(k) : this._open.delete(k);
+      const node = this.nodeAt(path);
+      if (node)
+        this.dispatchEvent(new CustomEvent("o-tree-toggle", {
+          bubbles: true,
+          composed: true,
+          detail: { node, path, open: next }
+        }));
+      this.render();
+    }
+    nodeAt(path) {
+      let list = this.data, n;
+      for (const i of path) {
+        n = list?.[i];
+        if (!n)
+          return null;
+        list = n.children ?? [];
+      }
+      return n ?? null;
+    }
+    visible(nodes = this.data, path = [], out = []) {
+      nodes.forEach((n, i) => {
+        const p = [...path, i];
+        out.push({ path: p, node: n });
+        if (n.children?.length && this._open.has(key(p)))
+          this.visible(n.children, p, out);
+      });
+      return out;
+    }
+    render() {
+      const root = this.shadowRoot;
+      if (!root)
+        return;
+      const data = this.data;
+      if (!this._seeded && data.length) {
+        this.seed(data);
+        this._seeded = true;
+      }
+      root.innerHTML = "";
+      const style = document.createElement("style");
+      style.textContent = `
+      ${glassBaseStyles()}
+      :host { display: block; font-family: var(--glass-font); color: var(--glass-text); }
+      [role="tree"] { list-style: none; margin: 0; padding: 4px 2px; }
+      [role="group"] { list-style: none; margin: 0; padding: 0; position: relative; }
+      li { position: relative; }
+      .row {
+        display: flex; align-items: center; gap: 6px;
+        padding: 4px 8px; border-radius: var(--glass-radius-sm);
+        cursor: default; font-size: 13px; color: var(--glass-text);
+        border: var(--glass-border-width) solid transparent;
+      }
+      .row:hover { background: var(--glass-hover); }
+      .row:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: -2px; }
+      .row[aria-selected="true"] { background: var(--glass-hover); border-color: var(--glass-border); }
+      .tw {
+        width: 16px; height: 16px; flex: none; display: grid; place-items: center;
+        color: var(--glass-text-muted); font-size: 10px; line-height: 1;
+        transition: transform .15s;
+      }
+      .tw.open { transform: rotate(90deg); }
+      .tw.leaf { visibility: hidden; }
+      .icon { font-size: 12px; opacity: .8; flex: none; }
+      .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .count { color: var(--glass-text-dim); font-size: 11px; margin-left: 2px; }
+      /* Connector rail sits inside the indent, so pixel's 3px borders never
+         double up against a nested row's own edge. */
+      .kids { margin-left: 15px; padding-left: 9px; border-left: 1px solid var(--glass-grid); }
+      .kids.nolines { border-left-color: transparent; }
+      @media (prefers-reduced-motion: reduce) { .tw { transition: none } }
+    `;
+      root.append(style);
+      const tree = document.createElement("ul");
+      tree.setAttribute("role", "tree");
+      tree.setAttribute("aria-label", this.getAttribute("label") || "Tree");
+      root.append(tree);
+      const vis = this.visible();
+      if (!this._focus || !vis.some((v) => key(v.path) === this._focus)) {
+        this._focus = vis.length ? key(vis[0].path) : null;
+      }
+      const build = (nodes, parent, path, level) => {
+        nodes.forEach((n, i) => {
+          const p = [...path, i];
+          const k = key(p);
+          const branch = !!n.children?.length;
+          const open = branch && this._open.has(k);
+          const li = document.createElement("li");
+          const row = document.createElement("div");
+          row.className = "row";
+          row.setAttribute("role", "treeitem");
+          row.setAttribute("aria-level", String(level));
+          row.setAttribute("aria-setsize", String(nodes.length));
+          row.setAttribute("aria-posinset", String(i + 1));
+          if (branch)
+            row.setAttribute("aria-expanded", String(open));
+          if (this.selectable)
+            row.setAttribute("aria-selected", String(this._selected === k));
+          row.tabIndex = this._focus === k ? 0 : -1;
+          row.dataset.path = k;
+          const tw = document.createElement("span");
+          tw.className = `tw${branch ? open ? " open" : "" : " leaf"}`;
+          tw.textContent = "▶";
+          row.append(tw);
+          if (n.icon) {
+            const ic = document.createElement("span");
+            ic.className = "icon";
+            ic.textContent = n.icon;
+            row.append(ic);
+          }
+          const lb = document.createElement("span");
+          lb.className = "label";
+          lb.textContent = n.label;
+          row.append(lb);
+          if (branch) {
+            const c = document.createElement("span");
+            c.className = "count";
+            c.textContent = String(n.children.length);
+            row.append(c);
+          }
+          row.addEventListener("click", () => {
+            this._focus = k;
+            if (branch)
+              this.toggle(p);
+            else
+              this.select(p);
+            if (!branch)
+              this.render();
+          });
+          row.addEventListener("keydown", (e) => this.onKey(e, p, branch, open));
+          li.append(row);
+          if (branch && open) {
+            const g = document.createElement("ul");
+            g.setAttribute("role", "group");
+            g.className = `kids${this.lines ? "" : " nolines"}`;
+            build(n.children, g, p, level + 1);
+            li.append(g);
+          }
+          parent.append(li);
+        });
+      };
+      build(data, tree, [], 1);
+      const active = root.querySelector(`.row[data-path="${this._focus}"]`);
+      if (active && this._movedFocus) {
+        active.focus();
+        this._movedFocus = false;
+      }
+    }
+    _movedFocus = false;
+    select(path) {
+      const k = key(path);
+      this._selected = k;
+      const node = this.nodeAt(path);
+      if (node)
+        this.dispatchEvent(new CustomEvent("o-tree-select", {
+          bubbles: true,
+          composed: true,
+          detail: { node, path, label: node.label }
+        }));
+    }
+    moveTo(k) {
+      this._focus = k;
+      this._movedFocus = true;
+      this.render();
+    }
+    onKey(e, path, branch, open) {
+      const ev = e;
+      const vis = this.visible();
+      const idx = vis.findIndex((v) => key(v.path) === key(path));
+      const go = (i) => {
+        if (vis[i])
+          this.moveTo(key(vis[i].path));
+      };
+      switch (ev.key) {
+        case "ArrowDown":
+          ev.preventDefault();
+          go(idx + 1);
+          break;
+        case "ArrowUp":
+          ev.preventDefault();
+          go(idx - 1);
+          break;
+        case "ArrowRight":
+          ev.preventDefault();
+          if (branch && !open) {
+            this._focus = key(path);
+            this._movedFocus = true;
+            this.toggle(path, true);
+          } else if (branch && open)
+            go(idx + 1);
+          break;
+        case "ArrowLeft":
+          ev.preventDefault();
+          if (branch && open) {
+            this._focus = key(path);
+            this._movedFocus = true;
+            this.toggle(path, false);
+          } else if (path.length > 1)
+            this.moveTo(key(path.slice(0, -1)));
+          break;
+        case "Home":
+          ev.preventDefault();
+          go(0);
+          break;
+        case "End":
+          ev.preventDefault();
+          go(vis.length - 1);
+          break;
+        case "Enter":
+        case " ":
+          ev.preventDefault();
+          if (branch)
+            this.toggle(path);
+          else {
+            this.select(path);
+            this.render();
+          }
+          break;
+      }
+    }
+  }
+  if (!customElements.get("o-tree-node"))
+    customElements.define("o-tree-node", OTreeNode);
+  if (!customElements.get("o-tree"))
+    customElements.define("o-tree", OTree);
+
+  // src/chartkit.ts
+  var SERIES_SLOTS = 6;
+  function seriesVar(i) {
+    return `var(--glass-series-${Math.min(i, SERIES_SLOTS - 1) + 1})`;
+  }
+  var field = (row, key2) => row?.[key2];
+  var num = (v) => {
+    const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
+    return Number.isFinite(n) ? n : 0;
+  };
+  function fmt(n) {
+    if (!Number.isFinite(n))
+      return "—";
+    const abs = Math.abs(n);
+    const dp = abs >= 100 || Number.isInteger(n) ? 0 : abs >= 1 ? 1 : 2;
+    return n.toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  }
+  function niceTicks(min, max, target = 5) {
+    if (!Number.isFinite(min) || !Number.isFinite(max))
+      return [0];
+    if (min === max)
+      return [min];
+    const span = max - min;
+    const raw = span / Math.max(1, target);
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw / mag;
+    const step = (norm >= 7.5 ? 10 : norm >= 3.5 ? 5 : norm >= 1.5 ? 2 : 1) * mag;
+    const lo = Math.floor(min / step) * step;
+    const hi = Math.ceil(max / step) * step;
+    const out = [];
+    for (let v = lo;v <= hi + step / 1000; v += step)
+      out.push(Math.abs(v) < step / 1000 ? 0 : +v.toFixed(10));
+    return out;
+  }
+  function barPath(x, y, w, h, r = 4, horizontal = false) {
+    const rr = Math.max(0, Math.min(r, horizontal ? w : h, w / 2, h / 2));
+    if (h <= 0 || w <= 0)
+      return "";
+    if (rr === 0)
+      return `M${x},${y} H${x + w} V${y + h} H${x} Z`;
+    if (horizontal) {
+      return `M${x},${y} H${x + w - rr} Q${x + w},${y} ${x + w},${y + rr} V${y + h - rr} Q${x + w},${y + h} ${x + w - rr},${y + h} H${x} Z`;
+    }
+    return `M${x},${y + h} V${y + rr} Q${x},${y} ${x + rr},${y} H${x + w - rr} Q${x + w},${y} ${x + w},${y + rr} V${y + h} Z`;
+  }
+  var svgNS = "http://www.w3.org/2000/svg";
+  var el = (name, attrs = {}) => {
+    const n = document.createElementNS(svgNS, name);
+    for (const [k, v] of Object.entries(attrs))
+      n.setAttribute(k, String(v));
+    return n;
+  };
+  function chartBaseStyles() {
+    return `
+    :host {
+      display: block;
+      font-family: var(--glass-font);
+      color: var(--glass-text);
+      container-type: inline-size;
+    }
+    .wrap {
+      background: var(--glass-chart-surface);
+      border: var(--glass-border-width) solid var(--glass-border);
+      border-radius: var(--glass-radius);
+      padding: 14px 16px 12px;
+      box-shadow: var(--glass-elevation);
+    }
+    .title { font-size: 14px; font-weight: 600; margin: 0 0 2px; color: var(--glass-text); }
+    .sub   { font-size: 12px; margin: 0 0 10px; color: var(--glass-text-muted); }
+    svg { display: block; width: 100%; overflow: visible; }
+    .grid  { stroke: var(--glass-grid); stroke-width: 1; }
+    .axis-text {
+      font-size: 11px; fill: var(--glass-text-muted);
+      font-variant-numeric: tabular-nums; font-family: var(--glass-font);
+    }
+    .mark-label {
+      font-size: 11px; fill: var(--glass-text); font-family: var(--glass-font);
+      font-variant-numeric: tabular-nums; pointer-events: none;
+    }
+    .hit { fill: transparent; cursor: default; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 4px 14px;
+      margin-top: 10px; font-size: 12px; color: var(--glass-text-muted);
+    }
+    .legend button {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none; padding: 2px 0; cursor: pointer;
+      font: inherit; color: inherit; font-family: var(--glass-font);
+    }
+    .legend .key { width: 12px; height: 12px; border-radius: var(--glass-radius-xs); flex: none; }
+    .legend .key.line { height: 3px; border-radius: 2px; }
+    .legend button[aria-pressed="false"] { opacity: 0.45; }
+    .tip {
+      position: absolute; pointer-events: none; z-index: 5;
+      background: var(--glass-chrome-bg); color: var(--glass-text);
+      border: var(--glass-border-width) solid var(--glass-border);
+      border-radius: var(--glass-radius-sm);
+      padding: 7px 9px; font-size: 12px; min-width: 96px;
+      box-shadow: var(--glass-shadow); opacity: 0; transition: opacity .12s;
+      font-family: var(--glass-font);
+    }
+    .tip.on { opacity: 1; }
+    .tip .cat { color: var(--glass-text-muted); margin-bottom: 4px; font-size: 11px; }
+    .tip .row { display: flex; align-items: center; gap: 7px; margin-top: 2px; }
+    .tip .k { width: 10px; height: 3px; border-radius: 2px; flex: none; }
+    /* Values lead, labels follow — the reader already has the series. */
+    .tip .v { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .tip .n { color: var(--glass-text-muted); }
+    .host-rel { position: relative; }
+    .tablebtn {
+      margin-top: 8px; background: none; cursor: pointer;
+      border: var(--glass-border-width) solid var(--glass-border);
+      border-radius: var(--glass-radius-sm);
+      color: var(--glass-text-muted); font: inherit; font-size: 11px;
+      padding: 3px 8px; font-family: var(--glass-font);
+    }
+    .tablebtn:hover { background: var(--glass-hover); color: var(--glass-text); }
+    table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 12px; }
+    th, td {
+      text-align: left; padding: 5px 8px; color: var(--glass-text);
+      border-bottom: 1px solid var(--glass-grid); font-variant-numeric: tabular-nums;
+    }
+    th { color: var(--glass-text-muted); font-weight: 500; }
+    .empty { color: var(--glass-text-muted); font-size: 13px; padding: 20px 0; }
+    @media (prefers-reduced-motion: reduce) { .tip { transition: none; } }
+  `;
+  }
+
+  class OChartElement extends GlassElement {
+    _data = [];
+    _showTable = false;
+    _ro = null;
+    _hidden = new Set;
+    get data() {
+      return this._data;
+    }
+    set data(v) {
+      this._data = Array.isArray(v) ? v : [];
+      this.render();
+    }
+    get chartTitle() {
+      return this.getAttribute("chart-title") ?? "";
+    }
+    set chartTitle(v) {
+      this.setAttribute("chart-title", v);
+    }
+    get description() {
+      return this.getAttribute("description") ?? "";
+    }
+    connectedCallback() {
+      this.render();
+      if (typeof ResizeObserver !== "undefined") {
+        this._ro = new ResizeObserver(() => this.render());
+        this._ro.observe(this);
+      }
+    }
+    disconnectedCallback() {
+      this._ro?.disconnect();
+      this._ro = null;
+    }
+    attributeChangedCallback(_n, p, x) {
+      if (p !== x)
+        this.render();
+    }
+    toggleTable = () => {
+      this._showTable = !this._showTable;
+      this.render();
+    };
+    boxWidth() {
+      const w = this.getBoundingClientRect().width || parseFloat(this.getAttribute("width") ?? "") || 520;
+      return Math.max(220, w);
+    }
+  }
+
+  // src/bar.ts
+  var PAD = { top: 14, right: 14, bottom: 30, left: 46 };
+  var MAX_THICK = 24;
+  var GAP = 2;
+
+  class OBar extends OChartElement {
+    static get observedAttributes() {
+      return ["x", "y", "series", "stacked", "horizontal", "chart-title", "description", "height"];
+    }
+    get x() {
+      return this.getAttribute("x") ?? "label";
+    }
+    get y() {
+      return this.getAttribute("y") ?? "value";
+    }
+    get stacked() {
+      return this.hasAttribute("stacked");
+    }
+    get horizontal() {
+      return this.hasAttribute("horizontal");
+    }
+    get series() {
+      const raw = this.getAttribute("series");
+      return raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    }
+    plotHeight() {
+      const h = parseFloat(this.getAttribute("height") ?? "");
+      return Number.isFinite(h) ? h : 220;
+    }
+    render() {
+      const root = this.shadowRoot;
+      if (!root)
+        return;
+      const rows = this._data;
+      const keys = this.series;
+      const multi = keys.length > 0;
+      const shown = multi ? keys.slice(0, SERIES_SLOTS) : [];
+      const folded = multi ? keys.slice(SERIES_SLOTS) : [];
+      const active = shown.filter((k) => !this._hidden.has(k));
+      root.innerHTML = "";
+      const style = document.createElement("style");
+      style.textContent = chartBaseStyles();
+      root.append(style);
+      const wrap = document.createElement("div");
+      wrap.className = "wrap host-rel";
+      root.append(wrap);
+      if (this.chartTitle) {
+        const h = document.createElement("p");
+        h.className = "title";
+        h.textContent = this.chartTitle;
+        wrap.append(h);
+      }
+      if (this.description) {
+        const d = document.createElement("p");
+        d.className = "sub";
+        d.textContent = this.description;
+        wrap.append(d);
+      }
+      if (!rows.length) {
+        const e = document.createElement("div");
+        e.className = "empty";
+        e.textContent = "No data";
+        wrap.append(e);
+        return;
+      }
+      const W = this.boxWidth() - 34;
+      const H = this.plotHeight();
+      const iw = Math.max(60, W - PAD.left - PAD.right);
+      const ih = Math.max(60, H - PAD.top - PAD.bottom);
+      const valueOf = (r, k) => num(r[k]);
+      const totals = rows.map((r) => multi ? this.stacked ? active.reduce((a, k) => a + valueOf(r, k), 0) : Math.max(0, ...active.map((k) => valueOf(r, k))) : num(r[this.y]));
+      const folUnits = folded.length ? rows.map((r) => folded.reduce((a, k) => a + valueOf(r, k), 0)) : rows.map(() => 0);
+      const maxV = Math.max(0, ...totals.map((t, i) => t + (this.stacked ? folUnits[i] : 0)));
+      const ticks = niceTicks(0, maxV || 1);
+      const top = ticks[ticks.length - 1] || 1;
+      const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+      svg.setAttribute("aria-label", this.chartTitle || "Bar chart");
+      wrap.append(svg);
+      for (const t of ticks) {
+        const p = t / top;
+        if (this.horizontal) {
+          const gx = PAD.left + p * iw;
+          svg.append(el("line", { class: "grid", x1: gx, x2: gx, y1: PAD.top, y2: PAD.top + ih }));
+          const lb = el("text", { class: "axis-text", x: gx, y: PAD.top + ih + 16, "text-anchor": "middle" });
+          lb.textContent = fmt(t);
+          svg.append(lb);
+        } else {
+          const gy = PAD.top + ih - p * ih;
+          svg.append(el("line", { class: "grid", x1: PAD.left, x2: PAD.left + iw, y1: gy, y2: gy }));
+          const lb = el("text", { class: "axis-text", x: PAD.left - 8, y: gy + 4, "text-anchor": "end" });
+          lb.textContent = fmt(t);
+          svg.append(lb);
+        }
+      }
+      const band = (this.horizontal ? ih : iw) / rows.length;
+      const groups = multi ? this.stacked ? 1 : active.length || 1 : 1;
+      const thick = Math.min(MAX_THICK, Math.max(3, band * 0.68 / groups - (groups > 1 ? GAP : 0)));
+      const single = !multi || active.length <= 1;
+      rows.forEach((row, ri) => {
+        const cat = String(row[this.x] ?? "");
+        const c0 = ri * band + band / 2;
+        const stackSegs = [];
+        if (multi) {
+          active.forEach((k) => stackSegs.push({ key: k, v: valueOf(row, k), slot: shown.indexOf(k) }));
+          if (folded.length && folUnits[ri] > 0)
+            stackSegs.push({ key: "Other", v: folUnits[ri], slot: SERIES_SLOTS - 1 });
+        } else {
+          stackSegs.push({ key: this.y, v: num(row[this.y]), slot: 0 });
+        }
+        let acc = 0;
+        stackSegs.forEach((seg, si) => {
+          const frac = seg.v / top;
+          const colour = single && !multi ? seriesVar(0) : seriesVar(seg.slot);
+          let px, py, pw, ph;
+          if (this.stacked || stackSegs.length === 1) {
+            const len = Math.max(0, frac * (this.horizontal ? iw : ih) - (si ? GAP : 0));
+            if (this.horizontal) {
+              px = PAD.left + acc / top * iw + (si ? GAP : 0);
+              py = PAD.top + c0 - thick / 2;
+              pw = len;
+              ph = thick;
+            } else {
+              px = PAD.left + c0 - thick / 2;
+              py = PAD.top + ih - acc / top * ih - len - (si ? GAP : 0);
+              pw = thick;
+              ph = len;
+            }
+            acc += seg.v;
+          } else {
+            const off = (si - (stackSegs.length - 1) / 2) * (thick + GAP);
+            if (this.horizontal) {
+              px = PAD.left;
+              py = PAD.top + c0 + off - thick / 2;
+              pw = Math.max(0, frac * iw);
+              ph = thick;
+            } else {
+              px = PAD.left + c0 + off - thick / 2;
+              py = PAD.top + ih - frac * ih;
+              pw = thick;
+              ph = Math.max(0, frac * ih);
+            }
+          }
+          if (pw <= 0 || ph <= 0)
+            return;
+          const isEnd = !this.stacked || si === stackSegs.length - 1;
+          const path = el("path", {
+            d: barPath(px, py, pw, ph, isEnd ? 4 : 0, this.horizontal),
+            fill: colour,
+            class: "mark"
+          });
+          path.setAttribute("data-cat", cat);
+          path.setAttribute("data-key", seg.key);
+          path.setAttribute("data-val", String(seg.v));
+          svg.append(path);
+        });
+        const tx = this.horizontal ? PAD.left - 8 : PAD.left + c0;
+        const ty = this.horizontal ? PAD.top + c0 + 4 : PAD.top + ih + 16;
+        const ct = el("text", {
+          class: "axis-text",
+          x: tx,
+          y: ty,
+          "text-anchor": this.horizontal ? "end" : "middle"
+        });
+        ct.textContent = cat;
+        svg.append(ct);
+        if (!multi) {
+          const v = num(row[this.y]);
+          const txt = fmt(v);
+          const est = txt.length * 6.4;
+          const frac = v / top;
+          if (this.horizontal) {
+            const endX = PAD.left + frac * iw;
+            if (endX + est + 8 < PAD.left + iw + PAD.right) {
+              const l = el("text", { class: "mark-label", x: endX + 6, y: PAD.top + c0 + 4 });
+              l.textContent = txt;
+              svg.append(l);
+            }
+          } else {
+            const endY = PAD.top + ih - frac * ih;
+            if (endY - 6 > PAD.top && thick > 16) {
+              const l = el("text", { class: "mark-label", x: PAD.left + c0, y: endY - 6, "text-anchor": "middle" });
+              l.textContent = txt;
+              svg.append(l);
+            }
+          }
+        }
+        const hit = el("rect", this.horizontal ? { class: "hit", x: PAD.left, y: PAD.top + ri * band, width: iw, height: band } : { class: "hit", x: PAD.left + ri * band, y: PAD.top, width: band, height: ih });
+        hit.setAttribute("data-ri", String(ri));
+        hit.setAttribute("tabindex", "0");
+        hit.setAttribute("role", "button");
+        hit.setAttribute("aria-label", `${cat}: ${stackSegs.map((s) => `${s.key} ${fmt(s.v)}`).join(", ")}`);
+        svg.append(hit);
+      });
+      this.attachTip(wrap, svg, rows, multi ? [...active, ...folded.length ? ["Other"] : []] : [this.y], folded);
+      if (multi && shown.length + (folded.length ? 1 : 0) >= 2) {
+        this.legend(wrap, shown, folded.length > 0);
+      }
+      this.tableView(wrap, rows, multi ? [...shown, ...folded.length ? ["Other"] : []] : [this.y], folUnits);
+    }
+    attachTip(wrap, svg, rows, keys, folded) {
+      const tip = document.createElement("div");
+      tip.className = "tip";
+      wrap.append(tip);
+      const show = (ri, cx, cy) => {
+        const row = rows[ri];
+        if (!row)
+          return;
+        tip.innerHTML = "";
+        const cat = document.createElement("div");
+        cat.className = "cat";
+        cat.textContent = String(row[this.x] ?? "");
+        tip.append(cat);
+        for (const k of keys) {
+          const v = k === "Other" ? folded.reduce((a, f) => a + num(row[f]), 0) : num(row[k]);
+          const r = document.createElement("div");
+          r.className = "row";
+          const key2 = document.createElement("span");
+          key2.className = "k";
+          const slot = k === "Other" ? SERIES_SLOTS - 1 : Math.max(0, this.series.indexOf(k));
+          key2.style.background = seriesVar(this.series.length ? slot : 0);
+          const val = document.createElement("span");
+          val.className = "v";
+          val.textContent = fmt(v);
+          const nm = document.createElement("span");
+          nm.className = "n";
+          nm.textContent = k;
+          r.append(key2, val, nm);
+          tip.append(r);
+        }
+        tip.classList.add("on");
+        const b = wrap.getBoundingClientRect();
+        tip.style.left = `${Math.min(Math.max(6, cx - b.left + 12), b.width - 130)}px`;
+        tip.style.top = `${Math.max(4, cy - b.top - 10)}px`;
+      };
+      const hide = () => tip.classList.remove("on");
+      svg.addEventListener("pointermove", (e) => {
+        const t = e.target.closest(".hit");
+        if (!t)
+          return hide();
+        show(Number(t.getAttribute("data-ri")), e.clientX, e.clientY);
+      });
+      svg.addEventListener("pointerleave", hide);
+      svg.addEventListener("focusin", (e) => {
+        const t = e.target.closest(".hit");
+        if (!t)
+          return;
+        const r = t.getBoundingClientRect();
+        show(Number(t.getAttribute("data-ri")), r.left + r.width / 2, r.top);
+      });
+      svg.addEventListener("focusout", hide);
+    }
+    legend(wrap, keys, hasOther) {
+      const box = document.createElement("div");
+      box.className = "legend";
+      const items = hasOther ? [...keys, "Other"] : keys;
+      items.forEach((k, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        const on = !this._hidden.has(k);
+        b.setAttribute("aria-pressed", String(on));
+        const sw = document.createElement("span");
+        sw.className = "key";
+        sw.style.background = seriesVar(k === "Other" ? SERIES_SLOTS - 1 : i);
+        const t = document.createElement("span");
+        t.textContent = k;
+        b.append(sw, t);
+        if (k !== "Other")
+          b.addEventListener("click", () => {
+            this._hidden.has(k) ? this._hidden.delete(k) : this._hidden.add(k);
+            this.render();
+          });
+        box.append(b);
+      });
+      wrap.append(box);
+    }
+    tableView(wrap, rows, keys, folUnits) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tablebtn";
+      btn.textContent = this._showTable ? "Hide table" : "Show table";
+      btn.setAttribute("aria-expanded", String(this._showTable));
+      btn.addEventListener("click", this.toggleTable);
+      wrap.append(btn);
+      if (!this._showTable)
+        return;
+      const tb = document.createElement("table");
+      const hr = document.createElement("tr");
+      for (const h of [this.x, ...keys]) {
+        const th = document.createElement("th");
+        th.textContent = h;
+        hr.append(th);
+      }
+      tb.append(hr);
+      rows.forEach((r, ri) => {
+        const tr = document.createElement("tr");
+        const c0 = document.createElement("td");
+        c0.textContent = String(r[this.x] ?? "");
+        tr.append(c0);
+        for (const k of keys) {
+          const td = document.createElement("td");
+          td.textContent = fmt(k === "Other" ? folUnits[ri] : num(r[k]));
+          tr.append(td);
+        }
+        tb.append(tr);
+      });
+      wrap.append(tb);
+    }
+  }
+  if (!customElements.get("o-bar"))
+    customElements.define("o-bar", OBar);
+
+  // src/line.ts
+  var PAD2 = { top: 16, right: 52, bottom: 30, left: 48 };
+
+  class OLine extends OChartElement {
+    static get observedAttributes() {
+      return ["x", "y", "series", "area", "chart-title", "description", "height"];
+    }
+    get x() {
+      return this.getAttribute("x") ?? "label";
+    }
+    get y() {
+      return this.getAttribute("y") ?? "value";
+    }
+    get area() {
+      return this.hasAttribute("area");
+    }
+    get series() {
+      const raw = this.getAttribute("series");
+      return raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    }
+    plotHeight() {
+      const h = parseFloat(this.getAttribute("height") ?? "");
+      return Number.isFinite(h) ? h : 220;
+    }
+    render() {
+      const root = this.shadowRoot;
+      if (!root)
+        return;
+      const rows = this._data;
+      const declared = this.series;
+      const keys = declared.length ? declared : [this.y];
+      const shown = keys.slice(0, SERIES_SLOTS);
+      const active = shown.filter((k) => !this._hidden.has(k));
+      root.innerHTML = "";
+      const style = document.createElement("style");
+      style.textContent = chartBaseStyles();
+      root.append(style);
+      const wrap = document.createElement("div");
+      wrap.className = "wrap host-rel";
+      root.append(wrap);
+      if (this.chartTitle) {
+        const h = document.createElement("p");
+        h.className = "title";
+        h.textContent = this.chartTitle;
+        wrap.append(h);
+      }
+      if (this.description) {
+        const d = document.createElement("p");
+        d.className = "sub";
+        d.textContent = this.description;
+        wrap.append(d);
+      }
+      if (!rows.length) {
+        const e = document.createElement("div");
+        e.className = "empty";
+        e.textContent = "No data";
+        wrap.append(e);
+        return;
+      }
+      const W = this.boxWidth() - 34;
+      const H = this.plotHeight();
+      const iw = Math.max(60, W - PAD2.left - PAD2.right);
+      const ih = Math.max(60, H - PAD2.top - PAD2.bottom);
+      const all = active.flatMap((k) => rows.map((r) => num(r[k])));
+      const lo = Math.min(0, ...all);
+      const hi = Math.max(1, ...all);
+      const ticks = niceTicks(lo, hi);
+      const t0 = ticks[0], t1 = ticks[ticks.length - 1];
+      const span = t1 - t0 || 1;
+      const px = (i) => PAD2.left + (rows.length === 1 ? iw / 2 : i / (rows.length - 1) * iw);
+      const py = (v) => PAD2.top + ih - (v - t0) / span * ih;
+      const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+      svg.setAttribute("aria-label", this.chartTitle || "Line chart");
+      wrap.append(svg);
+      for (const t of ticks) {
+        const gy = py(t);
+        svg.append(el("line", { class: "grid", x1: PAD2.left, x2: PAD2.left + iw, y1: gy, y2: gy }));
+        const lb = el("text", { class: "axis-text", x: PAD2.left - 8, y: gy + 4, "text-anchor": "end" });
+        lb.textContent = fmt(t);
+        svg.append(lb);
+      }
+      const every = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor(iw / 62))));
+      rows.forEach((r, i) => {
+        if (i % every && i !== rows.length - 1)
+          return;
+        const lb = el("text", { class: "axis-text", x: px(i), y: PAD2.top + ih + 16, "text-anchor": "middle" });
+        lb.textContent = String(r[this.x] ?? "");
+        svg.append(lb);
+      });
+      const crosshair = el("line", {
+        class: "grid",
+        x1: 0,
+        x2: 0,
+        y1: PAD2.top,
+        y2: PAD2.top + ih,
+        opacity: "0",
+        "stroke-width": "1"
+      });
+      svg.append(crosshair);
+      active.forEach((k) => {
+        const slot = shown.indexOf(k);
+        const colour = seriesVar(slot);
+        const pts = rows.map((r, i) => [px(i), py(num(r[k]))]);
+        const d = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(" ");
+        if (this.area && active.length === 1) {
+          const base = py(Math.max(t0, 0));
+          svg.append(el("path", {
+            d: `${d} L${pts[pts.length - 1][0]},${base} L${pts[0][0]},${base} Z`,
+            fill: colour,
+            opacity: "0.1"
+          }));
+        }
+        svg.append(el("path", {
+          d,
+          fill: "none",
+          stroke: colour,
+          "stroke-width": "2",
+          "stroke-linejoin": "round",
+          "stroke-linecap": "round"
+        }));
+        const last = pts[pts.length - 1];
+        svg.append(el("circle", {
+          cx: last[0],
+          cy: last[1],
+          r: 4.5,
+          fill: colour,
+          stroke: "var(--glass-chart-surface)",
+          "stroke-width": "2"
+        }));
+        if (active.length <= 4) {
+          const l = el("text", { class: "mark-label", x: last[0] + 9, y: last[1] + 4 });
+          l.textContent = fmt(num(rows[rows.length - 1][k]));
+          svg.append(l);
+        }
+      });
+      const dots = [];
+      active.forEach((k) => {
+        const slot = shown.indexOf(k);
+        const c = el("circle", {
+          cx: 0,
+          cy: 0,
+          r: 4,
+          fill: seriesVar(slot),
+          stroke: "var(--glass-chart-surface)",
+          "stroke-width": "2",
+          opacity: "0"
+        });
+        dots.push(c);
+        svg.append(c);
+      });
+      const hit = el("rect", {
+        class: "hit",
+        x: PAD2.left - 4,
+        y: PAD2.top,
+        width: iw + 8,
+        height: ih
+      });
+      hit.setAttribute("tabindex", "0");
+      hit.setAttribute("role", "application");
+      hit.setAttribute("aria-label", `${this.chartTitle || "Line chart"}: use arrow keys to step through points`);
+      svg.append(hit);
+      const tip = document.createElement("div");
+      tip.className = "tip";
+      wrap.append(tip);
+      let idx = -1;
+      const at = (i, clientX, clientY) => {
+        if (i < 0 || i >= rows.length)
+          return;
+        idx = i;
+        const gx = px(i);
+        crosshair.setAttribute("x1", String(gx));
+        crosshair.setAttribute("x2", String(gx));
+        crosshair.setAttribute("opacity", "1");
+        active.forEach((k, di) => {
+          const d = dots[di];
+          d.setAttribute("cx", String(gx));
+          d.setAttribute("cy", String(py(num(rows[i][k]))));
+          d.setAttribute("opacity", "1");
+        });
+        tip.innerHTML = "";
+        const cat = document.createElement("div");
+        cat.className = "cat";
+        cat.textContent = String(rows[i][this.x] ?? "");
+        tip.append(cat);
+        active.forEach((k) => {
+          const r = document.createElement("div");
+          r.className = "row";
+          const key2 = document.createElement("span");
+          key2.className = "k";
+          key2.style.background = seriesVar(shown.indexOf(k));
+          const v = document.createElement("span");
+          v.className = "v";
+          v.textContent = fmt(num(rows[i][k]));
+          const n = document.createElement("span");
+          n.className = "n";
+          n.textContent = k;
+          r.append(key2, v, n);
+          tip.append(r);
+        });
+        tip.classList.add("on");
+        const b = wrap.getBoundingClientRect();
+        const lx = clientX !== undefined ? clientX - b.left : gx;
+        tip.style.left = `${Math.min(Math.max(6, lx + 12), Math.max(6, b.width - 140))}px`;
+        tip.style.top = `${clientY !== undefined ? Math.max(4, clientY - b.top - 10) : PAD2.top}px`;
+      };
+      const off = () => {
+        crosshair.setAttribute("opacity", "0");
+        dots.forEach((d) => d.setAttribute("opacity", "0"));
+        tip.classList.remove("on");
+      };
+      svg.addEventListener("pointermove", (e) => {
+        const b = svg.getBoundingClientRect();
+        const rel = (e.clientX - b.left) / b.width * W;
+        if (rel < PAD2.left - 8 || rel > PAD2.left + iw + 8)
+          return off();
+        const i = rows.length === 1 ? 0 : Math.round((rel - PAD2.left) / iw * (rows.length - 1));
+        at(Math.max(0, Math.min(rows.length - 1, i)), e.clientX, e.clientY);
+      });
+      svg.addEventListener("pointerleave", off);
+      hit.addEventListener("focus", () => at(idx < 0 ? 0 : idx));
+      hit.addEventListener("blur", off);
+      hit.addEventListener("keydown", (e) => {
+        const k = e.key;
+        if (k === "ArrowRight") {
+          e.preventDefault();
+          at(Math.min(rows.length - 1, idx + 1));
+        }
+        if (k === "ArrowLeft") {
+          e.preventDefault();
+          at(Math.max(0, idx - 1));
+        }
+      });
+      if (shown.length >= 2) {
+        const box = document.createElement("div");
+        box.className = "legend";
+        shown.forEach((k, i) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.setAttribute("aria-pressed", String(!this._hidden.has(k)));
+          const sw = document.createElement("span");
+          sw.className = "key line";
+          sw.style.background = seriesVar(i);
+          const t = document.createElement("span");
+          t.textContent = k;
+          b.append(sw, t);
+          b.addEventListener("click", () => {
+            this._hidden.has(k) ? this._hidden.delete(k) : this._hidden.add(k);
+            this.render();
+          });
+          box.append(b);
+        });
+        wrap.append(box);
+      }
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tablebtn";
+      btn.textContent = this._showTable ? "Hide table" : "Show table";
+      btn.setAttribute("aria-expanded", String(this._showTable));
+      btn.addEventListener("click", this.toggleTable);
+      wrap.append(btn);
+      if (this._showTable) {
+        const tb = document.createElement("table");
+        const hr = document.createElement("tr");
+        for (const h of [this.x, ...shown]) {
+          const th = document.createElement("th");
+          th.textContent = h;
+          hr.append(th);
+        }
+        tb.append(hr);
+        rows.forEach((r) => {
+          const tr = document.createElement("tr");
+          const c = document.createElement("td");
+          c.textContent = String(r[this.x] ?? "");
+          tr.append(c);
+          for (const k of shown) {
+            const td = document.createElement("td");
+            td.textContent = fmt(num(r[k]));
+            tr.append(td);
+          }
+          tb.append(tr);
+        });
+        wrap.append(tb);
+      }
+    }
+  }
+  if (!customElements.get("o-line"))
+    customElements.define("o-line", OLine);
+
+  // src/pie.ts
+  var GAP_DEG = 1.2;
+
+  class OPie extends OChartElement {
+    static get observedAttributes() {
+      return ["label", "value", "donut", "max-slices", "chart-title", "description", "height"];
+    }
+    get labelKey() {
+      return this.getAttribute("label") ?? "label";
+    }
+    get valueKey() {
+      return this.getAttribute("value") ?? "value";
+    }
+    get donut() {
+      return this.hasAttribute("donut");
+    }
+    get maxSlices() {
+      const n = parseInt(this.getAttribute("max-slices") ?? "", 10);
+      return Number.isFinite(n) ? Math.max(2, Math.min(SERIES_SLOTS, n)) : SERIES_SLOTS;
+    }
+    plotHeight() {
+      const h = parseFloat(this.getAttribute("height") ?? "");
+      return Number.isFinite(h) ? h : 240;
+    }
+    slices() {
+      const rows = this._data.map((r) => ({
+        label: String(r[this.labelKey] ?? ""),
+        value: num(r[this.valueKey])
+      })).filter((s) => s.value > 0).sort((a, b) => b.value - a.value);
+      const total = rows.reduce((a, s) => a + s.value, 0) || 1;
+      const cap = this.maxSlices;
+      const head = rows.slice(0, rows.length > cap ? cap - 1 : cap);
+      const tail = rows.slice(head.length);
+      const out = head.map((s, i) => ({ ...s, slot: i, pct: s.value / total }));
+      if (tail.length) {
+        const v = tail.reduce((a, s) => a + s.value, 0);
+        out.push({ label: "Other", value: v, slot: SERIES_SLOTS - 1, pct: v / total });
+      }
+      return out;
+    }
+    render() {
+      const root = this.shadowRoot;
+      if (!root)
+        return;
+      root.innerHTML = "";
+      const style = document.createElement("style");
+      style.textContent = chartBaseStyles();
+      root.append(style);
+      const wrap = document.createElement("div");
+      wrap.className = "wrap host-rel";
+      root.append(wrap);
+      if (this.chartTitle) {
+        const h = document.createElement("p");
+        h.className = "title";
+        h.textContent = this.chartTitle;
+        wrap.append(h);
+      }
+      if (this.description) {
+        const d = document.createElement("p");
+        d.className = "sub";
+        d.textContent = this.description;
+        wrap.append(d);
+      }
+      const sl = this.slices();
+      if (!sl.length) {
+        const e = document.createElement("div");
+        e.className = "empty";
+        e.textContent = "No data";
+        wrap.append(e);
+        return;
+      }
+      const W = this.boxWidth() - 34;
+      const H = this.plotHeight();
+      const cx = W / 2, cy = H / 2;
+      const R = Math.max(40, Math.min(cx - 74, cy - 12));
+      const inner = this.donut ? R * 0.58 : 0;
+      const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+      svg.setAttribute("aria-label", this.chartTitle || "Pie chart");
+      wrap.append(svg);
+      const polar = (r, deg) => {
+        const a = (deg - 90) * Math.PI / 180;
+        return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+      };
+      let cur = 0;
+      const total = sl.reduce((a, s) => a + s.value, 0) || 1;
+      sl.forEach((s) => {
+        const sweep = s.value / total * 360;
+        const a0 = cur + GAP_DEG / 2;
+        const a1 = cur + sweep - GAP_DEG / 2;
+        cur += sweep;
+        if (a1 <= a0)
+          return;
+        const large = a1 - a0 > 180 ? 1 : 0;
+        const [x0, y0] = polar(R, a0), [x1, y1] = polar(R, a1);
+        let d;
+        if (inner > 0) {
+          const [ix1, iy1] = polar(inner, a1), [ix0, iy0] = polar(inner, a0);
+          d = `M${x0},${y0} A${R},${R} 0 ${large} 1 ${x1},${y1} L${ix1},${iy1} A${inner},${inner} 0 ${large} 0 ${ix0},${iy0} Z`;
+        } else {
+          d = `M${cx},${cy} L${x0},${y0} A${R},${R} 0 ${large} 1 ${x1},${y1} Z`;
+        }
+        const p = el("path", { d, fill: seriesVar(s.slot), class: "mark" });
+        p.setAttribute("data-label", s.label);
+        p.setAttribute("data-val", String(s.value));
+        p.setAttribute("tabindex", "0");
+        p.setAttribute("role", "button");
+        p.setAttribute("aria-label", `${s.label}: ${fmt(s.value)}, ${(s.pct * 100).toFixed(1)}%`);
+        svg.append(p);
+        if (s.pct >= 0.06) {
+          const mid = (a0 + a1) / 2;
+          const [lx, ly] = polar(R + 14, mid);
+          const anchor = lx < cx - 2 ? "end" : lx > cx + 2 ? "start" : "middle";
+          const t = el("text", {
+            class: "mark-label",
+            x: lx,
+            y: ly + 4,
+            "text-anchor": anchor
+          });
+          t.textContent = `${(s.pct * 100).toFixed(0)}%`;
+          svg.append(t);
+        }
+      });
+      if (this.donut) {
+        const big = el("text", {
+          x: cx,
+          y: cy - 2,
+          "text-anchor": "middle",
+          class: "mark-label",
+          "font-size": "20",
+          "font-weight": "600"
+        });
+        big.textContent = fmt(total);
+        svg.append(big);
+        const cap = el("text", { x: cx, y: cy + 15, "text-anchor": "middle", class: "axis-text" });
+        cap.textContent = "total";
+        svg.append(cap);
+      }
+      const tip = document.createElement("div");
+      tip.className = "tip";
+      wrap.append(tip);
+      const show = (label, clientX, clientY) => {
+        const s = sl.find((z) => z.label === label);
+        if (!s)
+          return;
+        tip.innerHTML = "";
+        const c = document.createElement("div");
+        c.className = "cat";
+        c.textContent = s.label;
+        tip.append(c);
+        const r = document.createElement("div");
+        r.className = "row";
+        const k = document.createElement("span");
+        k.className = "k";
+        k.style.background = seriesVar(s.slot);
+        const v = document.createElement("span");
+        v.className = "v";
+        v.textContent = fmt(s.value);
+        const n = document.createElement("span");
+        n.className = "n";
+        n.textContent = `${(s.pct * 100).toFixed(1)}%`;
+        r.append(k, v, n);
+        tip.append(r);
+        tip.classList.add("on");
+        const b = wrap.getBoundingClientRect();
+        tip.style.left = `${Math.min(Math.max(6, clientX - b.left + 12), Math.max(6, b.width - 140))}px`;
+        tip.style.top = `${Math.max(4, clientY - b.top - 10)}px`;
+      };
+      const hide = () => tip.classList.remove("on");
+      svg.addEventListener("pointermove", (e) => {
+        const t = e.target.closest(".mark");
+        if (!t)
+          return hide();
+        show(t.getAttribute("data-label") ?? "", e.clientX, e.clientY);
+      });
+      svg.addEventListener("pointerleave", hide);
+      svg.addEventListener("focusin", (e) => {
+        const t = e.target.closest(".mark");
+        if (!t)
+          return;
+        const r = t.getBoundingClientRect();
+        show(t.getAttribute("data-label") ?? "", r.left + r.width / 2, r.top + r.height / 2);
+      });
+      svg.addEventListener("focusout", hide);
+      const box = document.createElement("div");
+      box.className = "legend";
+      sl.forEach((s) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("aria-pressed", "true");
+        b.disabled = true;
+        b.style.cursor = "default";
+        const sw = document.createElement("span");
+        sw.className = "key";
+        sw.style.background = seriesVar(s.slot);
+        const t = document.createElement("span");
+        t.textContent = `${s.label} · ${fmt(s.value)}`;
+        b.append(sw, t);
+        box.append(b);
+      });
+      wrap.append(box);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tablebtn";
+      btn.textContent = this._showTable ? "Hide table" : "Show table";
+      btn.setAttribute("aria-expanded", String(this._showTable));
+      btn.addEventListener("click", this.toggleTable);
+      wrap.append(btn);
+      if (this._showTable) {
+        const tb = document.createElement("table");
+        const hr = document.createElement("tr");
+        for (const h of [this.labelKey, this.valueKey, "share"]) {
+          const th = document.createElement("th");
+          th.textContent = h;
+          hr.append(th);
+        }
+        tb.append(hr);
+        sl.forEach((s) => {
+          const tr = document.createElement("tr");
+          const a = document.createElement("td");
+          a.textContent = s.label;
+          const b2 = document.createElement("td");
+          b2.textContent = fmt(s.value);
+          const c2 = document.createElement("td");
+          c2.textContent = `${(s.pct * 100).toFixed(1)}%`;
+          tr.append(a, b2, c2);
+          tb.append(tr);
+        });
+        wrap.append(tb);
+      }
+    }
+  }
+  if (!customElements.get("o-pie"))
+    customElements.define("o-pie", OPie);
+
   // src/collapse.ts
   var uid = 0;
 
@@ -3516,8 +4922,8 @@ ${pageResolveList(mode)}
       this.persist();
     };
     storageArea() {
-      const key = this.getAttribute("storage-key");
-      if (!key)
+      const key2 = this.getAttribute("storage-key");
+      if (!key2)
         return null;
       try {
         return window.localStorage;
@@ -3527,20 +4933,20 @@ ${pageResolveList(mode)}
     }
     persist() {
       const store = this.storageArea();
-      const key = this.getAttribute("storage-key");
-      if (!store || !key)
+      const key2 = this.getAttribute("storage-key");
+      if (!store || !key2)
         return;
       try {
-        store.setItem(key, JSON.stringify(this.openLabels));
+        store.setItem(key2, JSON.stringify(this.openLabels));
       } catch {}
     }
     restore() {
       const store = this.storageArea();
-      const key = this.getAttribute("storage-key");
-      if (!store || !key)
+      const key2 = this.getAttribute("storage-key");
+      if (!store || !key2)
         return;
       try {
-        const raw = store.getItem(key);
+        const raw = store.getItem(key2);
         if (!raw)
           return;
         const labels = JSON.parse(raw);
@@ -3993,7 +5399,7 @@ ${pageResolveList(mode)}
       if (!cells)
         return;
       const idx = cell ? cell.row * this.cols + cell.col : -1;
-      cells.forEach((el, i) => el.classList.toggle("hot", i === idx));
+      cells.forEach((el2, i) => el2.classList.toggle("hot", i === idx));
     }
     render() {
       const total = this.cols * this.rows;
