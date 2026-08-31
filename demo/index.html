@@ -17,7 +17,8 @@
         background: var(--demo-page-tint, none), var(--owc-glass-page-bg, linear-gradient(135deg, #059669, #065f46));
         min-height: 100vh;
         padding: 2rem;
-        padding-top: 4.5rem;
+        padding-left: calc(var(--o-sidebar-offset, 228px) + 2rem);
+        transition: padding-left 0.22s ease;
         font-family: var(--owc-glass-font, sans-serif);
         color: var(--owc-glass-page-text);
         transition: background 0.5s, color 0.3s;
@@ -43,7 +44,7 @@
       body.tint-slate  { --demo-page-tint: linear-gradient(135deg, rgba(51,65,85,0.30), rgba(15,23,42,0.30)); }
 
       h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
-      h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; scroll-margin-top: 52px; }
+      h2 { margin: 2.5rem 0 0.5rem; font-size: 1rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; scroll-margin-top: 12px; }
       .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
       .desc { opacity: 0.6; font-size: 13px; margin: 0 0 10px; }
       .code-wrap { position: relative; margin-top: 10px; }
@@ -76,20 +77,43 @@
       .copy-btn.copied { background: var(--demo-ok-soft); color: var(--demo-ok); border-color: var(--demo-ok-edge); }
 
       /* Sticky nav */
+      /* o-sidebar owns the fixed positioning, chrome and border now; #nav is
+         just the link list living in its light DOM, so every existing
+         `#nav a` selector (scroll-spy, anchor wiring) still resolves. */
       #nav {
-        position: fixed;
-        top: 0; left: 0; right: 0;
-        z-index: 100;
-        background: var(--owc-glass-chrome-bg);
-        backdrop-filter: var(--owc-glass-backdrop);
-        -webkit-backdrop-filter: var(--owc-glass-backdrop);
-        border-bottom: var(--owc-glass-border-width) solid var(--owc-glass-chrome-border);
-        padding: 0 2rem;
-        height: 44px;
         display: flex;
-        align-items: center;
-        gap: 4px;
-        overflow-x: auto;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1px;
+      }
+      /* On the rail full labels would be unreadable slivers, so the links hide
+         and each category collapses to its initial — still visible, still
+         clickable, so navigation stays reachable instead of the rail going dead. */
+      o-sidebar[collapsed] #nav a,
+      o-sidebar[collapsed] #nav-empty { display: none; }
+      o-sidebar[collapsed] #nav { align-items: center; gap: 4px; }
+      o-sidebar[collapsed] .nav-cat {
+        font-size: 0;
+        padding: 0;
+        width: 28px; height: 28px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: var(--owc-glass-radius-sm);
+        border: var(--owc-glass-border-width) solid var(--owc-glass-border);
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      }
+      o-sidebar[collapsed] .nav-cat::before {
+        content: attr(data-short);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--owc-glass-text-muted);
+      }
+      o-sidebar[collapsed] .nav-cat:hover { background: var(--owc-glass-hover); }
+      o-sidebar[collapsed] .nav-cat:hover::before { color: var(--owc-glass-text); }
+      #nav-empty {
+        color: var(--owc-glass-text-dim);
+        font-size: 12px;
+        padding: 8px 10px;
       }
       /* Themed scrollbars for every scrollable region on the page, mirroring
          the library's glassScrollbarStyles() but reading the --owc-glass-*
@@ -107,7 +131,7 @@
         width: var(--owc-glass-scroll-size);
         height: var(--owc-glass-scroll-size);
       }
-      /* The nav is only 44px tall, so it keeps a slimmer bar. */
+      /* The nav list is narrow, so it keeps a slimmer scrollbar. */
       #nav::-webkit-scrollbar { width: 6px; height: 6px; }
       html::-webkit-scrollbar-track,
       body::-webkit-scrollbar-track,
@@ -146,16 +170,20 @@
         color: var(--owc-glass-text-muted);
         text-decoration: none;
         font-size: 12px;
-        padding: 4px 10px;
-        border-radius: var(--owc-glass-radius-pill);
+        padding: 5px 10px;
+        border-radius: var(--owc-glass-radius-sm);
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         transition: background 0.15s, color 0.15s;
       }
+      #nav a[hidden] { display: none; }
       #nav a:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
       #nav span.sep { color: var(--owc-glass-text-dim); font-size: 10px; flex-shrink: 0; }
       #nav .gh-link {
-        margin-left: auto;
+        margin-top: 12px;
         display: flex;
+        justify-content: center;
         align-items: center;
         gap: 6px;
         color: var(--owc-glass-text-muted);
@@ -307,14 +335,21 @@
       }
       .collapse-hint { font-size: 12px; color: var(--owc-glass-text-dim); }
       .nav-cat {
-        font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em;
-        color: var(--owc-glass-text-dim); padding: 0 2px; flex: none;
+        font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+        color: var(--owc-glass-text-dim); padding: 10px 10px 3px; flex: none;
       }
+      .nav-cat:first-child { padding-top: 2px; }
+      /* The dot separators divided a horizontal bar; in a column they are noise. */
+      #nav span.sep { display: none; }
       #nav a.active { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
 
       /* Scroll progress */
+      /* Sat at top:44px to clear the old horizontal nav bar. With the sidebar
+         there is nothing above it, so it returns to the viewport edge and
+         starts after the sidebar gutter instead of running underneath it. */
       #scroll-progress {
-        position: fixed; top: 44px; left: 0; right: 0; z-index: 101;
+        position: fixed; top: 0; right: 0; z-index: 101;
+        left: var(--o-sidebar-offset, 228px);
         height: 2px; background: var(--demo-ok);
         transform-origin: left; transform: scaleX(0);
         transition: transform 0.1s;
@@ -356,6 +391,9 @@
         opacity: 0.5;
       }
       footer a { color: inherit; }
+      @media (prefers-reduced-motion: reduce) {
+        body { transition: none; }
+      }
     </style>
   </head>
   <body>
@@ -365,7 +403,11 @@
     <o-progress></o-progress>
 
     <!-- Sticky navigation -->
-    <nav id="nav">
+    <o-sidebar id="sidebar" fixed side="left" label="Components"
+               width="228" rail-width="52" breakpoint="820">
+      <o-search slot="search" id="nav-search" no-dropdown
+                placeholder="Filter components..."></o-search>
+      <nav id="nav">
       <span class="nav-cat">Basics</span>
       <a href="#section-button">o-button</a>
       <a href="#section-toggle">o-toggle</a>
@@ -375,6 +417,7 @@
       <span class="nav-cat">Layout</span>
       <a href="#section-panel">o-panel</a>
       <a href="#section-dropzone">Drop-zone</a>
+      <a href="#section-collapse">o-collapse</a>
       <a href="#section-tabs">o-tabs</a>
       <a href="#section-note">o-note</a>
       <span class="sep">·</span>
@@ -407,7 +450,9 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
         GitHub
       </a>
-    </nav>
+      </nav>
+      <div id="nav-empty" hidden>No components match.</div>
+    </o-sidebar>
 
     <!-- Hero header -->
     <div class="hero">
@@ -694,6 +739,50 @@ dz.addEventListener('o-drop', e =&gt; {
       <button class="copy-btn" data-copy="&lt;o-dropzone cols=&quot;3&quot; rows=&quot;2&quot; gap=&quot;10&quot;&gt;
   &lt;o-panel move snap=&quot;10&quot;&gt;Drag me&lt;/o-panel&gt;
 &lt;/o-dropzone&gt;">Copy</button>
+    </div>
+<!-- o-collapse -->
+    <h2 id="section-collapse">o-collapse</h2>
+    <p class="desc">Nestable disclosure panels. <code>o-collapse-group</code> adds bulk control — <code>collapseAll()</code>, <code>expandAll()</code>, and <code>collapse(labels)</code> / <code>expand(labels)</code> for a subset. This whole page is built from them. Add <code>accordion</code> to keep one panel open at a time, and <code>storage-key</code> to remember state across visits.</p>
+    <div class="row" style="margin-bottom:10px">
+      <o-button id="cd-expand">Expand all</o-button>
+      <o-button id="cd-collapse">Collapse all</o-button>
+      <o-button id="cd-top">Collapse top level only</o-button>
+      <o-button id="cd-subset">Expand only "Shipping"</o-button>
+    </div>
+    <o-collapse-group id="cd-group" style="max-width:560px;display:block">
+      <o-collapse open label="Order details">
+        <p class="desc" style="margin-top:0">A nested collapse keeps its own state — collapse the parent, reopen it, and the child is exactly as you left it.</p>
+        <o-collapse open label="Items">
+          <div class="row"><o-note style="width:100%">2 × Mechanical keyboard — €178.00</o-note></div>
+        </o-collapse>
+        <o-collapse label="Shipping">
+          <div class="row"><o-note style="width:100%">Ships in 2–3 business days.</o-note></div>
+        </o-collapse>
+      </o-collapse>
+      <o-collapse label="Payment">
+        <div class="row"><o-note style="width:100%">Visa ending 4242.</o-note></div>
+      </o-collapse>
+    </o-collapse-group>
+    <div style="margin-top:8px;font-size:13px;opacity:0.6" id="cd-state"></div>
+    <div class="code-wrap"><div class="code">&lt;o-collapse-group id="group" accordion storage-key="my-panels"&gt;
+  &lt;o-collapse open label="Order details"&gt;
+    &lt;o-collapse label="Shipping"&gt;…nested to any depth…&lt;/o-collapse&gt;
+  &lt;/o-collapse&gt;
+&lt;/o-collapse-group&gt;
+
+group.expandAll()                        // every panel, at every depth
+group.collapseAll({ topLevelOnly: true }) // leave nested state intact
+group.expand(['Shipping'])                // target a subset by label
+group.openLabels                          // read or assign the open set
+
+group.addEventListener('o-collapse-toggle', e =&gt; {
+  console.log(e.detail.label, e.detail.open)
+})</div>
+      <button class="copy-btn" data-copy="&lt;o-collapse-group id=&quot;group&quot;&gt;
+  &lt;o-collapse open label=&quot;Order details&quot;&gt;
+    &lt;o-collapse label=&quot;Shipping&quot;&gt;Nested&lt;/o-collapse&gt;
+  &lt;/o-collapse&gt;
+&lt;/o-collapse-group&gt;">Copy</button>
     </div>
 <!-- o-tabs -->
     <h2 id="section-tabs">o-tabs</h2>
@@ -1508,6 +1597,89 @@ btnExport.addEventListener('o-click', () => {
       document.getElementById('btn-collapse-top')
         .addEventListener('o-click', () => groupEl.collapseAll({ topLevelOnly: true }))
 
+      // ── o-collapse showcase ────────────────────────────────────
+      const cdGroup = document.getElementById('cd-group')
+      const cdState = document.getElementById('cd-state')
+      function cdRender() {
+        const open = cdGroup.openLabels
+        cdState.textContent = open.length
+          ? `Open: ${open.join(', ')}`
+          : 'All panels collapsed'
+      }
+      document.getElementById('cd-expand').addEventListener('o-click', () => { cdGroup.expandAll(); cdRender() })
+      document.getElementById('cd-collapse').addEventListener('o-click', () => { cdGroup.collapseAll(); cdRender() })
+      document.getElementById('cd-top').addEventListener('o-click', () => { cdGroup.collapseAll({ topLevelOnly: true }); cdRender() })
+      document.getElementById('cd-subset').addEventListener('o-click', () => {
+        cdGroup.openLabels = ['Order details', 'Shipping']
+        cdRender()
+      })
+      cdGroup.addEventListener('o-collapse-toggle', e => {
+        cdRender()
+        logEvent('collapse:toggle', { label: e.detail.label, open: e.detail.open })
+      })
+      cdRender()
+
+      // ── Sidebar rail — category initials stay navigable ────────
+      // On the rail the links are hidden, so each category header becomes a
+      // clickable initial jumping to the first section beneath it.
+      document.querySelectorAll('#nav .nav-cat').forEach(cat => {
+        cat.setAttribute('data-short', cat.textContent.trim().charAt(0).toUpperCase())
+        cat.setAttribute('title', cat.textContent.trim())
+        cat.addEventListener('click', () => {
+          let sib = cat.nextElementSibling
+          while (sib && !sib.classList.contains('nav-cat')) {
+            if (sib.tagName === 'A' && sib.getAttribute('href')?.startsWith('#')) { sib.click(); return }
+            sib = sib.nextElementSibling
+          }
+        })
+      })
+
+      // ── Sidebar search — filters the nav list only ─────────────
+      // The page itself is never touched: sections stay mounted and scroll
+      // position is preserved, so clearing the box restores the view exactly.
+      const navSearch = document.getElementById('nav-search')
+      const navEmpty = document.getElementById('nav-empty')
+      const navAnchors = [...document.querySelectorAll('#nav a[href^="#"]')]
+      const navCats = [...document.querySelectorAll('#nav .nav-cat')]
+
+      function filterNav(query) {
+        const q = (query || '').trim().toLowerCase()
+        let shown = 0
+        navAnchors.forEach(a => {
+          // Match the link text (o-table) and the section id (section-table),
+          // so "editable" and "table" both find the editable-table section.
+          const hay = (a.textContent + ' ' + a.getAttribute('href')).toLowerCase()
+          const hit = !q || hay.includes(q)
+          a.hidden = !hit
+          if (hit) shown++
+        })
+        // A category header with nothing under it is noise.
+        navCats.forEach(cat => {
+          let sib = cat.nextElementSibling, any = false
+          while (sib && !sib.classList.contains('nav-cat')) {
+            if (sib.tagName === 'A' && !sib.hidden && sib.getAttribute('href')?.startsWith('#')) { any = true; break }
+            sib = sib.nextElementSibling
+          }
+          cat.hidden = q ? !any : false
+        })
+        navEmpty.hidden = shown > 0
+        return shown
+      }
+
+      navSearch.addEventListener('o-input', e => {
+        filterNav(e.detail.query)
+        logEvent('nav:filter', { query: e.detail.query })
+      })
+
+      // Enter jumps to the first surviving match.
+      navSearch.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return
+        const first = navAnchors.find(a => !a.hidden)
+        if (!first) return
+        e.preventDefault()
+        first.click()
+      })
+
       // ── Scrollspy ──────────────────────────────────────────────
       const navLinks = document.querySelectorAll('#nav a[href^="#"]')
       const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean)
@@ -1533,7 +1705,7 @@ btnExport.addEventListener('o-click', () => {
             if (link) link.classList.add('active')
           }
         })
-      }, { threshold: 0.3, rootMargin: '-48px 0px -60% 0px' })
+      }, { threshold: 0.3, rootMargin: '0px 0px -60% 0px' })
       sections.forEach(s => spy.observe(s))
 
       if (location.hash) {

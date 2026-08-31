@@ -47,6 +47,7 @@
     OTabs: () => OTabs,
     OTable: () => OTable,
     OSkeleton: () => OSkeleton,
+    OSidebar: () => OSidebar,
     OSearch: () => OSearch,
     OScroll: () => OScroll,
     OProgress: () => OProgress,
@@ -3552,6 +3553,307 @@ ${pageResolveList(mode)}
     customElements.define("o-collapse", OCollapse);
   if (!customElements.get("o-collapse-group"))
     customElements.define("o-collapse-group", OCollapseGroup);
+
+  // src/sidebar.ts
+  var uid2 = 0;
+
+  class OSidebar extends GlassElement {
+    static get observedAttributes() {
+      return ["side", "collapsed", "fixed", "width", "rail-width", "label", "breakpoint"];
+    }
+    _id = `os-${++uid2}`;
+    _rendered = false;
+    _mq = null;
+    get side() {
+      return this.getAttribute("side") === "right" ? "right" : "left";
+    }
+    set side(v) {
+      this.setAttribute("side", v);
+    }
+    get collapsed() {
+      return this.hasAttribute("collapsed");
+    }
+    set collapsed(v) {
+      v ? this.setAttribute("collapsed", "") : this.removeAttribute("collapsed");
+    }
+    get fixed() {
+      return this.hasAttribute("fixed");
+    }
+    set fixed(v) {
+      v ? this.setAttribute("fixed", "") : this.removeAttribute("fixed");
+    }
+    get width() {
+      return Math.max(0, parseInt(this.getAttribute("width") ?? "240") || 240);
+    }
+    set width(v) {
+      this.setAttribute("width", String(v));
+    }
+    get railWidth() {
+      return Math.max(0, parseInt(this.getAttribute("rail-width") ?? "52") || 52);
+    }
+    set railWidth(v) {
+      this.setAttribute("rail-width", String(v));
+    }
+    get label() {
+      return this.getAttribute("label") ?? "";
+    }
+    set label(v) {
+      this.setAttribute("label", v);
+    }
+    get breakpoint() {
+      return Math.max(0, parseInt(this.getAttribute("breakpoint") ?? "820") || 820);
+    }
+    set breakpoint(v) {
+      this.setAttribute("breakpoint", String(v));
+    }
+    get overlaying() {
+      return !!this._mq?.matches;
+    }
+    get currentWidth() {
+      return this.collapsed ? this.railWidth : this.width;
+    }
+    connectedCallback() {
+      this.render();
+      this._rendered = true;
+      this.watchViewport();
+      this.publishOffset();
+    }
+    disconnectedCallback() {
+      this._mq?.removeEventListener("change", this.onViewport);
+      this._mq = null;
+      if (this.fixed)
+        document.documentElement.style.removeProperty("--o-sidebar-offset");
+    }
+    attributeChangedCallback(name, prev, next) {
+      if (!this._rendered)
+        return;
+      if (prev === next)
+        return;
+      if (name === "collapsed") {
+        this.sync();
+        this.publishOffset();
+        return;
+      }
+      if (name === "breakpoint") {
+        this.watchViewport();
+        this.publishOffset();
+        return;
+      }
+      this.render();
+      this.publishOffset();
+    }
+    toggle(force) {
+      const next = force === undefined ? !this.collapsed : force;
+      if (next === this.collapsed)
+        return;
+      this.collapsed = next;
+      this.dispatchEvent(new CustomEvent("o-sidebar-toggle", {
+        bubbles: true,
+        composed: true,
+        detail: { collapsed: next }
+      }));
+    }
+    collapse() {
+      this.toggle(true);
+    }
+    expand() {
+      this.toggle(false);
+    }
+    watchViewport() {
+      this._mq?.removeEventListener("change", this.onViewport);
+      if (typeof window.matchMedia !== "function")
+        return;
+      this._mq = window.matchMedia(`(max-width: ${this.breakpoint}px)`);
+      this._mq.addEventListener("change", this.onViewport);
+      this.syncOverlay();
+    }
+    onViewport = () => {
+      this.syncOverlay();
+      this.publishOffset();
+    };
+    syncOverlay() {
+      this.classList.toggle("o-sidebar-overlay", this.overlaying);
+    }
+    publishOffset() {
+      if (!this.fixed)
+        return;
+      const px = this.overlaying ? 0 : this.currentWidth;
+      document.documentElement.style.setProperty("--o-sidebar-offset", `${px}px`);
+    }
+    sync() {
+      const root = this.shadowRoot;
+      if (!root)
+        return;
+      const btn = root.querySelector(".toggle");
+      btn?.setAttribute("aria-expanded", String(!this.collapsed));
+      btn?.setAttribute("title", this.collapsed ? "Expand sidebar" : "Collapse sidebar");
+    }
+    onKey = (e) => {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        this.toggle();
+      }
+    };
+    render() {
+      const root = this.shadowRoot;
+      root.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host {
+          display: block;
+          width: var(--o-sidebar-w);
+          --o-sidebar-w: ${this.width}px;
+          --o-sidebar-rail: ${this.railWidth}px;
+          box-sizing: border-box;
+          transition: width 0.22s ease;
+        }
+        :host([collapsed]) { width: var(--o-sidebar-rail); }
+        :host([hidden]) { display: none; }
+        :host([fixed]) {
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          z-index: 100;
+        }
+        :host([fixed]:not([side="right"])) { left: 0; }
+        :host([fixed][side="right"]) { right: 0; }
+
+        .wrap {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          box-sizing: border-box;
+          background: var(--glass-chrome-bg, var(--glass-bg));
+          backdrop-filter: var(--glass-backdrop);
+          -webkit-backdrop-filter: var(--glass-backdrop);
+          color: var(--glass-text);
+          font-family: var(--glass-font);
+          overflow: hidden;
+        }
+        /* Only the inner edge gets a border — the outer edge is the viewport. */
+        :host(:not([side="right"])) .wrap {
+          border-right: var(--glass-border-width) solid var(--glass-chrome-border, var(--glass-border));
+        }
+        :host([side="right"]) .wrap {
+          border-left: var(--glass-border-width) solid var(--glass-chrome-border, var(--glass-border));
+        }
+
+        .head {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex: none;
+          padding: 10px;
+          box-sizing: border-box;
+          min-height: 44px;
+        }
+        :host([side="right"]) .head { flex-direction: row-reverse; }
+        .title {
+          flex: 1;
+          min-width: 0;
+          font-size: 13px;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          opacity: 1;
+          transition: opacity 0.15s ease;
+        }
+        :host([collapsed]) .title { opacity: 0; pointer-events: none; }
+
+        .toggle {
+          flex: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px; height: 32px;
+          padding: 0;
+          background: none;
+          border: var(--glass-border-width) solid var(--glass-border);
+          border-radius: var(--glass-radius-sm);
+          color: var(--glass-text);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .toggle:hover { background: var(--glass-hover); }
+        .toggle:focus-visible {
+          outline: var(--glass-border-width) solid var(--accent-warm);
+          outline-offset: 2px;
+        }
+        .bars { display: block; width: 14px; height: 10px; position: relative; }
+        .bars::before, .bars::after, .bars > i {
+          content: ''; position: absolute; left: 0; right: 0;
+          height: 2px; background: currentColor;
+        }
+        .bars::before { top: 0; }
+        .bars > i { top: 4px; }
+        .bars::after { bottom: 0; }
+
+        /* Search sits under the header and hides on the rail — a 52px rail
+           cannot show a usable text field, and a clipped one invites typing
+           into something invisible. */
+        .search {
+          flex: none;
+          padding: 0 10px 10px;
+          transition: opacity 0.15s ease;
+        }
+        :host([collapsed]) .search {
+          opacity: 0;
+          pointer-events: none;
+          height: 0;
+          padding: 0;
+          overflow: hidden;
+        }
+
+        .body {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          padding: 0 10px 10px;
+          scrollbar-width: thin;
+          scrollbar-color: var(--glass-scroll-thumb) var(--glass-scroll-track);
+        }
+        .body::-webkit-scrollbar { width: var(--glass-scroll-size); }
+        .body::-webkit-scrollbar-track { background: var(--glass-scroll-track); }
+        .body::-webkit-scrollbar-thumb {
+          background: var(--glass-scroll-thumb);
+          border-radius: var(--glass-scroll-radius);
+        }
+        .body::-webkit-scrollbar-thumb:hover { background: var(--glass-scroll-thumb-hover); }
+        :host([collapsed]) .body { padding: 0 6px 10px; }
+
+        .foot { flex: none; padding: 10px; }
+        :host([collapsed]) .foot { padding: 10px 6px; }
+
+        @media (prefers-reduced-motion: reduce) {
+          :host, .title, .search, .toggle { transition: none; }
+        }
+      </style>
+      <div class="wrap" part="wrap">
+        <div class="head">
+          <button class="toggle" part="toggle" type="button"
+                  id="${this._id}-t"
+                  aria-expanded="${!this.collapsed}" aria-controls="${this._id}-b"
+                  aria-label="Toggle sidebar"
+                  title="${this.collapsed ? "Expand sidebar" : "Collapse sidebar"}">
+            <span class="bars" aria-hidden="true"><i></i></span>
+          </button>
+          <span class="title">${this.label}</span>
+        </div>
+        <div class="search"><slot name="search"></slot></div>
+        <div class="body" id="${this._id}-b" part="body"><slot></slot></div>
+        <div class="foot"><slot name="footer"></slot></div>
+      </div>
+    `;
+      const btn = root.querySelector(".toggle");
+      btn.addEventListener("click", () => this.toggle());
+      btn.addEventListener("keydown", this.onKey);
+      this.sync();
+    }
+  }
+  if (!customElements.get("o-sidebar"))
+    customElements.define("o-sidebar", OSidebar);
 
   // src/dropzone.ts
   class ODropZone extends GlassElement {

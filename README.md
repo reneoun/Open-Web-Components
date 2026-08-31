@@ -57,6 +57,7 @@ import '@owc/components'
 | [`o-scroll`](#o-scroll) | Scrollable region with themed glass scrollbars |
 | [`o-dropzone`](#o-dropzone) | Grid landing area that movable panels snap into |
 | [`o-collapse`](#o-collapse) | Nestable collapsible panel, with group-wide bulk control |
+| [`o-sidebar`](#o-sidebar) | Collapsible side panel that can be fixed; collapses to an icon rail |
 
 **Utility:**
 
@@ -742,6 +743,62 @@ also set yourself:
 | `--o-panel-height` | Height of the panel box (default `auto`) |
 
 `o-panel` also exposes `part="panel"` for styling the panel box directly.
+
+---
+
+### `o-sidebar`
+
+A side panel that collapses to a narrow rail rather than disappearing, so
+navigation stays reachable. Add `fixed` to pin it to the viewport edge.
+
+```html
+<o-sidebar fixed side="left" label="Components" width="228" rail-width="52">
+  <o-search slot="search" no-dropdown placeholder="Filter..."></o-search>
+  <nav>
+    <a href="#intro">Introduction</a>
+    <a href="#usage">Usage</a>
+  </nav>
+  <small slot="footer">v1.11.0</small>
+</o-sidebar>
+```
+
+| Attribute | Description |
+|---|---|
+| `side` | `'left'` (default) or `'right'` |
+| `collapsed` | Present when collapsed to the rail |
+| `fixed` | Pin to the viewport edge instead of sitting in flow |
+| `width` | Expanded width in px (default `240`) |
+| `rail-width` | Collapsed width in px (default `52`) |
+| `label` | Text shown in the header, hidden on the rail |
+| `breakpoint` | Viewport width at or below which it overlays (default `820`) |
+
+| Property / method | Description |
+|---|---|
+| `toggle(force?)` | Flip collapsed state, or set it explicitly |
+| `collapse()` / `expand()` | Aliases for `toggle(true)` / `toggle(false)` |
+| `currentWidth` | Rendered width — the rail width while collapsed |
+| `overlaying` | `true` while the viewport is narrower than `breakpoint` |
+
+| Event | Detail |
+|---|---|
+| `o-sidebar-toggle` | `{ collapsed }` |
+
+Slots: default (body), `search`, and `footer`. Parts: `wrap`, `toggle`, `body`.
+
+**Slotted content is never unmounted.** Collapsing narrows the host and hides
+labels, but children stay in the light DOM — so selectors the page holds against
+them (scroll-spy, anchor wiring) keep resolving in both states.
+
+**A fixed sidebar publishes `--o-sidebar-offset`** on `document.documentElement`,
+tracking the rail/expanded transition. Pad your content from it rather than
+hard-coding a width that would drift out of sync:
+
+```css
+body { padding-left: calc(var(--o-sidebar-offset, 240px) + 2rem); }
+```
+
+Below `breakpoint` the sidebar overlays instead of reserving a gutter and the
+offset drops to `0px`, so a narrow screen keeps its full content width.
 
 ---
 
