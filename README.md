@@ -13,10 +13,10 @@ Glassmorphism web components — drop a single `<script>` tag and use them anywh
 ## Quick Start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.11.1/OWC/dist/components.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.12.0/OWC/dist/components.js"></script>
 ```
 
-[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.11.1` pin means updates never break your page. **14 components + 1 utility** included.
+[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.12.0` pin means updates never break your page. **14 components + 1 utility** included.
 
 To always get the latest (not recommended for production):
 ```html
@@ -966,7 +966,7 @@ document.addEventListener('progress-complete', e => {
 <!doctype html>
 <html>
 <head>
-  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.11.1/OWC/dist/components.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.12.0/OWC/dist/components.js"></script>
 </head>
 <body style="background: linear-gradient(135deg, #059669, #065f46); min-height: 100vh; padding: 2rem; color: #fff;">
 
