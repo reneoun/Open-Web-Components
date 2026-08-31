@@ -448,3 +448,17 @@ describe('editable cell input box model', () => {
     expect(s).toContain('.edit-cancel { color: var(--glass-negative); }')
   })
 })
+
+describe('row separators', () => {
+  it('draws them from the dedicated table-line token, not the hover surface', async () => {
+    const t = document.createElement('o-table') as any
+    document.body.appendChild(t)
+    t.columns = [{ key: 'a', label: 'A' }]
+    t.data = [{ a: 1 }, { a: 2 }]
+    await Promise.resolve()
+    const css = t.shadowRoot!.innerHTML
+    expect(css).toContain('border-bottom: var(--glass-border-width) solid var(--glass-table-line)')
+    expect(css).not.toContain('border-bottom: var(--glass-border-width) solid var(--glass-hover)')
+    t.remove()
+  })
+})

@@ -120,6 +120,7 @@
     "glass-chrome-border",
     "glass-chart-surface",
     "glass-grid",
+    "glass-table-line",
     "glass-series-1",
     "glass-series-2",
     "glass-series-3",
@@ -197,6 +198,7 @@
         "glass-chrome-border": "rgba(255,255,255,0.1)",
         "glass-chart-surface": "#0a2c20",
         "glass-grid": "#16402f",
+        "glass-table-line": "rgba(255,255,255,0.53)",
         "glass-series-1": "#009e5e",
         "glass-series-2": "#a44996",
         "glass-series-3": "#ad8300",
@@ -230,6 +232,7 @@
         "glass-chrome-border": "rgba(4,90,60,0.18)",
         "glass-chart-surface": "#f4fcf8",
         "glass-grid": "#dceee6",
+        "glass-table-line": "rgba(4,41,27,0.49)",
         "glass-series-1": "#06b472",
         "glass-series-2": "#539fff",
         "glass-series-3": "#b18600",
@@ -265,6 +268,7 @@
         "glass-chrome-border": "#000000",
         "glass-chart-surface": "#0d0d1a",
         "glass-grid": "#24243d",
+        "glass-table-line": "#c2c3c7",
         "glass-series-1": "#0065b2",
         "glass-series-2": "#9b4600",
         "glass-series-3": "#009f00",
@@ -298,6 +302,7 @@
         "glass-chrome-border": "#000000",
         "glass-chart-surface": "#ffffff",
         "glass-grid": "#e6ded4",
+        "glass-table-line": "#83769c",
         "glass-series-1": "#3dbbff",
         "glass-series-2": "#ee9300",
         "glass-series-3": "#cb0033",
@@ -333,6 +338,7 @@
         "glass-chrome-border": "#333e4a",
         "glass-chart-surface": "#1b222b",
         "glass-grid": "#2b3440",
+        "glass-table-line": "#657483",
         "glass-series-1": "#196ac7",
         "glass-series-2": "#cf4e12",
         "glass-series-3": "#584cba",
@@ -366,6 +372,7 @@
         "glass-chrome-border": "#d5dae1",
         "glass-chart-surface": "#ffffff",
         "glass-grid": "#e4e8ee",
+        "glass-table-line": "#8a949f",
         "glass-series-1": "#004ea9",
         "glass-series-2": "#ff8552",
         "glass-series-3": "#008755",
@@ -1290,7 +1297,7 @@ ${pageResolveList(mode)}
         }
         th, td {
           padding: 10px 14px; text-align: left;
-          border-bottom: var(--glass-border-width) solid var(--glass-hover);
+          border-bottom: var(--glass-border-width) solid var(--glass-table-line);
           color: var(--glass-text); position: relative;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }

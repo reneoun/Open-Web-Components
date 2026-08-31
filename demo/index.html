@@ -394,6 +394,71 @@
       @media (prefers-reduced-motion: reduce) {
         body { transition: none; }
       }
+
+      /* ── o-sidebar demo ─────────────────────────────────────── */
+      .demo-sidebar-frame {
+        display: flex; align-items: stretch;
+        border: var(--owc-glass-border-width) solid var(--owc-glass-border);
+        border-radius: var(--owc-glass-radius); overflow: hidden;
+        min-height: 190px; max-width: 560px; background: var(--owc-glass-bg);
+      }
+      .demo-sb-nav { display: flex; flex-direction: column; gap: 2px; padding: 8px; }
+      .demo-sb-nav a {
+        color: var(--owc-glass-text-muted); text-decoration: none; font-size: 13px;
+        padding: 6px 8px; border-radius: var(--owc-glass-radius-sm); white-space: nowrap;
+      }
+      .demo-sb-nav a:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
+      .demo-sb-body { flex: 1; padding: 14px 16px; min-width: 0; }
+
+      /* ── Chat example ──────────────────────────────────────── */
+      .chat-frame {
+        display: flex; align-items: stretch; overflow: hidden;
+        border: var(--owc-glass-border-width) solid var(--owc-glass-border);
+        border-radius: var(--owc-glass-radius); background: var(--owc-glass-bg);
+        height: 420px; max-width: 720px;
+      }
+      .chat-sessions { display: flex; flex-direction: column; gap: 2px; padding: 8px; }
+      .chat-sessions button {
+        display: block; width: 100%; text-align: left; cursor: pointer;
+        background: none; border: none; color: var(--owc-glass-text-muted);
+        font-family: var(--owc-glass-font); font-size: 13px; line-height: 1.3;
+        padding: 7px 9px; border-radius: var(--owc-glass-radius-sm); white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
+      }
+      .chat-sessions button:hover { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
+      .chat-sessions button[aria-current="true"] {
+        background: var(--owc-glass-hover); color: var(--owc-glass-text);
+        box-shadow: inset 2px 0 0 var(--owc-accent-warm);
+      }
+      .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+      .chat-head {
+        padding: 10px 14px; font-size: 13px; font-weight: 600;
+        border-bottom: var(--owc-glass-border-width) solid var(--owc-glass-table-line);
+        color: var(--owc-glass-text);
+      }
+      .chat-log { flex: 1; min-height: 0; }
+      .chat-log-inner { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+      .msg { display: flex; flex-direction: column; max-width: 78%; gap: 3px; }
+      .msg.user { align-self: flex-end; align-items: flex-end; }
+      .msg.bot  { align-self: flex-start; align-items: flex-start; }
+      .msg .who { font-size: 11px; opacity: 0.55; padding: 0 4px; }
+      .bubble {
+        padding: 8px 12px; font-size: 13.5px; line-height: 1.45;
+        border-radius: var(--owc-glass-radius-xl);
+        border: var(--owc-glass-border-width) solid var(--owc-glass-table-line);
+        color: var(--owc-glass-text); overflow-wrap: anywhere;
+      }
+      .msg.bot  .bubble { background: var(--owc-glass-bg); border-top-left-radius: var(--owc-glass-radius-xs); }
+      .msg.user .bubble {
+        background: var(--owc-accent-warm); color: var(--owc-glass-accent-text);
+        border-color: var(--owc-accent-warm); border-top-right-radius: var(--owc-glass-radius-xs);
+      }
+      .chat-composer {
+        display: flex; gap: 8px; padding: 10px 12px; align-items: center;
+        border-top: var(--owc-glass-border-width) solid var(--owc-glass-table-line);
+      }
+      .chat-composer o-input { flex: 1; min-width: 0; }
+      @media (max-width: 620px) { .chat-frame { height: 380px; } .msg { max-width: 88%; } }
     </style>
   </head>
   <body>
@@ -418,6 +483,7 @@
       <a href="#section-panel">o-panel</a>
       <a href="#section-dropzone">Drop-zone</a>
       <a href="#section-collapse">o-collapse</a>
+      <a href="#section-sidebar">o-sidebar</a>
       <a href="#section-tree">o-tree</a>
       <a href="#section-tabs">o-tabs</a>
       <a href="#section-note">o-note</a>
@@ -444,6 +510,7 @@
       <span class="sep">·</span>
       <span class="nav-cat">Examples</span>
       <a href="#section-calculator">Calculator</a>
+      <a href="#section-chat">Chat window</a>
       <a href="#section-kanban">Kanban</a>
       <a href="#section-combined">Combined</a>
       <a href="#section-kitchen">Kitchen sink</a>
@@ -917,6 +984,44 @@ tabs.addEventListener("o-change", e => console.log(e.detail))'>Copy</button>
 note.addEventListener('o-change', e =&gt; console.log(e.detail))</div>
       <button class="copy-btn">Copy</button>
     </div>
+    <o-collapse open label="o-sidebar">
+<!-- o-sidebar -->
+    <h2 id="section-sidebar">o-sidebar</h2>
+    <p class="desc">The same component driving this page's navigation, shown here <strong>unfixed</strong> so it sits in the flow. Collapses to an icon rail rather than disappearing, so navigation stays reachable. Use <code>side="right"</code> to flip it.</p>
+    <div class="row" style="gap:10px;margin-bottom:10px">
+      <o-button id="sb-toggle">Toggle rail</o-button>
+      <o-button id="sb-side">Flip side</o-button>
+      <span id="sb-state" style="font-size:13px;opacity:0.6;align-self:center"></span>
+    </div>
+    <div class="demo-sidebar-frame">
+      <o-sidebar id="demo-sidebar" label="Library" width="180" rail-width="48">
+        <nav class="demo-sb-nav">
+          <a href="#section-sidebar" data-i="B">Basics</a>
+          <a href="#section-sidebar" data-i="L">Layout</a>
+          <a href="#section-sidebar" data-i="D">Data</a>
+        </nav>
+        <small slot="footer">v1.13.0</small>
+      </o-sidebar>
+      <div class="demo-sb-body">
+        <strong>Content area</strong>
+        <p style="opacity:0.65;font-size:13px;margin:6px 0 0">The sidebar reserves its own width when unfixed, so this panel reflows as it collapses.</p>
+      </div>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;o-sidebar label="Library" width="180" rail-width="48"&gt;
+  &lt;o-search slot="search" no-dropdown&gt;&lt;/o-search&gt;
+  &lt;nav&gt;&lt;a href="#a"&gt;Basics&lt;/a&gt;&lt;a href="#b"&gt;Layout&lt;/a&gt;&lt;/nav&gt;
+  &lt;small slot="footer"&gt;v1.13.0&lt;/small&gt;
+&lt;/o-sidebar&gt;
+
+sidebar.toggle()            // or .collapse() / .expand()
+sidebar.side = 'right'      // flip which edge it hugs
+sidebar.addEventListener('o-sidebar-toggle', e =&gt;
+  console.log(e.detail.collapsed))
+
+&lt;!-- add `fixed` to pin it to the viewport edge --&gt;</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+    </o-collapse>
     </o-collapse>
     <o-collapse open label="Data">
     <o-collapse open label="o-table">
@@ -1609,6 +1714,44 @@ btnExport.addEventListener('o-click', () => {
 
       <div id="ks-search-out" style="margin-top:10px;font-size:12px;opacity:0.6;min-height:18px"></div>
     </o-panel>
+    </o-collapse>
+    <o-collapse open label="Chat window">
+<!-- Chat -->
+    <h2 id="section-chat">Chat window</h2>
+    <p class="desc">A chat UI assembled entirely from existing components — <code>o-sidebar</code> for the session list, <code>o-scroll</code> for the transcript, <code>o-input</code> and <code>o-button</code> for the composer, <code>o-skeleton</code> as the typing indicator. Pick a session, or send a message and watch it reply.</p>
+    <div class="chat-frame">
+      <o-sidebar id="chat-sb" label="Sessions" width="176" rail-width="46" breakpoint="0">
+        <div class="chat-sessions" id="chat-session-list"></div>
+      </o-sidebar>
+      <div class="chat-main">
+        <div class="chat-head" id="chat-title">Deploy pipeline</div>
+        <o-scroll class="chat-log" id="chat-log">
+          <div class="chat-log-inner" id="chat-log-inner"></div>
+        </o-scroll>
+        <div class="chat-composer">
+          <o-input id="chat-input" placeholder="Write a message..."></o-input>
+          <o-button id="chat-send">Send</o-button>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;div class="chat-frame"&gt;
+  &lt;o-sidebar label="Sessions" width="176" rail-width="46"&gt;
+    &lt;div id="sessions"&gt;&lt;/div&gt;
+  &lt;/o-sidebar&gt;
+  &lt;div class="chat-main"&gt;
+    &lt;o-scroll id="log"&gt;&lt;div id="inner"&gt;&lt;/div&gt;&lt;/o-scroll&gt;
+    &lt;div class="chat-composer"&gt;
+      &lt;o-input id="msg" placeholder="Write a message..."&gt;&lt;/o-input&gt;
+      &lt;o-button id="send"&gt;Send&lt;/o-button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+// Enter sends; the transcript scrolls to the newest message.
+msg.addEventListener('keydown', e =&gt; { if (e.key === 'Enter') send() })
+send.addEventListener('o-click', send)</div>
+      <button class="copy-btn">Copy</button>
+    </div>
     </o-collapse>
     <o-collapse open label="Utilities">
 <!-- Live event log -->
@@ -2876,6 +3019,113 @@ btnExport.addEventListener('o-click', () => {
       document.addEventListener('progress-complete', e => {
         logEvent('progress-complete', { count: e.detail.results.length })
       })
+
+      // ── o-sidebar demo ──────────────────────────────────────────
+      const demoSb    = document.getElementById('demo-sidebar')
+      const demoSbSt  = document.getElementById('sb-state')
+      function sbState() {
+        demoSbSt.textContent = `${demoSb.collapsed ? 'rail' : 'expanded'} · ${demoSb.side}`
+      }
+      document.getElementById('sb-toggle').addEventListener('o-click', () => demoSb.toggle())
+      document.getElementById('sb-side').addEventListener('o-click', () => {
+        demoSb.side = demoSb.side === 'left' ? 'right' : 'left'
+        sbState()
+      })
+      demoSb.addEventListener('o-sidebar-toggle', e => {
+        sbState()
+        logEvent('o-sidebar-toggle', { collapsed: e.detail.collapsed })
+      })
+      sbState()
+
+      // ── Chat window ─────────────────────────────────────────────
+      const chatSessions = [
+        { id: 'deploy', title: 'Deploy pipeline', messages: [
+          { who: 'user', text: 'The staging deploy failed again on the migration step.' },
+          { who: 'bot',  text: 'The migration is trying to add a NOT NULL column to a table that already has rows. Add a default, or backfill first and set NOT NULL in a follow-up migration.' },
+          { who: 'user', text: 'Backfill is safer. Can it run without downtime?' },
+          { who: 'bot',  text: 'Yes — batch it in chunks of a few thousand rows so you never hold a long lock.' },
+        ]},
+        { id: 'theming', title: 'Theme tokens', messages: [
+          { who: 'user', text: 'Why are the table row lines invisible in light mode?' },
+          { who: 'bot',  text: 'They were drawn with --glass-hover, a hover *surface* token. On dark grounds it reads fine; on pale grounds it is a near-white line on a near-white panel.' },
+          { who: 'user', text: 'So it needs its own token.' },
+          { who: 'bot',  text: 'Exactly — --glass-table-line, defined per theme and contrast-checked against each surface.' },
+        ]},
+        { id: 'charts', title: 'Chart palettes', messages: [
+          { who: 'user', text: 'Did the PICO-8 palette pass the colourblind checks?' },
+          { who: 'bot',  text: 'Not as-is. Green and orange collapse to a delta-E of 2.9 under deuteranopia. The hues were re-stepped into the passing band — the identity survives, the neon brightness does not.' },
+        ]},
+        { id: 'welcome', title: 'Getting started', messages: [
+          { who: 'bot', text: 'Drop in one script tag and every o- element is available. No build step, no framework.' },
+        ]},
+      ]
+      let chatActive = chatSessions[0]
+      const chatListEl  = document.getElementById('chat-session-list')
+      const chatInnerEl = document.getElementById('chat-log-inner')
+      const chatTitleEl = document.getElementById('chat-title')
+      const chatInput   = document.getElementById('chat-input')
+      const chatLogEl   = document.getElementById('chat-log')
+
+      function chatRenderSessions() {
+        chatListEl.innerHTML = ''
+        chatSessions.forEach(s => {
+          const b = document.createElement('button')
+          b.type = 'button'
+          b.textContent = s.title
+          b.setAttribute('aria-current', String(s === chatActive))
+          b.addEventListener('click', () => { chatActive = s; chatRenderSessions(); chatRenderLog() })
+          chatListEl.appendChild(b)
+        })
+      }
+      function chatBubble(m) {
+        const wrap = document.createElement('div')
+        wrap.className = `msg ${m.who}`
+        const who = document.createElement('span')
+        who.className = 'who'
+        who.textContent = m.who === 'user' ? 'You' : 'Assistant'
+        const b = document.createElement('div')
+        b.className = 'bubble'
+        b.textContent = m.text
+        wrap.append(who, b)
+        return wrap
+      }
+      function chatScroll() {
+        const area = chatLogEl.shadowRoot && chatLogEl.shadowRoot.querySelector('.scroll-area')
+        if (area) area.scrollTop = area.scrollHeight
+      }
+      function chatRenderLog() {
+        chatTitleEl.textContent = chatActive.title
+        chatInnerEl.innerHTML = ''
+        chatActive.messages.forEach(m => chatInnerEl.appendChild(chatBubble(m)))
+        chatScroll()
+      }
+      function chatSend() {
+        const text = (chatInput.value || '').trim()
+        if (!text) return
+        chatActive.messages.push({ who: 'user', text })
+        chatInput.value = ''
+        chatRenderLog()
+        logEvent('chat:send', { session: chatActive.id, length: text.length })
+
+        const typing = document.createElement('div')
+        typing.className = 'msg bot'
+        typing.innerHTML = '<span class="who">Assistant</span>'
+        const sk = document.createElement('o-skeleton')
+        sk.setAttribute('width', '120px'); sk.setAttribute('height', '32px')
+        typing.appendChild(sk)
+        chatInnerEl.appendChild(typing)
+        chatScroll()
+
+        setTimeout(() => {
+          typing.remove()
+          chatActive.messages.push({ who: 'bot', text: `Noted — "${text.slice(0, 40)}${text.length > 40 ? '…' : ''}". This is a canned reply so the demo feels alive.` })
+          chatRenderLog()
+        }, 900)
+      }
+      document.getElementById('chat-send').addEventListener('o-click', chatSend)
+      chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') chatSend() })
+      chatRenderSessions()
+      chatRenderLog()
     </script>
 
   </body>

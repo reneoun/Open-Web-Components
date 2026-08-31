@@ -117,7 +117,7 @@ export class OTable extends GlassElement {
         }
         th, td {
           padding: 10px 14px; text-align: left;
-          border-bottom: var(--glass-border-width) solid var(--glass-hover);
+          border-bottom: var(--glass-border-width) solid var(--glass-table-line);
           color: var(--glass-text); position: relative;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }

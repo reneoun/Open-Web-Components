@@ -449,6 +449,17 @@ describe('WCAG AA contrast', () => {
       it('the accent is visible against the surface', () => {
         expect(contrastOn(t['accent-warm'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
       })
+      it('the table row separator is a visible structural line', () => {
+        // Regression: row separators used to borrow --glass-hover, a hover
+        // *surface* token. It reads on dark grounds and inverts on light —
+        // glass-light drew a near-white line on a pale panel at 1.05:1.
+        // Row separators define the grid, so the panel-edge exemption that
+        // lets highlight strokes sit below 3:1 does not apply to them.
+        expect(contrastOn(t['glass-table-line'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
+      })
+      it('does not draw the row separator from the hover surface', () => {
+        expect(t['glass-table-line']).not.toBe(t['glass-hover'])
+      })
       it('the positive (confirm) colour clears the non-text threshold', () => {
         expect(contrastOn(t['glass-positive'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
       })
