@@ -296,6 +296,20 @@
       .shortcut-close { float: right; margin-top: -4px; }
 
       /* Scrollspy active nav */
+      /* Sections are slotted into o-collapse; the h2's 2.5rem top margin is
+         meant to separate flat sections and leaves a dead gap right under a
+         collapse header. Tighten it, and drop it entirely for the first one. */
+      o-collapse > h2 { margin-top: 1.4rem; }
+      o-collapse > h2:first-child { margin-top: 0.2rem; }
+      o-collapse > o-collapse:first-child { margin-top: 0; }
+      .collapse-controls {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 14px;
+      }
+      .collapse-hint { font-size: 12px; color: var(--owc-glass-text-dim); }
+      .nav-cat {
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em;
+        color: var(--owc-glass-text-dim); padding: 0 2px; flex: none;
+      }
       #nav a.active { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
 
       /* Scroll progress */
@@ -352,46 +366,42 @@
 
     <!-- Sticky navigation -->
     <nav id="nav">
+      <span class="nav-cat">Basics</span>
       <a href="#section-button">o-button</a>
-      <span class="sep">·</span>
-      <a href="#section-panel">o-panel</a>
-      <span class="sep">·</span>
-      <a href="#section-toast">o-toast</a>
-      <span class="sep">·</span>
       <a href="#section-toggle">o-toggle</a>
-      <span class="sep">·</span>
-      <a href="#section-table">o-table</a>
-      <span class="sep">·</span>
-      <a href="#section-search">o-search</a>
-      <span class="sep">·</span>
-      <a href="#section-editable">o-table editable</a>
-      <span class="sep">·</span>
-      <a href="#section-note">o-note</a>
-      <span class="sep">·</span>
-      <a href="#section-dialog">o-dialog</a>
-      <span class="sep">·</span>
+      <a href="#section-input">o-input</a>
       <a href="#section-tooltip">o-tooltip</a>
       <span class="sep">·</span>
-      <a href="#section-dropdown">o-dropdown</a>
-      <span class="sep">·</span>
+      <span class="nav-cat">Layout</span>
+      <a href="#section-panel">o-panel</a>
+      <a href="#section-dropzone">Drop-zone</a>
       <a href="#section-tabs">o-tabs</a>
+      <a href="#section-note">o-note</a>
       <span class="sep">·</span>
-      <a href="#section-input">o-input</a>
-      <span class="sep">·</span>
+      <span class="nav-cat">Data</span>
+      <a href="#section-table">o-table</a>
+      <a href="#section-editable">Editable</a>
+      <a href="#section-multisearch">Multi-search</a>
       <a href="#section-skeleton">o-skeleton</a>
-      <span class="sep">·</span>
       <a href="#section-progress">o-progress</a>
       <span class="sep">·</span>
-      <a href="#section-async-plus">asyncPlus</a>
+      <span class="nav-cat">Search</span>
+      <a href="#section-search">o-search</a>
+      <a href="#section-autocomplete">Autocomplete</a>
+      <a href="#section-form">Form</a>
+      <a href="#section-dropdown">o-dropdown</a>
       <span class="sep">·</span>
-      <a href="#section-combined">Combined</a>
+      <span class="nav-cat">Overlays</span>
+      <a href="#section-dialog">o-dialog</a>
+      <a href="#section-toast">o-toast</a>
       <span class="sep">·</span>
+      <span class="nav-cat">Examples</span>
       <a href="#section-calculator">Calculator</a>
-      <span class="sep">·</span>
-      <a href="#section-dropzone">Drop-zone grid</a>
-      <span class="sep">·</span>
+      <a href="#section-kanban">Kanban</a>
+      <a href="#section-combined">Combined</a>
       <a href="#section-kitchen">Kitchen sink</a>
       <span class="sep">·</span>
+      <span class="nav-cat">Utilities</span>
       <a href="#section-events">Events</a>
       <a class="gh-link" href="https://github.com/reneoun/Open-Web-Components" target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -453,7 +463,16 @@
     </div>
 
     <!-- o-button -->
-    <h2 id="section-button">o-button</h2>
+        <div class="collapse-controls">
+      <o-button id="btn-expand-all">Expand all</o-button>
+      <o-button id="btn-collapse-all">Collapse all</o-button>
+      <o-button id="btn-collapse-top">Collapse categories</o-button>
+      <span class="collapse-hint">Sections remember their state.</span>
+    </div>
+    <o-collapse-group id="demo-sections" storage-key="owc-demo-sections">
+    <o-collapse open label="Basics">
+    <o-collapse open label="o-button">
+<h2 id="section-button">o-button</h2>
     <p class="desc">Glassmorphic button. Fires <code>o-click</code> instead of native click.</p>
     <div class="row" style="align-items:center">
       <o-button id="btn-demo-1">Click me</o-button>
@@ -468,75 +487,27 @@ btn.addEventListener('o-click', () =&gt; console.log('clicked'))</div>
       <button class="copy-btn" data-copy="<o-button>Click me</o-button>
 btn.addEventListener('o-click', () => console.log('clicked'))">Copy</button>
     </div>
-
-    <!-- o-panel -->
-    <h2 id="section-panel">o-panel</h2>
-    <p class="desc">Glassmorphic content panel. Supports dragging, grid snapping, and resizing.</p>
+<!-- o-button loading state -->
+    <h2 id="section-button-loading" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-button — simulated async loading</h2>
+    <p class="desc">Disable and update text while awaiting an async operation — restore on completion.</p>
     <div class="row">
-      <o-panel move snap="20">
-        <strong>Draggable + snap 20px</strong>
-        <p style="margin:8px 0 0;opacity:0.8">Grab ⠿ to move. Snaps to 20px grid.</p>
-      </o-panel>
-      <o-panel resize>
-        <strong>Resizable panel</strong>
-        <p style="margin:8px 0 0;opacity:0.8">Drag the right / bottom / corner handles.</p>
-      </o-panel>
-      <o-panel move snap="40" resize>
-        <strong>Drag + snap 40px + resize</strong>
-        <p style="margin:8px 0 0;opacity:0.8">All features combined.</p>
-      </o-panel>
-      <o-panel>
-        <strong>Static panel</strong>
-        <p style="margin:8px 0 0;opacity:0.8">No attributes.</p>
-      </o-panel>
+      <o-button id="btn-async-save">Save to server</o-button>
+      <o-button id="btn-async-upload">Upload file</o-button>
+      <o-button id="btn-async-sync">Sync data</o-button>
     </div>
-    <div class="code-wrap"><div class="code">&lt;o-panel&gt;Static content&lt;/o-panel&gt;
-&lt;o-panel move&gt;Draggable&lt;/o-panel&gt;
-&lt;o-panel move snap="20"&gt;Snaps to 20px grid while dragging&lt;/o-panel&gt;
-&lt;o-panel resize&gt;Resizable (right / bottom / corner handles)&lt;/o-panel&gt;
-&lt;o-panel move snap="20" resize&gt;All combined&lt;/o-panel&gt;</div>
-      <button class="copy-btn" data-copy='<o-panel move snap="20" resize>Content</o-panel>'>Copy</button>
-    </div>
-
-    <!-- o-panel attribute playground -->
-    <h2 id="section-panel-playground" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-panel — attribute playground</h2>
-    <p class="desc">Toggle attributes live and see the generated markup update in real time.</p>
-    <div class="pg-controls">
-      <label><input type="checkbox" id="pg-move"> move</label>
-      <label><input type="checkbox" id="pg-resize"> resize</label>
-      <label><input type="checkbox" id="pg-snap"> snap
-        <input type="range" id="pg-snap-val" min="10" max="80" step="10" value="20" style="margin-left:4px">
-        <span id="pg-snap-num" style="min-width:24px;display:inline-block">20</span>
-      </label>
-    </div>
-    <div class="pg-preview">
-      <o-panel id="pg-panel">
-        <strong>Playground panel</strong>
-        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">Toggle checkboxes above to change attributes.</p>
-      </o-panel>
-    </div>
-    <div class="code-wrap"><div class="code" id="pg-code">&lt;o-panel&gt;Content&lt;/o-panel&gt;</div>
+    <div class="code-wrap"><div class="code">btn.addEventListener('o-click', async () =&gt; {
+  btn.setAttribute('disabled', '')
+  btn.textContent = 'Saving…'
+  await doWork()
+  btn.removeAttribute('disabled')
+  btn.textContent = 'Save to server'
+  toast('Saved!', 'success')
+})</div>
       <button class="copy-btn">Copy</button>
     </div>
-
-    <!-- o-toast -->
-    <h2 id="section-toast">o-toast</h2>
-    <p class="desc">Programmatic toast notifications. Call <code>window.toast(message, type?, options?)</code> after loading the CDN bundle.</p>
-    <div class="row">
-      <o-button id="btn-success">Success</o-button>
-      <o-button id="btn-error">Error</o-button>
-      <o-button id="btn-warning">Warning</o-button>
-      <o-button id="btn-info">Info</o-button>
-      <o-button id="btn-long">8s toast</o-button>
-    </div>
-    <div class="code-wrap"><div class="code">// type: 'success' | 'error' | 'warning' | 'info'  (default: 'info')
-toast('File saved!', 'success')
-toast('Connection failed', 'error')
-toast('Long message', 'info', { duration: 8000 })</div>
-      <button class="copy-btn" data-copy="toast('File saved!', 'success')">Copy</button>
-    </div>
-
-    <!-- o-toggle -->
+    </o-collapse>
+    <o-collapse open label="o-toggle">
+<!-- o-toggle -->
     <h2 id="section-toggle">o-toggle</h2>
     <p class="desc">Segmented control toggle. Pass options as a comma-separated string or array. Fires <code>o-change</code> with <code>{ value, index }</code>.</p>
     <div class="row">
@@ -557,8 +528,7 @@ toggle.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value, i
       <button class="copy-btn" data-copy='<o-toggle options="Day,Week,Month" value="day"></o-toggle>
 toggle.addEventListener("o-change", e => console.log(e.detail))'>Copy</button>
     </div>
-
-    <!-- o-toggle as tabs -->
+<!-- o-toggle as tabs -->
     <h2 id="section-toggle-tabs" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-toggle — as a tab switcher</h2>
     <p class="desc">Use <code>o-toggle</code> to drive tab content — swap any panel based on the selected value.</p>
     <o-toggle id="tab-toggle" options="Overview,API,Examples" value="overview"></o-toggle>
@@ -576,66 +546,7 @@ toggle.addEventListener("o-change", e => console.log(e.detail))'>Copy</button>
         <p style="margin:8px 0 0;opacity:0.8;font-size:13px">See the full interactive demos on this page. Each section has copy-ready code snippets. Press <kbd style="background:var(--owc-glass-hover);padding:1px 5px;border-radius:var(--owc-glass-radius-xs);font-size:11px">?</kbd> for keyboard shortcuts.</p>
       </div>
     </div>
-
-    <!-- o-table -->
-    <h2 id="section-table">o-table</h2>
-    <p class="desc">Sortable, resizable, glassmorphic data table. Supports column persistence and optional row selection.</p>
-    <o-table id="demo-table" storage="local" storage-key="owc-demo-table"></o-table>
-    <div class="code-wrap"><div class="code">&lt;o-table selectable&gt;&lt;/o-table&gt;
-
-table.columns = [
-  { key: 'name',  label: 'Name',  width: 160, sortable: true },
-  { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60 },
-]
-table.data = [{ name: 'Alice', score: 92 }, ...]
-
-// Events
-table.addEventListener('o-sort',       e =&gt; console.log(e.detail)) // { col, dir }
-table.addEventListener('o-row-select', e =&gt; console.log(e.detail)) // { selected: row[] }
-
-// Attributes
-// storage="local|session"  storage-key="my-key"  — persists sort + column widths
-// selectable                                      — adds checkbox column</div>
-      <button class="copy-btn" data-copy='<o-table selectable></o-table>
-table.columns = [{ key: "name", label: "Name", width: 160, sortable: true }]
-table.data = [{ name: "Alice" }]'>Copy</button>
-    </div>
-
-    <!-- o-table dynamic rows with undo/redo -->
-    <h2 id="section-table-dynamic" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-table — dynamic data + undo/redo</h2>
-    <p class="desc">Add, remove, or randomize rows at runtime. Every action is pushed to a history stack — undo and redo supported.</p>
-    <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:8px">
-      <o-button id="tbl-add">+ Add row</o-button>
-      <o-button id="tbl-remove">- Remove last</o-button>
-      <o-button id="tbl-randomize">Randomize scores</o-button>
-      <o-button id="tbl-reset">Reset</o-button>
-      <div style="width:1px;height:24px;background:var(--owc-glass-border)"></div>
-      <o-button id="tbl-undo" disabled>↩ Undo</o-button>
-      <o-button id="tbl-redo" disabled>↪ Redo</o-button>
-      <span id="tbl-row-count" style="opacity:0.6;font-size:13px">4 rows</span>
-    </div>
-    <o-table id="demo-table-dyn" storage="local" storage-key="owc-dyn-table"></o-table>
-
-    <!-- o-button loading state -->
-    <h2 id="section-button-loading" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-button — simulated async loading</h2>
-    <p class="desc">Disable and update text while awaiting an async operation — restore on completion.</p>
-    <div class="row">
-      <o-button id="btn-async-save">Save to server</o-button>
-      <o-button id="btn-async-upload">Upload file</o-button>
-      <o-button id="btn-async-sync">Sync data</o-button>
-    </div>
-    <div class="code-wrap"><div class="code">btn.addEventListener('o-click', async () =&gt; {
-  btn.setAttribute('disabled', '')
-  btn.textContent = 'Saving…'
-  await doWork()
-  btn.removeAttribute('disabled')
-  btn.textContent = 'Save to server'
-  toast('Saved!', 'success')
-})</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- o-toggle as color swatch picker -->
+<!-- o-toggle as color swatch picker -->
     <h2 id="section-toggle-color" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-toggle — color swatch picker</h2>
     <p class="desc">Drive any visual state from <code>o-toggle</code> — here a live color preview controlled by the selected option.</p>
     <div class="row" style="align-items:center;gap:16px">
@@ -643,123 +554,40 @@ table.data = [{ name: "Alice" }]'>Copy</button>
       <div id="color-swatch" style="width:48px;height:48px;border-radius:var(--owc-glass-radius);background:#3b82f6;transition:background 0.3s;border:2px solid var(--owc-glass-border)"></div>
     </div>
     <div style="margin-top:8px;opacity:0.6;font-size:13px">Hex: <code id="color-hex">#3b82f6</code></div>
-
-    <!-- o-search -->
-    <h2 id="section-search">o-search</h2>
-    <p class="desc">Glassmorphic search bar with built-in filtering and optional dropdown. Add <code>no-dropdown</code> to use it as a pure filter input.</p>
-    <o-search id="demo-search-standalone" placeholder="Search fruits..." style="max-width:400px"></o-search>
-    <div id="search-result" style="margin-top:8px;opacity:0.7;font-size:13px"></div>
-    <div class="code-wrap"><div class="code">&lt;o-search placeholder="Search..." no-dropdown&gt;&lt;/o-search&gt;
-
-search.data       = [{ name: 'Apple' }, { name: 'Banana' }]
-search.searchKeys = ['name']
-search.valueKey   = 'name'                           // fills input on select
-search.renderItem = item =&gt; `&lt;b&gt;${item.name}&lt;/b&gt;`   // custom dropdown row
-
-// Custom filter (overrides searchKeys)
-search.filterFn = (query, item) =&gt; item.name.startsWith(query)
-
-// Events
-search.addEventListener('o-input',   e =&gt; console.log(e.detail)) // { query }
-search.addEventListener('o-results', e =&gt; console.log(e.detail)) // { query, results }
-search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, query }</div>
-      <button class="copy-btn" data-copy='<o-search placeholder="Search..." no-dropdown></o-search>
-search.data = [{ name: "Apple" }]
-search.searchKeys = ["name"]'>Copy</button>
-    </div>
-
-    <!-- Rich o-search with custom renderItem -->
-    <h2 id="section-search-rich" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-search — rich dropdown with custom renderItem</h2>
-    <p class="desc">Pass a <code>renderItem</code> function to build any dropdown layout — emoji, icons, multi-line, badges.</p>
-    <o-search id="demo-search-rich" placeholder="Search commands..." style="max-width:440px"></o-search>
-    <div id="rich-selected" style="margin-top:8px;opacity:0.7;font-size:13px;min-height:18px"></div>
-    <div class="code-wrap"><div class="code">search.renderItem = item =&gt; `
-  &lt;span style="font-size:18px"&gt;${item.icon}&lt;/span&gt;
-  &lt;span&gt;&lt;b&gt;${item.name}&lt;/b&gt;&lt;br&gt;
-    &lt;small style="opacity:0.6"&gt;${item.desc}&lt;/small&gt;&lt;/span&gt;`</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- o-table editable -->
-    <h2 id="section-editable">o-table — editable cells</h2>
-    <p class="desc"><code>editable="always"</code> renders inline inputs. <code>editable="click"</code> opens a form row below the original with label:input pairs. Press ✏️ to edit, ✓ to confirm, ✗ to cancel.</p>
-    <o-table id="editable-table" editable></o-table>
-    <div id="editable-log" style="margin-top:8px;font-size:12px;opacity:0.6;font-family:monospace;min-height:18px"></div>
-    <div class="code-wrap"><div class="code">&lt;o-table editable&gt;&lt;/o-table&gt;
-
-table.columns = [
-  { key: 'name', label: 'Name', width: 160, editable: 'always' },
-  { key: 'role', label: 'Role', width: 140, editable: 'click'  },
-  { key: 'dept', label: 'Dept', width: 140, editable: 'click'  },
-]
-// Click ✏️ → form row appears below with editable fields
-table.addEventListener('o-cell-change', e =&gt; console.log(e.detail))
-table.addEventListener('o-row-change',  e =&gt; console.log(e.detail))</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- o-note -->
-    <h2 id="section-note">o-note</h2>
-    <p class="desc">Glass-styled note component. <code>variant="textarea"</code> (default) auto-resizes with optional floating label and char counter. <code>variant="card"</code> adds a title and tag chips.</p>
+    </o-collapse>
+<!-- o-input -->
+    <h2 id="section-input">o-input</h2>
+    <p class="desc">Glassmorphic text input with optional static label and validation states. Fires <code>o-input</code> on every keystroke and <code>o-change</code> on blur.</p>
     <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
-      <div style="flex:1;min-width:240px;max-width:380px">
-        <p style="font-size:12px;opacity:0.5;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em">Textarea variant</p>
-        <o-note label="Your thoughts" placeholder="Start typing..." max-length="200" style="display:block"></o-note>
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Default</div>
+        <o-input id="demo-input-default" label="Full name" placeholder="Alice Smith" style="display:block"></o-input>
       </div>
-      <div style="flex:1;min-width:240px;max-width:380px">
-        <p style="font-size:12px;opacity:0.5;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em">Card variant</p>
-        <o-note variant="card" style="display:block"></o-note>
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Error state</div>
+        <o-input label="Email" placeholder="name@example.com" error="Invalid email address" style="display:block"></o-input>
+      </div>
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Success state</div>
+        <o-input label="Username" value="reneoun" success style="display:block"></o-input>
+      </div>
+      <div style="flex:1;min-width:180px;max-width:240px">
+        <div class="ks-label" style="margin-bottom:6px">Disabled</div>
+        <o-input label="API key" value="sk-••••••••" disabled style="display:block"></o-input>
       </div>
     </div>
-    <div class="code-wrap"><div class="code">&lt;!-- textarea --&gt;
-&lt;o-note label="Note" placeholder="..." max-length="200"&gt;&lt;/o-note&gt;
+    <div id="input-log" style="margin-top:10px;font-size:12px;opacity:0.6;font-family:monospace;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">&lt;o-input label="Name" placeholder="Alice"&gt;&lt;/o-input&gt;
+&lt;o-input label="Email" error="Invalid email"&gt;&lt;/o-input&gt;
+&lt;o-input label="User" success&gt;&lt;/o-input&gt;
+&lt;o-input label="Key" disabled&gt;&lt;/o-input&gt;
 
-&lt;!-- card --&gt;
-&lt;o-note variant="card"&gt;&lt;/o-note&gt;
-
-note.addEventListener('o-change', e =&gt; console.log(e.detail))</div>
-      <button class="copy-btn">Copy</button>
+input.addEventListener('o-input',  e =&gt; console.log(e.detail)) // { value }
+input.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value }</div>
+      <button class="copy-btn" data-copy='<o-input label="Name" placeholder="Alice"></o-input>
+input.addEventListener("o-input", e => console.log(e.detail))'>Copy</button>
     </div>
-
-    <!-- o-dialog -->
-    <h2 id="section-dialog">o-dialog</h2>
-    <p class="desc">Glassmorphism form dialog with blurred backdrop, slot-based content, and programmatic open/close. Fires <code>o-submit</code> with named input values and <code>o-cancel</code> on backdrop click or Escape.</p>
-    <div class="row">
-      <o-button id="btn-open-dialog">Open dialog</o-button>
-      <span id="dialog-result" style="font-size:13px;opacity:0.6"></span>
-    </div>
-
-    <o-dialog id="demo-dialog">
-      <span slot="title">Add team member</span>
-
-      <o-input name="name" label="Name" placeholder="Alice" style="width:100%;margin-bottom:10px"></o-input>
-      <o-input name="role" label="Role" placeholder="Engineer" style="width:100%"></o-input>
-
-      <div slot="actions">
-        <o-button type="submit">Add member</o-button>
-        <o-button id="btn-dialog-cancel">Cancel</o-button>
-      </div>
-    </o-dialog>
-
-    <div class="code-wrap"><div class="code">&lt;o-dialog id="d"&gt;
-  &lt;span slot="title"&gt;Add Item&lt;/span&gt;
-
-  &lt;label&gt;Name&lt;/label&gt;
-  &lt;input name="name" type="text"&gt;
-
-  &lt;div slot="actions"&gt;
-    &lt;o-button type="submit"&gt;Save&lt;/o-button&gt;
-  &lt;/div&gt;
-&lt;/o-dialog&gt;
-
-document.getElementById('d').open()
-
-d.addEventListener('o-submit', e =&gt; console.log(e.detail)) // { name }
-d.addEventListener('o-cancel', () =&gt; console.log('cancelled'))</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- o-tooltip -->
+<!-- o-tooltip -->
     <h2 id="section-tooltip">o-tooltip</h2>
     <p class="desc">Glassmorphic tooltip that wraps any element. Appears on hover or focus. Supports four positions via the <code>position</code> attribute.</p>
     <div class="row" style="align-items:center;gap:24px;flex-wrap:wrap;padding:20px 0">
@@ -788,52 +616,86 @@ d.addEventListener('o-cancel', () =&gt; console.log('cancelled'))</div>
   <o-button>Hover me</o-button>
 </o-tooltip>'>Copy</button>
     </div>
-
-    <!-- o-dropdown -->
-    <h2 id="section-dropdown">o-dropdown</h2>
-    <p class="desc">Glassmorphic dropdown menu. Set options via the <code>options</code> property. Fires <code>o-select</code> with <code>{ value, label }</code>. Keyboard-navigable with arrow keys and Escape.</p>
-    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
-      <div>
-        <div class="ks-label" style="margin-bottom:6px">Actions menu</div>
-        <o-dropdown id="demo-dropdown-actions">
-          <o-button>Actions ▾</o-button>
-        </o-dropdown>
-      </div>
-      <div>
-        <div class="ks-label" style="margin-bottom:6px">With icons</div>
-        <o-dropdown id="demo-dropdown-icons">
-          <o-button>File ▾</o-button>
-        </o-dropdown>
-      </div>
-      <div>
-        <div class="ks-label" style="margin-bottom:6px">Status</div>
-        <o-dropdown id="demo-dropdown-status">
-          <o-button>Set status ▾</o-button>
-        </o-dropdown>
-      </div>
+    </o-collapse>
+    <o-collapse open label="Layout">
+    <o-collapse open label="o-panel">
+<!-- o-panel -->
+    <h2 id="section-panel">o-panel</h2>
+    <p class="desc">Glassmorphic content panel. Supports dragging, grid snapping, and resizing.</p>
+    <div class="row">
+      <o-panel move snap="20">
+        <strong>Draggable + snap 20px</strong>
+        <p style="margin:8px 0 0;opacity:0.8">Grab ⠿ to move. Snaps to 20px grid.</p>
+      </o-panel>
+      <o-panel resize>
+        <strong>Resizable panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8">Drag the right / bottom / corner handles.</p>
+      </o-panel>
+      <o-panel move snap="40" resize>
+        <strong>Drag + snap 40px + resize</strong>
+        <p style="margin:8px 0 0;opacity:0.8">All features combined.</p>
+      </o-panel>
+      <o-panel>
+        <strong>Static panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8">No attributes.</p>
+      </o-panel>
     </div>
-    <div id="dropdown-result" style="margin-top:10px;font-size:13px;opacity:0.6;min-height:18px"></div>
-    <div class="code-wrap"><div class="code">const dd = document.querySelector('o-dropdown')
-
-dd.options = [
-  { label: 'Edit',      value: 'edit',      icon: '✏️' },
-  { label: 'Duplicate', value: 'duplicate', icon: '📋' },
-  { label: 'Delete',    value: 'delete',    icon: '🗑️' },
-]
-
-dd.addEventListener('o-select', e =&gt; {
-  console.log(e.detail) // { value, label }
-})
-
-// Programmatic control
-dd.open()
-dd.close()
-dd.toggle()</div>
-      <button class="copy-btn" data-copy="dd.options = [{ label: 'Edit', value: 'edit', icon: '✏️' }]
-dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
+    <div class="code-wrap"><div class="code">&lt;o-panel&gt;Static content&lt;/o-panel&gt;
+&lt;o-panel move&gt;Draggable&lt;/o-panel&gt;
+&lt;o-panel move snap="20"&gt;Snaps to 20px grid while dragging&lt;/o-panel&gt;
+&lt;o-panel resize&gt;Resizable (right / bottom / corner handles)&lt;/o-panel&gt;
+&lt;o-panel move snap="20" resize&gt;All combined&lt;/o-panel&gt;</div>
+      <button class="copy-btn" data-copy='<o-panel move snap="20" resize>Content</o-panel>'>Copy</button>
     </div>
+<!-- o-panel attribute playground -->
+    <h2 id="section-panel-playground" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-panel — attribute playground</h2>
+    <p class="desc">Toggle attributes live and see the generated markup update in real time.</p>
+    <div class="pg-controls">
+      <label><input type="checkbox" id="pg-move"> move</label>
+      <label><input type="checkbox" id="pg-resize"> resize</label>
+      <label><input type="checkbox" id="pg-snap"> snap
+        <input type="range" id="pg-snap-val" min="10" max="80" step="10" value="20" style="margin-left:4px">
+        <span id="pg-snap-num" style="min-width:24px;display:inline-block">20</span>
+      </label>
+    </div>
+    <div class="pg-preview">
+      <o-panel id="pg-panel">
+        <strong>Playground panel</strong>
+        <p style="margin:8px 0 0;opacity:0.8;font-size:13px">Toggle checkboxes above to change attributes.</p>
+      </o-panel>
+    </div>
+    <div class="code-wrap"><div class="code" id="pg-code">&lt;o-panel&gt;Content&lt;/o-panel&gt;</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+    </o-collapse>
+<!-- Grid drop-zone -->
+    <h2 id="section-dropzone">o-dropzone — grid drop-zone</h2>
+    <p class="desc">Drag a panel by its handle over the area below. The grid appears only while dragging, the cell under the panel highlights, and on release the panel snaps to fill it. Panels keep their free-drag behaviour — nothing reflows, and dragging back out releases the panel to float again.</p>
+    <div style="margin-bottom:8px;font-size:13px;opacity:0.6" id="dz-status">No panel dropped yet.</div>
+    <o-dropzone id="dz" cols="3" rows="2" gap="10" style="height:320px;border:var(--owc-glass-border-width) dashed var(--owc-glass-border);border-radius:var(--owc-glass-radius)">
+      <o-panel move snap="10" style="position:absolute;left:12px;top:12px">
+        <strong style="display:block;margin-bottom:6px">Drag me</strong>
+        <span style="font-size:13px;opacity:0.7">Drop into a cell</span>
+      </o-panel>
+      <o-panel move snap="10" style="position:absolute;left:12px;top:150px">
+        <strong style="display:block;margin-bottom:6px">And me</strong>
+        <span style="font-size:13px;opacity:0.7">Cells can overlap</span>
+      </o-panel>
+    </o-dropzone>
+    <div class="code-wrap"><div class="code">&lt;o-dropzone cols="3" rows="2" gap="10"&gt;
+  &lt;o-panel move snap="10"&gt;Drag me&lt;/o-panel&gt;
+&lt;/o-dropzone&gt;
 
-    <!-- o-tabs -->
+// Fires once the panel lands in a cell
+dz.addEventListener('o-drop', e =&gt; {
+  const { panel, col, row } = e.detail
+  console.log(`landed at column ${col}, row ${row}`)
+})</div>
+      <button class="copy-btn" data-copy="&lt;o-dropzone cols=&quot;3&quot; rows=&quot;2&quot; gap=&quot;10&quot;&gt;
+  &lt;o-panel move snap=&quot;10&quot;&gt;Drag me&lt;/o-panel&gt;
+&lt;/o-dropzone&gt;">Copy</button>
+    </div>
+<!-- o-tabs -->
     <h2 id="section-tabs">o-tabs</h2>
     <p class="desc">Glassmorphic tab bar. Add <code>slot="tab"</code> children with <code>data-value</code> for the tab headers, and <code>data-tab</code> on panel elements for content. Fires <code>o-change</code> with <code>{ value, prev }</code>. Arrow-key navigable.</p>
     <o-tabs id="demo-tabs" style="max-width:560px">
@@ -910,41 +772,116 @@ tabs.value = 'two' // programmatic switch</div>
 </o-tabs>
 tabs.addEventListener("o-change", e => console.log(e.detail))'>Copy</button>
     </div>
-
-    <!-- o-input -->
-    <h2 id="section-input">o-input</h2>
-    <p class="desc">Glassmorphic text input with optional static label and validation states. Fires <code>o-input</code> on every keystroke and <code>o-change</code> on blur.</p>
+<!-- o-note -->
+    <h2 id="section-note">o-note</h2>
+    <p class="desc">Glass-styled note component. <code>variant="textarea"</code> (default) auto-resizes with optional floating label and char counter. <code>variant="card"</code> adds a title and tag chips.</p>
     <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
-      <div style="flex:1;min-width:180px;max-width:240px">
-        <div class="ks-label" style="margin-bottom:6px">Default</div>
-        <o-input id="demo-input-default" label="Full name" placeholder="Alice Smith" style="display:block"></o-input>
+      <div style="flex:1;min-width:240px;max-width:380px">
+        <p style="font-size:12px;opacity:0.5;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em">Textarea variant</p>
+        <o-note label="Your thoughts" placeholder="Start typing..." max-length="200" style="display:block"></o-note>
       </div>
-      <div style="flex:1;min-width:180px;max-width:240px">
-        <div class="ks-label" style="margin-bottom:6px">Error state</div>
-        <o-input label="Email" placeholder="name@example.com" error="Invalid email address" style="display:block"></o-input>
-      </div>
-      <div style="flex:1;min-width:180px;max-width:240px">
-        <div class="ks-label" style="margin-bottom:6px">Success state</div>
-        <o-input label="Username" value="reneoun" success style="display:block"></o-input>
-      </div>
-      <div style="flex:1;min-width:180px;max-width:240px">
-        <div class="ks-label" style="margin-bottom:6px">Disabled</div>
-        <o-input label="API key" value="sk-••••••••" disabled style="display:block"></o-input>
+      <div style="flex:1;min-width:240px;max-width:380px">
+        <p style="font-size:12px;opacity:0.5;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em">Card variant</p>
+        <o-note variant="card" style="display:block"></o-note>
       </div>
     </div>
-    <div id="input-log" style="margin-top:10px;font-size:12px;opacity:0.6;font-family:monospace;min-height:18px"></div>
-    <div class="code-wrap"><div class="code">&lt;o-input label="Name" placeholder="Alice"&gt;&lt;/o-input&gt;
-&lt;o-input label="Email" error="Invalid email"&gt;&lt;/o-input&gt;
-&lt;o-input label="User" success&gt;&lt;/o-input&gt;
-&lt;o-input label="Key" disabled&gt;&lt;/o-input&gt;
+    <div class="code-wrap"><div class="code">&lt;!-- textarea --&gt;
+&lt;o-note label="Note" placeholder="..." max-length="200"&gt;&lt;/o-note&gt;
 
-input.addEventListener('o-input',  e =&gt; console.log(e.detail)) // { value }
-input.addEventListener('o-change', e =&gt; console.log(e.detail)) // { value }</div>
-      <button class="copy-btn" data-copy='<o-input label="Name" placeholder="Alice"></o-input>
-input.addEventListener("o-input", e => console.log(e.detail))'>Copy</button>
+&lt;!-- card --&gt;
+&lt;o-note variant="card"&gt;&lt;/o-note&gt;
+
+note.addEventListener('o-change', e =&gt; console.log(e.detail))</div>
+      <button class="copy-btn">Copy</button>
     </div>
+    </o-collapse>
+    <o-collapse open label="Data">
+    <o-collapse open label="o-table">
+<!-- o-table -->
+    <h2 id="section-table">o-table</h2>
+    <p class="desc">Sortable, resizable, glassmorphic data table. Supports column persistence and optional row selection.</p>
+    <o-table id="demo-table" storage="local" storage-key="owc-demo-table"></o-table>
+    <div class="code-wrap"><div class="code">&lt;o-table selectable&gt;&lt;/o-table&gt;
 
-    <!-- o-skeleton -->
+table.columns = [
+  { key: 'name',  label: 'Name',  width: 160, sortable: true },
+  { key: 'score', label: 'Score', width: 90,  sortable: true, minWidth: 60 },
+]
+table.data = [{ name: 'Alice', score: 92 }, ...]
+
+// Events
+table.addEventListener('o-sort',       e =&gt; console.log(e.detail)) // { col, dir }
+table.addEventListener('o-row-select', e =&gt; console.log(e.detail)) // { selected: row[] }
+
+// Attributes
+// storage="local|session"  storage-key="my-key"  — persists sort + column widths
+// selectable                                      — adds checkbox column</div>
+      <button class="copy-btn" data-copy='<o-table selectable></o-table>
+table.columns = [{ key: "name", label: "Name", width: 160, sortable: true }]
+table.data = [{ name: "Alice" }]'>Copy</button>
+    </div>
+<!-- o-table dynamic rows with undo/redo -->
+    <h2 id="section-table-dynamic" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-table — dynamic data + undo/redo</h2>
+    <p class="desc">Add, remove, or randomize rows at runtime. Every action is pushed to a history stack — undo and redo supported.</p>
+    <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <o-button id="tbl-add">+ Add row</o-button>
+      <o-button id="tbl-remove">- Remove last</o-button>
+      <o-button id="tbl-randomize">Randomize scores</o-button>
+      <o-button id="tbl-reset">Reset</o-button>
+      <div style="width:1px;height:24px;background:var(--owc-glass-border)"></div>
+      <o-button id="tbl-undo" disabled>↩ Undo</o-button>
+      <o-button id="tbl-redo" disabled>↪ Redo</o-button>
+      <span id="tbl-row-count" style="opacity:0.6;font-size:13px">4 rows</span>
+    </div>
+    <o-table id="demo-table-dyn" storage="local" storage-key="owc-dyn-table"></o-table>
+<!-- o-table editable -->
+    <h2 id="section-editable">o-table — editable cells</h2>
+    <p class="desc"><code>editable="always"</code> renders inline inputs. <code>editable="click"</code> opens a form row below the original with label:input pairs. Press ✏️ to edit, ✓ to confirm, ✗ to cancel.</p>
+    <o-table id="editable-table" editable></o-table>
+    <div id="editable-log" style="margin-top:8px;font-size:12px;opacity:0.6;font-family:monospace;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">&lt;o-table editable&gt;&lt;/o-table&gt;
+
+table.columns = [
+  { key: 'name', label: 'Name', width: 160, editable: 'always' },
+  { key: 'role', label: 'Role', width: 140, editable: 'click'  },
+  { key: 'dept', label: 'Dept', width: 140, editable: 'click'  },
+]
+// Click ✏️ → form row appears below with editable fields
+table.addEventListener('o-cell-change', e =&gt; console.log(e.detail))
+table.addEventListener('o-row-change',  e =&gt; console.log(e.detail))</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+<!-- Multi-search AND filter -->
+    <h2 id="section-multisearch">Multi-search (AND filter)</h2>
+    <p class="desc">Two <code>o-search</code> bars filtering the same dataset simultaneously — results must match both queries. Paged with <code>page-size</code>, which resets to page 1 whenever the filters change.</p>
+    <div class="row" style="gap:12px">
+      <o-search id="multi-s1" placeholder="Filter by name..." no-dropdown style="max-width:300px"></o-search>
+      <o-search id="multi-s2" placeholder="Filter by company..." no-dropdown style="max-width:300px"></o-search>
+      <o-button id="btn-multi-clear">Clear</o-button>
+    </div>
+    <div style="margin-top:8px;font-size:13px;opacity:0.6" id="multi-count"></div>
+    <div style="margin-top:8px">
+      <o-table id="multi-table" page-size="8"></o-table>
+    </div>
+    <div class="code-wrap"><div class="code">// Two o-search bars — results must satisfy both filters simultaneously
+s1.addEventListener('o-input', e => { q1 = e.detail.query; render() })
+s2.addEventListener('o-input', e => { q2 = e.detail.query; render() })
+
+function render() {
+  const a = q1.toLowerCase(), b = q2.toLowerCase()
+  // Assigning .data resets the table to page 1 automatically
+  table.data = allData.filter(r =&gt;
+    (!a || r.name.toLowerCase().includes(a) || r.dept.toLowerCase().includes(a)) &amp;&amp;
+    (!b || r.company.toLowerCase().includes(b))
+  )
+}
+
+// &lt;o-table page-size="8"&gt; renders its own pager and emits o-page
+table.addEventListener('o-page', e =&gt; console.log(e.detail.page))</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+    </o-collapse>
+<!-- o-skeleton -->
     <h2 id="section-skeleton">o-skeleton</h2>
     <p class="desc">Pulsing glassmorphic placeholder for loading states. Three variants: <code>block</code> (default), <code>table</code> (matches <code>o-table</code>), and <code>panel</code> (matches <code>o-panel</code>). Swap in wherever content is loading.</p>
     <div class="row" style="align-items:flex-start;gap:24px;flex-wrap:wrap">
@@ -989,8 +926,7 @@ input.addEventListener("o-input", e => console.log(e.detail))'>Copy</button>
 &lt;o-skeleton variant="panel"&gt;&lt;/o-skeleton&gt;</div>
       <button class="copy-btn" data-copy='<o-skeleton variant="table" rows="5"></o-skeleton>'>Copy</button>
     </div>
-
-    <!-- o-progress -->
+<!-- o-progress -->
     <h2 id="section-progress">o-progress</h2>
     <p class="desc">Fixed top-of-page loading bar. Use the static API or set the <code>value</code> attribute (0–100). <code>OProgress.done()</code> or <code>value="100"</code> animates to full then fades out automatically.</p>
     <div class="row" style="gap:10px;flex-wrap:wrap">
@@ -1019,8 +955,7 @@ document.querySelector('o-progress').setAttribute('value', '75')</div>
 OProgress.set(60)
 OProgress.done()">Copy</button>
     </div>
-
-    <!-- asyncPlus demo -->
+<!-- asyncPlus demo -->
     <h2 id="section-async-plus">asyncPlus</h2>
     <p class="desc"><code>asyncPlus(...promises)</code> wraps multiple promises and automatically drives the progress bar — starts on the first call, increments as each settles, completes when all are done. Fires a <code>progress-complete</code> event on <code>document</code>.</p>
     <o-panel style="max-width:520px;width:100%">
@@ -1046,8 +981,362 @@ document.addEventListener('progress-complete', e => {
 })</div>
       <button class="copy-btn">Copy</button>
     </div>
+    </o-collapse>
+    <o-collapse open label="Input & Search">
+    <o-collapse open label="o-search">
+<!-- o-search -->
+    <h2 id="section-search">o-search</h2>
+    <p class="desc">Glassmorphic search bar with built-in filtering and optional dropdown. Add <code>no-dropdown</code> to use it as a pure filter input.</p>
+    <o-search id="demo-search-standalone" placeholder="Search fruits..." style="max-width:400px"></o-search>
+    <div id="search-result" style="margin-top:8px;opacity:0.7;font-size:13px"></div>
+    <div class="code-wrap"><div class="code">&lt;o-search placeholder="Search..." no-dropdown&gt;&lt;/o-search&gt;
 
-    <!-- Combined: o-search + o-table + pagination -->
+search.data       = [{ name: 'Apple' }, { name: 'Banana' }]
+search.searchKeys = ['name']
+search.valueKey   = 'name'                           // fills input on select
+search.renderItem = item =&gt; `&lt;b&gt;${item.name}&lt;/b&gt;`   // custom dropdown row
+
+// Custom filter (overrides searchKeys)
+search.filterFn = (query, item) =&gt; item.name.startsWith(query)
+
+// Events
+search.addEventListener('o-input',   e =&gt; console.log(e.detail)) // { query }
+search.addEventListener('o-results', e =&gt; console.log(e.detail)) // { query, results }
+search.addEventListener('o-select',  e =&gt; console.log(e.detail)) // { item, query }</div>
+      <button class="copy-btn" data-copy='<o-search placeholder="Search..." no-dropdown></o-search>
+search.data = [{ name: "Apple" }]
+search.searchKeys = ["name"]'>Copy</button>
+    </div>
+<!-- Rich o-search with custom renderItem -->
+    <h2 id="section-search-rich" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-search — rich dropdown with custom renderItem</h2>
+    <p class="desc">Pass a <code>renderItem</code> function to build any dropdown layout — emoji, icons, multi-line, badges.</p>
+    <o-search id="demo-search-rich" placeholder="Search commands..." style="max-width:440px"></o-search>
+    <div id="rich-selected" style="margin-top:8px;opacity:0.7;font-size:13px;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">search.renderItem = item =&gt; `
+  &lt;span style="font-size:18px"&gt;${item.icon}&lt;/span&gt;
+  &lt;span&gt;&lt;b&gt;${item.name}&lt;/b&gt;&lt;br&gt;
+    &lt;small style="opacity:0.6"&gt;${item.desc}&lt;/small&gt;&lt;/span&gt;`</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+<!-- Auto-complete with side effects -->
+    <h2 id="section-autocomplete">Auto-complete with side effects</h2>
+    <p class="desc">Select a country in the dropdown — the currency, flag, and continent fields auto-populate. One <code>o-search</code> driving multiple outputs.</p>
+    <o-panel style="max-width:480px;width:100%">
+      <div class="ks-label">Country</div>
+      <o-search id="country-search" placeholder="Search countries..." style="width:100%;margin-bottom:12px"></o-search>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="ks-label">Flag</div>
+          <div id="country-flag" style="font-size:2.5rem;line-height:1;min-height:40px">—</div>
+        </div>
+        <div>
+          <div class="ks-label">Currency</div>
+          <div id="country-currency" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
+        </div>
+        <div>
+          <div class="ks-label">Continent</div>
+          <div id="country-continent" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
+        </div>
+        <div>
+          <div class="ks-label">Dialing code</div>
+          <div id="country-dial" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
+        </div>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">// One o-search drives multiple output fields
+search.items = countries.map(c => ({ label: c.name, value: c.name }))
+
+search.addEventListener('o-select', e => {
+  const c = countries.find(x => x.name === e.detail.value)
+  flag.textContent      = c.flag
+  currency.textContent  = c.currency
+  continent.textContent = c.continent
+  dial.textContent      = c.dial
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+    </o-collapse>
+<!-- Form validation demo -->
+    <h2 id="section-form">Form validation</h2>
+    <p class="desc">A submit button that stays disabled until all required fields have content — built with <code>o-search</code> as text inputs and <code>o-button</code> as submit.</p>
+    <o-panel style="max-width:460px;width:100%">
+      <o-input id="form-fname" label="First name *" placeholder="Enter first name..." style="width:100%;margin-bottom:10px"></o-input>
+      <o-input id="form-lname" label="Last name *" placeholder="Enter last name..." style="width:100%;margin-bottom:10px"></o-input>
+      <o-input id="form-email" label="Email *" type="email" placeholder="name@example.com" style="width:100%;margin-bottom:14px"></o-input>
+
+      <div style="display:flex;align-items:center;gap:10px">
+        <o-button id="btn-form-submit" disabled>Submit</o-button>
+        <span id="form-hint" style="font-size:12px;opacity:0.5">Fill all fields to enable</span>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">&lt;o-input id="fname" label="First name *" placeholder="Alice"&gt;&lt;/o-input&gt;
+&lt;o-input id="email" label="Email *" type="email" placeholder="name@example.com"&gt;&lt;/o-input&gt;
+&lt;o-button id="submit" disabled&gt;Submit&lt;/o-button&gt;
+
+const values = {}
+inputs.forEach(el =>
+  el.addEventListener('o-input', e => {
+    values[el.id] = e.detail.value
+    submit.toggleAttribute('disabled', !Object.values(values).every(Boolean))
+  })
+)
+
+// Show validation state on blur
+emailInput.addEventListener('o-change', e => {
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.detail.value)
+  emailInput.setAttribute('error', valid ? '' : 'Enter a valid email')
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+<!-- o-dropdown -->
+    <h2 id="section-dropdown">o-dropdown</h2>
+    <p class="desc">Glassmorphic dropdown menu. Set options via the <code>options</code> property. Fires <code>o-select</code> with <code>{ value, label }</code>. Keyboard-navigable with arrow keys and Escape.</p>
+    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div>
+        <div class="ks-label" style="margin-bottom:6px">Actions menu</div>
+        <o-dropdown id="demo-dropdown-actions">
+          <o-button>Actions ▾</o-button>
+        </o-dropdown>
+      </div>
+      <div>
+        <div class="ks-label" style="margin-bottom:6px">With icons</div>
+        <o-dropdown id="demo-dropdown-icons">
+          <o-button>File ▾</o-button>
+        </o-dropdown>
+      </div>
+      <div>
+        <div class="ks-label" style="margin-bottom:6px">Status</div>
+        <o-dropdown id="demo-dropdown-status">
+          <o-button>Set status ▾</o-button>
+        </o-dropdown>
+      </div>
+    </div>
+    <div id="dropdown-result" style="margin-top:10px;font-size:13px;opacity:0.6;min-height:18px"></div>
+    <div class="code-wrap"><div class="code">const dd = document.querySelector('o-dropdown')
+
+dd.options = [
+  { label: 'Edit',      value: 'edit',      icon: '✏️' },
+  { label: 'Duplicate', value: 'duplicate', icon: '📋' },
+  { label: 'Delete',    value: 'delete',    icon: '🗑️' },
+]
+
+dd.addEventListener('o-select', e =&gt; {
+  console.log(e.detail) // { value, label }
+})
+
+// Programmatic control
+dd.open()
+dd.close()
+dd.toggle()</div>
+      <button class="copy-btn" data-copy="dd.options = [{ label: 'Edit', value: 'edit', icon: '✏️' }]
+dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
+    </div>
+    </o-collapse>
+    <o-collapse open label="Overlays">
+<!-- o-dialog -->
+    <h2 id="section-dialog">o-dialog</h2>
+    <p class="desc">Glassmorphism form dialog with blurred backdrop, slot-based content, and programmatic open/close. Fires <code>o-submit</code> with named input values and <code>o-cancel</code> on backdrop click or Escape.</p>
+    <div class="row">
+      <o-button id="btn-open-dialog">Open dialog</o-button>
+      <span id="dialog-result" style="font-size:13px;opacity:0.6"></span>
+    </div>
+
+    <o-dialog id="demo-dialog">
+      <span slot="title">Add team member</span>
+
+      <o-input name="name" label="Name" placeholder="Alice" style="width:100%;margin-bottom:10px"></o-input>
+      <o-input name="role" label="Role" placeholder="Engineer" style="width:100%"></o-input>
+
+      <div slot="actions">
+        <o-button type="submit">Add member</o-button>
+        <o-button id="btn-dialog-cancel">Cancel</o-button>
+      </div>
+    </o-dialog>
+
+    <div class="code-wrap"><div class="code">&lt;o-dialog id="d"&gt;
+  &lt;span slot="title"&gt;Add Item&lt;/span&gt;
+
+  &lt;label&gt;Name&lt;/label&gt;
+  &lt;input name="name" type="text"&gt;
+
+  &lt;div slot="actions"&gt;
+    &lt;o-button type="submit"&gt;Save&lt;/o-button&gt;
+  &lt;/div&gt;
+&lt;/o-dialog&gt;
+
+document.getElementById('d').open()
+
+d.addEventListener('o-submit', e =&gt; console.log(e.detail)) // { name }
+d.addEventListener('o-cancel', () =&gt; console.log('cancelled'))</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+    <o-collapse open label="o-toast">
+<!-- o-toast -->
+    <h2 id="section-toast">o-toast</h2>
+    <p class="desc">Programmatic toast notifications. Call <code>window.toast(message, type?, options?)</code> after loading the CDN bundle.</p>
+    <div class="row">
+      <o-button id="btn-success">Success</o-button>
+      <o-button id="btn-error">Error</o-button>
+      <o-button id="btn-warning">Warning</o-button>
+      <o-button id="btn-info">Info</o-button>
+      <o-button id="btn-long">8s toast</o-button>
+    </div>
+    <div class="code-wrap"><div class="code">// type: 'success' | 'error' | 'warning' | 'info'  (default: 'info')
+toast('File saved!', 'success')
+toast('Connection failed', 'error')
+toast('Long message', 'info', { duration: 8000 })</div>
+      <button class="copy-btn" data-copy="toast('File saved!', 'success')">Copy</button>
+    </div>
+<!-- Toast builder -->
+    <h2 id="section-toast-builder">Custom toast builder</h2>
+    <p class="desc">Compose a custom notification — type your message, pick a type, set a duration, and fire. Built entirely from OWC components.</p>
+    <o-panel style="max-width:520px;width:100%">
+      <o-input id="toast-msg-input" label="Message" placeholder="Your notification message..." style="width:100%"></o-input>
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px">
+        <div>
+          <div class="ks-label">Type</div>
+          <o-toggle id="toast-type" options="Success,Error,Warning,Info" value="info"></o-toggle>
+        </div>
+        <div>
+          <div class="ks-label">Duration</div>
+          <o-toggle id="toast-dur" options="2s,4s,8s,∞" value="4s"></o-toggle>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <o-button id="btn-fire-custom-toast">Fire toast</o-button>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">&lt;o-input id="msg" label="Message" placeholder="Your message..."&gt;&lt;/o-input&gt;
+&lt;o-toggle id="type" options="Success,Error,Warning,Info" value="info"&gt;&lt;/o-toggle&gt;
+&lt;o-toggle id="dur"  options="2s,4s,8s,∞" value="4s"&gt;&lt;/o-toggle&gt;
+&lt;o-button&gt;Fire toast&lt;/o-button&gt;
+
+const durMap = { '2s': 2000, '4s': 4000, '8s': 8000, '∞': 99999 }
+btn.addEventListener('o-click', () =>
+  toast(msg.value || 'Hello!', type.value.toLowerCase(), { duration: durMap[dur.value] })
+)</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+    </o-collapse>
+    </o-collapse>
+    <o-collapse open label="Examples">
+<!-- Calculator -->
+    <h2 id="section-calculator">Calculator</h2>
+    <p class="desc">A working calculator assembled only from OWC components — <code>o-panel</code> shell, <code>o-input</code> display, <code>o-button</code> keypad, <code>o-toast</code> for errors. Click the keys or type; <kbd>Esc</kbd> clears, <kbd>Backspace</kbd> deletes.</p>
+    <o-panel id="calc-panel" move snap="20" style="max-width:300px">
+      <strong style="display:block;margin-bottom:10px">Calculator</strong>
+      <o-input id="calc-display" label="Result" style="display:block;margin-bottom:10px"></o-input>
+      <div class="calc-grid" id="calc-keys">
+        <o-button data-key="C" class="calc-wide">C</o-button>
+        <o-button data-key="back">&#8592;</o-button>
+        <o-button data-key="/">&#247;</o-button>
+        <o-button data-key="7">7</o-button>
+        <o-button data-key="8">8</o-button>
+        <o-button data-key="9">9</o-button>
+        <o-button data-key="*">&#215;</o-button>
+        <o-button data-key="4">4</o-button>
+        <o-button data-key="5">5</o-button>
+        <o-button data-key="6">6</o-button>
+        <o-button data-key="-">&#8722;</o-button>
+        <o-button data-key="1">1</o-button>
+        <o-button data-key="2">2</o-button>
+        <o-button data-key="3">3</o-button>
+        <o-button data-key="+">+</o-button>
+        <o-button data-key="0" class="calc-wide">0</o-button>
+        <o-button data-key=".">.</o-button>
+        <o-button data-key="=">=</o-button>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">// Every key is an o-button; the display is an o-input
+keys.addEventListener('click', e =&gt; {
+  const btn = e.target.closest('o-button')
+  if (btn) press(btn.dataset.key)
+})
+
+// Divide-by-zero surfaces through o-toast rather than showing NaN
+if (op === '/' &amp;&amp; b === 0) {
+  toast({ message: 'Cannot divide by zero', type: 'error' })
+  return clear()
+}</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+<!-- Kanban demo -->
+    <h2 id="section-kanban">o-panel — kanban board</h2>
+    <p class="desc">Three <code>o-panel</code> columns as a kanban board. Move items between columns using the arrow buttons.</p>
+    <div class="row scroll-x" style="align-items:flex-start;gap:12px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">
+      <o-panel id="kan-todo"    style="min-width:180px;flex:1">
+        <div style="font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+          <span>To do <span id="kan-todo-count" style="opacity:0.5;font-weight:400;font-size:12px">(3)</span></span>
+        </div>
+        <div id="kan-todo-list"></div>
+      </o-panel>
+      <o-panel id="kan-doing"   style="min-width:180px;flex:1">
+        <div style="font-weight:700;margin-bottom:10px">In progress <span id="kan-doing-count" style="opacity:0.5;font-weight:400;font-size:12px">(2)</span></div>
+        <div id="kan-doing-list"></div>
+      </o-panel>
+      <o-panel id="kan-done"    style="min-width:180px;flex:1">
+        <div style="font-weight:700;margin-bottom:10px">Done <span id="kan-done-count" style="opacity:0.5;font-weight:400;font-size:12px">(1)</span></div>
+        <div id="kan-done-list"></div>
+      </o-panel>
+    </div>
+    <div class="code-wrap"><div class="code">&lt;!-- Three o-panel columns as a kanban board --&gt;
+&lt;div style="display:flex;gap:12px"&gt;
+  &lt;o-panel id="todo"&gt;...&lt;/o-panel&gt;
+  &lt;o-panel id="doing"&gt;...&lt;/o-panel&gt;
+  &lt;o-panel id="done"&gt;...&lt;/o-panel&gt;
+&lt;/div&gt;
+
+// Move item between columns
+function move(item, fromCol, toCol) {
+  fromCol.items = fromCol.items.filter(i => i !== item)
+  toCol.items   = [...toCol.items, item]
+  renderColumn(fromCol)
+  renderColumn(toCol)
+}</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Scroll to top -->
+    <div id="scroll-top-btn" style="display:none;position:fixed;bottom:24px;right:24px;z-index:90">
+      <o-button id="btn-scroll-top">↑ Top</o-button>
+    </div>
+<!-- Live clock widget -->
+    <h2 id="section-clock">o-panel — as a live widget</h2>
+    <p class="desc">An <code>o-panel</code> used as a real-time widget host — draggable clock showing that panels can hold any live content.</p>
+    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <o-panel move snap="10" style="min-width:180px;text-align:center">
+        <div id="clock-time" style="font-size:2.2rem;font-weight:700;letter-spacing:0.05em;line-height:1">00:00:00</div>
+        <div id="clock-date" style="font-size:12px;opacity:0.6;margin-top:4px"></div>
+        <div style="margin-top:10px;display:flex;gap:6px;justify-content:center">
+          <o-toggle id="clock-fmt" options="24h,12h" value="24h"></o-toggle>
+        </div>
+      </o-panel>
+      <o-panel move snap="10" style="min-width:200px">
+        <div style="font-size:12px;opacity:0.5;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">Notification queue</div>
+        <div class="row" style="gap:6px;flex-wrap:wrap">
+          <o-button id="q-success">+Success</o-button>
+          <o-button id="q-error">+Error</o-button>
+          <o-button id="q-info">+Info</o-button>
+          <o-button id="q-fire">Fire queue</o-button>
+        </div>
+        <div id="q-count" style="margin-top:8px;font-size:12px;opacity:0.6">Queue: 0 toasts</div>
+      </o-panel>
+    </div>
+    <div class="code-wrap"><div class="code">// Clock: update every second
+setInterval(() =&gt; {
+  clock.textContent = new Date().toLocaleTimeString()
+}, 1000)
+
+// Notification queue: fire with staggered delays
+queue.forEach((item, i) =&gt; {
+  setTimeout(() =&gt; toast(item.msg, item.type), i * 800)
+})</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+<!-- Combined: o-search + o-table + pagination -->
     <h2 id="section-combined">Search + Table + Pagination</h2>
     <p class="desc">Live example combining <code>o-search</code>, <code>o-table</code> (selectable), <code>o-toggle</code> for pages + page size, and <code>o-button</code> for prev/next.</p>
     <o-search id="demo-search" placeholder="Search people..." no-dropdown style="max-width:500px"></o-search>
@@ -1116,287 +1405,7 @@ btnExport.addEventListener('o-click', () => {
 })</div>
       <button class="copy-btn">Copy</button>
     </div>
-
-    <!-- Toast builder -->
-    <h2 id="section-toast-builder">Custom toast builder</h2>
-    <p class="desc">Compose a custom notification — type your message, pick a type, set a duration, and fire. Built entirely from OWC components.</p>
-    <o-panel style="max-width:520px;width:100%">
-      <o-input id="toast-msg-input" label="Message" placeholder="Your notification message..." style="width:100%"></o-input>
-
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px">
-        <div>
-          <div class="ks-label">Type</div>
-          <o-toggle id="toast-type" options="Success,Error,Warning,Info" value="info"></o-toggle>
-        </div>
-        <div>
-          <div class="ks-label">Duration</div>
-          <o-toggle id="toast-dur" options="2s,4s,8s,∞" value="4s"></o-toggle>
-        </div>
-      </div>
-
-      <div style="margin-top:14px">
-        <o-button id="btn-fire-custom-toast">Fire toast</o-button>
-      </div>
-    </o-panel>
-    <div class="code-wrap"><div class="code">&lt;o-input id="msg" label="Message" placeholder="Your message..."&gt;&lt;/o-input&gt;
-&lt;o-toggle id="type" options="Success,Error,Warning,Info" value="info"&gt;&lt;/o-toggle&gt;
-&lt;o-toggle id="dur"  options="2s,4s,8s,∞" value="4s"&gt;&lt;/o-toggle&gt;
-&lt;o-button&gt;Fire toast&lt;/o-button&gt;
-
-const durMap = { '2s': 2000, '4s': 4000, '8s': 8000, '∞': 99999 }
-btn.addEventListener('o-click', () =>
-  toast(msg.value || 'Hello!', type.value.toLowerCase(), { duration: durMap[dur.value] })
-)</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- Kanban demo -->
-    <h2 id="section-kanban">o-panel — kanban board</h2>
-    <p class="desc">Three <code>o-panel</code> columns as a kanban board. Move items between columns using the arrow buttons.</p>
-    <div class="row scroll-x" style="align-items:flex-start;gap:12px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">
-      <o-panel id="kan-todo"    style="min-width:180px;flex:1">
-        <div style="font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
-          <span>To do <span id="kan-todo-count" style="opacity:0.5;font-weight:400;font-size:12px">(3)</span></span>
-        </div>
-        <div id="kan-todo-list"></div>
-      </o-panel>
-      <o-panel id="kan-doing"   style="min-width:180px;flex:1">
-        <div style="font-weight:700;margin-bottom:10px">In progress <span id="kan-doing-count" style="opacity:0.5;font-weight:400;font-size:12px">(2)</span></div>
-        <div id="kan-doing-list"></div>
-      </o-panel>
-      <o-panel id="kan-done"    style="min-width:180px;flex:1">
-        <div style="font-weight:700;margin-bottom:10px">Done <span id="kan-done-count" style="opacity:0.5;font-weight:400;font-size:12px">(1)</span></div>
-        <div id="kan-done-list"></div>
-      </o-panel>
-    </div>
-    <div class="code-wrap"><div class="code">&lt;!-- Three o-panel columns as a kanban board --&gt;
-&lt;div style="display:flex;gap:12px"&gt;
-  &lt;o-panel id="todo"&gt;...&lt;/o-panel&gt;
-  &lt;o-panel id="doing"&gt;...&lt;/o-panel&gt;
-  &lt;o-panel id="done"&gt;...&lt;/o-panel&gt;
-&lt;/div&gt;
-
-// Move item between columns
-function move(item, fromCol, toCol) {
-  fromCol.items = fromCol.items.filter(i => i !== item)
-  toCol.items   = [...toCol.items, item]
-  renderColumn(fromCol)
-  renderColumn(toCol)
-}</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- Scroll to top -->
-    <div id="scroll-top-btn" style="display:none;position:fixed;bottom:24px;right:24px;z-index:90">
-      <o-button id="btn-scroll-top">↑ Top</o-button>
-    </div>
-
-    <!-- Live clock widget -->
-    <h2 id="section-clock">o-panel — as a live widget</h2>
-    <p class="desc">An <code>o-panel</code> used as a real-time widget host — draggable clock showing that panels can hold any live content.</p>
-    <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:wrap">
-      <o-panel move snap="10" style="min-width:180px;text-align:center">
-        <div id="clock-time" style="font-size:2.2rem;font-weight:700;letter-spacing:0.05em;line-height:1">00:00:00</div>
-        <div id="clock-date" style="font-size:12px;opacity:0.6;margin-top:4px"></div>
-        <div style="margin-top:10px;display:flex;gap:6px;justify-content:center">
-          <o-toggle id="clock-fmt" options="24h,12h" value="24h"></o-toggle>
-        </div>
-      </o-panel>
-      <o-panel move snap="10" style="min-width:200px">
-        <div style="font-size:12px;opacity:0.5;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">Notification queue</div>
-        <div class="row" style="gap:6px;flex-wrap:wrap">
-          <o-button id="q-success">+Success</o-button>
-          <o-button id="q-error">+Error</o-button>
-          <o-button id="q-info">+Info</o-button>
-          <o-button id="q-fire">Fire queue</o-button>
-        </div>
-        <div id="q-count" style="margin-top:8px;font-size:12px;opacity:0.6">Queue: 0 toasts</div>
-      </o-panel>
-    </div>
-    <div class="code-wrap"><div class="code">// Clock: update every second
-setInterval(() =&gt; {
-  clock.textContent = new Date().toLocaleTimeString()
-}, 1000)
-
-// Notification queue: fire with staggered delays
-queue.forEach((item, i) =&gt; {
-  setTimeout(() =&gt; toast(item.msg, item.type), i * 800)
-})</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- Auto-complete with side effects -->
-    <h2 id="section-autocomplete">Auto-complete with side effects</h2>
-    <p class="desc">Select a country in the dropdown — the currency, flag, and continent fields auto-populate. One <code>o-search</code> driving multiple outputs.</p>
-    <o-panel style="max-width:480px;width:100%">
-      <div class="ks-label">Country</div>
-      <o-search id="country-search" placeholder="Search countries..." style="width:100%;margin-bottom:12px"></o-search>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div>
-          <div class="ks-label">Flag</div>
-          <div id="country-flag" style="font-size:2.5rem;line-height:1;min-height:40px">—</div>
-        </div>
-        <div>
-          <div class="ks-label">Currency</div>
-          <div id="country-currency" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
-        </div>
-        <div>
-          <div class="ks-label">Continent</div>
-          <div id="country-continent" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
-        </div>
-        <div>
-          <div class="ks-label">Dialing code</div>
-          <div id="country-dial" style="font-size:15px;opacity:0.8;padding-top:6px">—</div>
-        </div>
-      </div>
-    </o-panel>
-    <div class="code-wrap"><div class="code">// One o-search drives multiple output fields
-search.items = countries.map(c => ({ label: c.name, value: c.name }))
-
-search.addEventListener('o-select', e => {
-  const c = countries.find(x => x.name === e.detail.value)
-  flag.textContent      = c.flag
-  currency.textContent  = c.currency
-  continent.textContent = c.continent
-  dial.textContent      = c.dial
-})</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- Form validation demo -->
-    <h2 id="section-form">Form validation</h2>
-    <p class="desc">A submit button that stays disabled until all required fields have content — built with <code>o-search</code> as text inputs and <code>o-button</code> as submit.</p>
-    <o-panel style="max-width:460px;width:100%">
-      <o-input id="form-fname" label="First name *" placeholder="Enter first name..." style="width:100%;margin-bottom:10px"></o-input>
-      <o-input id="form-lname" label="Last name *" placeholder="Enter last name..." style="width:100%;margin-bottom:10px"></o-input>
-      <o-input id="form-email" label="Email *" type="email" placeholder="name@example.com" style="width:100%;margin-bottom:14px"></o-input>
-
-      <div style="display:flex;align-items:center;gap:10px">
-        <o-button id="btn-form-submit" disabled>Submit</o-button>
-        <span id="form-hint" style="font-size:12px;opacity:0.5">Fill all fields to enable</span>
-      </div>
-    </o-panel>
-    <div class="code-wrap"><div class="code">&lt;o-input id="fname" label="First name *" placeholder="Alice"&gt;&lt;/o-input&gt;
-&lt;o-input id="email" label="Email *" type="email" placeholder="name@example.com"&gt;&lt;/o-input&gt;
-&lt;o-button id="submit" disabled&gt;Submit&lt;/o-button&gt;
-
-const values = {}
-inputs.forEach(el =>
-  el.addEventListener('o-input', e => {
-    values[el.id] = e.detail.value
-    submit.toggleAttribute('disabled', !Object.values(values).every(Boolean))
-  })
-)
-
-// Show validation state on blur
-emailInput.addEventListener('o-change', e => {
-  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.detail.value)
-  emailInput.setAttribute('error', valid ? '' : 'Enter a valid email')
-})</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- Multi-search AND filter -->
-    <h2 id="section-multisearch">Multi-search (AND filter)</h2>
-    <p class="desc">Two <code>o-search</code> bars filtering the same dataset simultaneously — results must match both queries. Paged with <code>page-size</code>, which resets to page 1 whenever the filters change.</p>
-    <div class="row" style="gap:12px">
-      <o-search id="multi-s1" placeholder="Filter by name..." no-dropdown style="max-width:300px"></o-search>
-      <o-search id="multi-s2" placeholder="Filter by company..." no-dropdown style="max-width:300px"></o-search>
-      <o-button id="btn-multi-clear">Clear</o-button>
-    </div>
-    <div style="margin-top:8px;font-size:13px;opacity:0.6" id="multi-count"></div>
-    <div style="margin-top:8px">
-      <o-table id="multi-table" page-size="8"></o-table>
-    </div>
-    <div class="code-wrap"><div class="code">// Two o-search bars — results must satisfy both filters simultaneously
-s1.addEventListener('o-input', e => { q1 = e.detail.query; render() })
-s2.addEventListener('o-input', e => { q2 = e.detail.query; render() })
-
-function render() {
-  const a = q1.toLowerCase(), b = q2.toLowerCase()
-  // Assigning .data resets the table to page 1 automatically
-  table.data = allData.filter(r =&gt;
-    (!a || r.name.toLowerCase().includes(a) || r.dept.toLowerCase().includes(a)) &amp;&amp;
-    (!b || r.company.toLowerCase().includes(b))
-  )
-}
-
-// &lt;o-table page-size="8"&gt; renders its own pager and emits o-page
-table.addEventListener('o-page', e =&gt; console.log(e.detail.page))</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- Calculator -->
-    <h2 id="section-calculator">Calculator</h2>
-    <p class="desc">A working calculator assembled only from OWC components — <code>o-panel</code> shell, <code>o-input</code> display, <code>o-button</code> keypad, <code>o-toast</code> for errors. Click the keys or type; <kbd>Esc</kbd> clears, <kbd>Backspace</kbd> deletes.</p>
-    <o-panel id="calc-panel" move snap="20" style="max-width:300px">
-      <strong style="display:block;margin-bottom:10px">Calculator</strong>
-      <o-input id="calc-display" label="Result" style="display:block;margin-bottom:10px"></o-input>
-      <div class="calc-grid" id="calc-keys">
-        <o-button data-key="C" class="calc-wide">C</o-button>
-        <o-button data-key="back">&#8592;</o-button>
-        <o-button data-key="/">&#247;</o-button>
-        <o-button data-key="7">7</o-button>
-        <o-button data-key="8">8</o-button>
-        <o-button data-key="9">9</o-button>
-        <o-button data-key="*">&#215;</o-button>
-        <o-button data-key="4">4</o-button>
-        <o-button data-key="5">5</o-button>
-        <o-button data-key="6">6</o-button>
-        <o-button data-key="-">&#8722;</o-button>
-        <o-button data-key="1">1</o-button>
-        <o-button data-key="2">2</o-button>
-        <o-button data-key="3">3</o-button>
-        <o-button data-key="+">+</o-button>
-        <o-button data-key="0" class="calc-wide">0</o-button>
-        <o-button data-key=".">.</o-button>
-        <o-button data-key="=">=</o-button>
-      </div>
-    </o-panel>
-    <div class="code-wrap"><div class="code">// Every key is an o-button; the display is an o-input
-keys.addEventListener('click', e =&gt; {
-  const btn = e.target.closest('o-button')
-  if (btn) press(btn.dataset.key)
-})
-
-// Divide-by-zero surfaces through o-toast rather than showing NaN
-if (op === '/' &amp;&amp; b === 0) {
-  toast({ message: 'Cannot divide by zero', type: 'error' })
-  return clear()
-}</div>
-      <button class="copy-btn">Copy</button>
-    </div>
-
-    <!-- Grid drop-zone -->
-    <h2 id="section-dropzone">o-dropzone — grid drop-zone</h2>
-    <p class="desc">Drag a panel by its handle over the area below. The grid appears only while dragging, the cell under the panel highlights, and on release the panel snaps to fill it. Panels keep their free-drag behaviour — nothing reflows, and dragging back out releases the panel to float again.</p>
-    <div style="margin-bottom:8px;font-size:13px;opacity:0.6" id="dz-status">No panel dropped yet.</div>
-    <o-dropzone id="dz" cols="3" rows="2" gap="10" style="height:320px;border:var(--owc-glass-border-width) dashed var(--owc-glass-border);border-radius:var(--owc-glass-radius)">
-      <o-panel move snap="10" style="position:absolute;left:12px;top:12px">
-        <strong style="display:block;margin-bottom:6px">Drag me</strong>
-        <span style="font-size:13px;opacity:0.7">Drop into a cell</span>
-      </o-panel>
-      <o-panel move snap="10" style="position:absolute;left:12px;top:150px">
-        <strong style="display:block;margin-bottom:6px">And me</strong>
-        <span style="font-size:13px;opacity:0.7">Cells can overlap</span>
-      </o-panel>
-    </o-dropzone>
-    <div class="code-wrap"><div class="code">&lt;o-dropzone cols="3" rows="2" gap="10"&gt;
-  &lt;o-panel move snap="10"&gt;Drag me&lt;/o-panel&gt;
-&lt;/o-dropzone&gt;
-
-// Fires once the panel lands in a cell
-dz.addEventListener('o-drop', e =&gt; {
-  const { panel, col, row } = e.detail
-  console.log(`landed at column ${col}, row ${row}`)
-})</div>
-      <button class="copy-btn" data-copy="&lt;o-dropzone cols=&quot;3&quot; rows=&quot;2&quot; gap=&quot;10&quot;&gt;
-  &lt;o-panel move snap=&quot;10&quot;&gt;Drag me&lt;/o-panel&gt;
-&lt;/o-dropzone&gt;">Copy</button>
-    </div>
-
-    <!-- Kitchen sink -->
+<!-- Kitchen sink -->
     <h2 id="section-kitchen">Kitchen sink</h2>
     <p class="desc">All components inside a single draggable + resizable <code>o-panel</code> — a practical multi-component composition.</p>
     <o-panel move resize snap="20" style="max-width:560px;width:100%">
@@ -1420,8 +1429,9 @@ dz.addEventListener('o-drop', e =&gt; {
 
       <div id="ks-search-out" style="margin-top:10px;font-size:12px;opacity:0.6;min-height:18px"></div>
     </o-panel>
-
-    <!-- Live event log -->
+    </o-collapse>
+    <o-collapse open label="Utilities">
+<!-- Live event log -->
     <h2 id="section-events">Live event log</h2>
     <p class="desc">All component events from this page, logged in real time.</p>
     <o-panel style="width:100%;max-width:700px">
@@ -1431,6 +1441,8 @@ dz.addEventListener('o-drop', e =&gt; {
       </div>
       <div id="event-log"><div class="empty">No events yet — interact with the components above.</div></div>
     </o-panel>
+    </o-collapse>
+    </o-collapse-group>
 
     <!-- Footer -->
     <footer>
@@ -1474,9 +1486,45 @@ dz.addEventListener('o-drop', e =&gt; {
         statEvents.textContent = 0
       })
 
+      // ── Collapsible sections ───────────────────────────────────
+      const groupEl = document.getElementById('demo-sections')
+
+      // A section inside a collapsed panel has zero height, so both the
+      // scrollspy and #anchor navigation would target something invisible.
+      // Open every o-collapse ancestor before scrolling to it.
+      function revealSection(el) {
+        if (!el) return
+        let p = el.closest('o-collapse')
+        while (p) {
+          if (!p.open) p.toggle(true)
+          p = p.parentElement && p.parentElement.closest('o-collapse')
+        }
+      }
+
+      document.getElementById('btn-expand-all')
+        .addEventListener('o-click', () => groupEl.expandAll())
+      document.getElementById('btn-collapse-all')
+        .addEventListener('o-click', () => groupEl.collapseAll())
+      document.getElementById('btn-collapse-top')
+        .addEventListener('o-click', () => groupEl.collapseAll({ topLevelOnly: true }))
+
       // ── Scrollspy ──────────────────────────────────────────────
       const navLinks = document.querySelectorAll('#nav a[href^="#"]')
       const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean)
+
+      navLinks.forEach(a => a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'))
+        if (!target) return
+        e.preventDefault()
+        revealSection(target)
+        // Wait a frame so the 0fr->1fr transition has laid the section out
+        // before measuring where to scroll to.
+        requestAnimationFrame(() => {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          history.replaceState(null, '', a.getAttribute('href'))
+        })
+      }))
+
       const spy = new IntersectionObserver(entries => {
         entries.forEach(e => {
           if (e.isIntersecting) {
@@ -1488,6 +1536,14 @@ dz.addEventListener('o-drop', e =&gt; {
       }, { threshold: 0.3, rootMargin: '-48px 0px -60% 0px' })
       sections.forEach(s => spy.observe(s))
 
+      if (location.hash) {
+        const target = document.querySelector(location.hash)
+        if (target) {
+          revealSection(target)
+          requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }))
+        }
+      }
+
       // ── Keyboard shortcuts ─────────────────────────────────────
       const overlay = document.getElementById('shortcut-overlay')
       const sectionIds = ['section-button','section-panel','section-toast','section-toggle','section-table','section-search','section-combined']
@@ -1498,7 +1554,9 @@ dz.addEventListener('o-drop', e =&gt; {
         if (e.key === 'Escape') { overlay.classList.remove('open'); return }
         const idx = parseInt(e.key)
         if (idx >= 1 && idx <= sectionIds.length) {
-          document.getElementById(sectionIds[idx - 1]).scrollIntoView({ behavior: 'smooth', block: 'start' })
+          const el = document.getElementById(sectionIds[idx - 1])
+          revealSection(el)
+          requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }))
           return
         }
         if (e.key === 't' || e.key === 'T') {

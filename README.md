@@ -56,6 +56,7 @@ import '@owc/components'
 | [`o-paginator`](#o-paginator) | Page navigation, standalone or built into `o-table` |
 | [`o-scroll`](#o-scroll) | Scrollable region with themed glass scrollbars |
 | [`o-dropzone`](#o-dropzone) | Grid landing area that movable panels snap into |
+| [`o-collapse`](#o-collapse) | Nestable collapsible panel, with group-wide bulk control |
 
 **Utility:**
 
@@ -594,6 +595,98 @@ browser default.
 | Attribute | Description |
 |---|---|
 | `height` | Any CSS length; also settable via inline style |
+
+---
+
+### `o-collapse`
+
+A nestable disclosure panel. Wrap any content, give it a `label`, and it gets a
+themed header that expands and collapses it. Collapses may contain collapses to
+any depth.
+
+```html
+<o-collapse open label="Basics">
+  <o-collapse label="Loading states">
+    …nested content…
+  </o-collapse>
+</o-collapse>
+```
+
+```js
+panel.addEventListener('o-collapse-toggle', e => {
+  const { open, label } = e.detail
+})
+```
+
+| Attribute | Default | Description |
+|---|---|---|
+| `label` | `''` | Header text |
+| `open` | — | Start expanded |
+| `disabled` | — | Header does nothing; panel stays as-is |
+
+| Property | Description |
+|---|---|
+| `open` | Read/write boolean |
+| `label` | Read/write string |
+| `depth` | Read-only — nesting depth, `0` for a top-level panel |
+
+| Method | Description |
+|---|---|
+| `toggle(force?)` | Flip, or force to a state. No-ops when already there |
+
+| Event | `detail` |
+|---|---|
+| `o-collapse-toggle` | `{ open, label }` — fires only on a real change |
+
+The open/close animation uses a `grid-template-rows: 0fr → 1fr` transition
+rather than `max-height`, so it animates to the content's true height at any
+nesting depth instead of needing a magic maximum. `prefers-reduced-motion` is
+respected. The header is a real `<button>` with `aria-expanded` and
+`aria-controls`, so Enter/Space and screen readers work without extra markup.
+
+A collapsed panel clips its content to zero height but does **not** unmount it —
+closing a parent leaves a nested child's own open state intact, so reopening
+restores exactly what was there.
+
+---
+
+### `o-collapse-group`
+
+Wraps a set of [`o-collapse`](#o-collapse) panels to control them together.
+
+```html
+<o-collapse-group id="all" storage-key="my-sections">
+  <o-collapse open label="One">…</o-collapse>
+  <o-collapse label="Two">…</o-collapse>
+</o-collapse-group>
+```
+
+```js
+all.collapseAll()                          // every panel, nested included
+all.collapseAll({ topLevelOnly: true })    // categories only, keep nested state
+all.expandAll()
+all.collapse(['One', 'Two'])               // target several by label
+all.openLabels = ['One']                   // declarative bulk set
+```
+
+| Attribute | Default | Description |
+|---|---|---|
+| `accordion` | — | Only one panel open at a time, per nesting depth |
+| `storage-key` | — | Persist open/closed state to `localStorage` |
+
+| Property | Description |
+|---|---|
+| `panels` | Every descendant `o-collapse` |
+| `topLevel` | Only those with no `o-collapse` ancestor |
+| `openLabels` | Read/write array of open panel labels |
+
+| Method | Description |
+|---|---|
+| `collapseAll(opts?)` / `expandAll(opts?)` | Bulk toggle; `{ topLevelOnly: true }` spares nested state |
+| `collapse(labels)` / `expand(labels)` | Target a subset by label |
+
+In `accordion` mode only siblings **at the same depth** close, so opening a
+nested panel never collapses its own parent out from under it.
 
 ---
 
