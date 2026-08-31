@@ -13,10 +13,10 @@ Glassmorphism web components — drop a single `<script>` tag and use them anywh
 ## Quick Start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.7.0/OWC/dist/components.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.8.0/OWC/dist/components.js"></script>
 ```
 
-[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.7.0` pin means updates never break your page. **14 components + 1 utility** included.
+[jsDelivr](https://www.jsdelivr.com/) serves the file directly from GitHub — no sign-up needed. The `@v1.8.0` pin means updates never break your page. **14 components + 1 utility** included.
 
 To always get the latest (not recommended for production):
 ```html
@@ -53,6 +53,7 @@ import '@owc/components'
 | [`o-input`](#o-input) | Text input with label and validation states |
 | [`o-skeleton`](#o-skeleton) | Pulsing placeholder for loading states |
 | [`o-progress`](#o-progress) | Fixed top-of-page loading bar |
+| [`o-paginator`](#o-paginator) | Page navigation, standalone or built into `o-table` |
 
 **Utility:**
 
@@ -181,6 +182,15 @@ panel.addEventListener('o-drag-end', e => save(e.detail.x, e.detail.y))
 
 Sortable, resizable, row-selectable table. Set `columns` and `data` via JS.
 
+Add `page-size` to paginate — the table renders its own [`o-paginator`](#o-paginator), slices the sorted view, and re-emits `o-page`:
+
+```html
+<o-table page-size="10"></o-table>
+```
+
+Assigning `.data` resets it to page 1, so filtering works without extra bookkeeping. Row selection is tracked by row identity, so it survives paging; the header "select all" checkbox applies to the rows currently on screen.
+
+
 ```html
 <o-table id="my-table"></o-table>
 
@@ -230,6 +240,46 @@ Sortable, resizable, row-selectable table. Set `columns` and `data` via JS.
 | `o-row-select` | `{ selected }` — array of selected row objects |
 | `o-cell-change` | `{ key, value, rowIndex, row }` |
 | `o-row-change` | `{ rowIndex, row, changes }` |
+
+---
+
+### `o-paginator`
+
+Page navigation. Use it standalone to drive any list, or let [`o-table`](#o-table) render one for you with `page-size`.
+
+```html
+<o-paginator id="pager" total="240" page-size="10"></o-paginator>
+
+<script>
+  const pager = document.getElementById('pager')
+  pager.addEventListener('o-page', e => {
+    const { page, start, end, totalPages, pageSize } = e.detail
+    render(allRows.slice(start, end))
+  })
+</script>
+```
+
+**Attributes**
+
+| Attribute | Default | Description |
+|---|---|---|
+| `total` | `0` | Total number of items being paged |
+| `page-size` | `10` | Items per page |
+| `page` | `1` | Current page (1-based) |
+| `siblings` | `1` | Page numbers shown either side of the current one |
+| `compact` | — | Render `Page 2 of 24` instead of numbered buttons |
+
+**Properties:** `total`, `pageSize`, `page` (all read/write), plus read-only `totalPages`, `start` and `end`.
+
+`start` and `end` are 0-based and slice-ready — `rows.slice(pager.start, pager.end)` is the current page.
+
+**Events**
+
+| Event | Detail |
+|---|---|
+| `o-page` | `{ page, start, end, totalPages, pageSize }` |
+
+Setting `page` out of range clamps instead of throwing, and `o-page` only fires when the page actually changes — so no event on a no-op assignment, and none on first render.
 
 ---
 
@@ -611,7 +661,7 @@ document.addEventListener('progress-complete', e => {
 <!doctype html>
 <html>
 <head>
-  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.7.0/OWC/dist/components.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.8.0/OWC/dist/components.js"></script>
 </head>
 <body style="background: linear-gradient(135deg, #059669, #065f46); min-height: 100vh; padding: 2rem; color: #fff;">
 

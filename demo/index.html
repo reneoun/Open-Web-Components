@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Web Components</title>
-    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.7.0/OWC/dist/components.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.8.0/OWC/dist/components.js"></script>
     <style>
       html { scroll-behavior: smooth; }
       * { box-sizing: border-box; }
@@ -90,14 +90,57 @@
         align-items: center;
         gap: 4px;
         overflow-x: auto;
-        /* Glass scrollbar */
-        scrollbar-width: thin;
-        scrollbar-color: var(--owc-glass-scroll-thumb) transparent;
       }
+      /* Themed scrollbars for every scrollable region on the page, mirroring
+         the library's glassScrollbarStyles() but reading the --owc-glass-*
+         tokens the page publishes. Firefox uses scrollbar-color; Chromium and
+         Safari need the ::-webkit-scrollbar pseudo-elements. */
+      html, body, .code, #event-log, .scroll-x, #nav {
+        scrollbar-width: thin;
+        scrollbar-color: var(--owc-glass-scroll-thumb) var(--owc-glass-scroll-track);
+      }
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar,
+      .code::-webkit-scrollbar,
+      #event-log::-webkit-scrollbar,
+      .scroll-x::-webkit-scrollbar {
+        width: var(--owc-glass-scroll-size);
+        height: var(--owc-glass-scroll-size);
+      }
+      /* The nav is only 44px tall, so it keeps a slimmer bar. */
       #nav::-webkit-scrollbar { width: 6px; height: 6px; }
-      #nav::-webkit-scrollbar-track { background: transparent; }
-      #nav::-webkit-scrollbar-thumb { background: var(--owc-glass-scroll-thumb); border-radius: var(--owc-glass-scroll-radius); }
-      #nav::-webkit-scrollbar-thumb:hover { background: var(--owc-glass-scroll-thumb-hover); }
+      html::-webkit-scrollbar-track,
+      body::-webkit-scrollbar-track,
+      .code::-webkit-scrollbar-track,
+      #event-log::-webkit-scrollbar-track,
+      .scroll-x::-webkit-scrollbar-track,
+      #nav::-webkit-scrollbar-track {
+        background: var(--owc-glass-scroll-track);
+        border-radius: var(--owc-glass-scroll-radius);
+      }
+      html::-webkit-scrollbar-thumb,
+      body::-webkit-scrollbar-thumb,
+      .code::-webkit-scrollbar-thumb,
+      #event-log::-webkit-scrollbar-thumb,
+      .scroll-x::-webkit-scrollbar-thumb,
+      #nav::-webkit-scrollbar-thumb {
+        background: var(--owc-glass-scroll-thumb);
+        border-radius: var(--owc-glass-scroll-radius);
+        transition: background 0.2s;
+      }
+      html::-webkit-scrollbar-thumb:hover,
+      body::-webkit-scrollbar-thumb:hover,
+      .code::-webkit-scrollbar-thumb:hover,
+      #event-log::-webkit-scrollbar-thumb:hover,
+      .scroll-x::-webkit-scrollbar-thumb:hover,
+      #nav::-webkit-scrollbar-thumb:hover {
+        background: var(--owc-glass-scroll-thumb-hover);
+      }
+      html::-webkit-scrollbar-corner,
+      body::-webkit-scrollbar-corner,
+      .code::-webkit-scrollbar-corner,
+      #event-log::-webkit-scrollbar-corner,
+      .scroll-x::-webkit-scrollbar-corner,
       #nav::-webkit-scrollbar-corner { background: transparent; }
       #nav a {
         color: var(--owc-glass-text-muted);
@@ -150,6 +193,18 @@
         margin-left: 8px;
         vertical-align: middle;
       }
+
+      /* Calculator keypad. o-button is inline-block by default, so each key
+         is stretched to fill its grid cell. */
+      .calc-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .calc-grid o-button { width: 100%; }
+      .calc-grid o-button::part(button) { width: 100%; }
+      .calc-grid .calc-wide { grid-column: span 2; }
+      #calc-display { font-variant-numeric: tabular-nums; }
 
       /* Event log */
       #event-log {
@@ -331,6 +386,8 @@
       <span class="sep">·</span>
       <a href="#section-combined">Combined</a>
       <span class="sep">·</span>
+      <a href="#section-calculator">Calculator</a>
+      <span class="sep">·</span>
       <a href="#section-kitchen">Kitchen sink</a>
       <span class="sep">·</span>
       <a href="#section-events">Events</a>
@@ -363,8 +420,8 @@
     </div>
 
     <div class="code-wrap" style="margin:12px 0 0;display:inline-block">
-      <div class="code" style="display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.7.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
-      <button class="copy-btn" data-copy='<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.7.0/OWC/dist/components.js"></script>'>Copy</button>
+      <div class="code" style="display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.8.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+      <button class="copy-btn" data-copy='<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.8.0/OWC/dist/components.js"></script>'>Copy</button>
     </div>
 
     <!-- Stats bar -->
@@ -789,7 +846,7 @@ dd.addEventListener('o-select', e => console.log(e.detail))">Copy</button>
       </div>
       <div data-tab="install" style="font-size:14px;line-height:1.7">
         <div class="ks-label">Via CDN</div>
-        <div class="code" style="margin-bottom:10px">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.7.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+        <div class="code" style="margin-bottom:10px">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.8.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
         <div class="ks-label">Via npm</div>
         <div class="code">npm install @owc/components</div>
       </div>
@@ -1094,7 +1151,7 @@ btn.addEventListener('o-click', () =>
     <!-- Kanban demo -->
     <h2 id="section-kanban">o-panel — kanban board</h2>
     <p class="desc">Three <code>o-panel</code> columns as a kanban board. Move items between columns using the arrow buttons.</p>
-    <div class="row" style="align-items:flex-start;gap:12px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">
+    <div class="row scroll-x" style="align-items:flex-start;gap:12px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">
       <o-panel id="kan-todo"    style="min-width:180px;flex:1">
         <div style="font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
           <span>To do <span id="kan-todo-count" style="opacity:0.5;font-weight:400;font-size:12px">(3)</span></span>
@@ -1240,7 +1297,7 @@ emailInput.addEventListener('o-change', e => {
 
     <!-- Multi-search AND filter -->
     <h2 id="section-multisearch">Multi-search (AND filter)</h2>
-    <p class="desc">Two <code>o-search</code> bars filtering the same dataset simultaneously — results must match both queries.</p>
+    <p class="desc">Two <code>o-search</code> bars filtering the same dataset simultaneously — results must match both queries. Paged with <code>page-size</code>, which resets to page 1 whenever the filters change.</p>
     <div class="row" style="gap:12px">
       <o-search id="multi-s1" placeholder="Filter by name..." no-dropdown style="max-width:300px"></o-search>
       <o-search id="multi-s2" placeholder="Filter by company..." no-dropdown style="max-width:300px"></o-search>
@@ -1248,7 +1305,7 @@ emailInput.addEventListener('o-change', e => {
     </div>
     <div style="margin-top:8px;font-size:13px;opacity:0.6" id="multi-count"></div>
     <div style="margin-top:8px">
-      <o-table id="multi-table"></o-table>
+      <o-table id="multi-table" page-size="8"></o-table>
     </div>
     <div class="code-wrap"><div class="code">// Two o-search bars — results must satisfy both filters simultaneously
 s1.addEventListener('o-input', e => { q1 = e.detail.query; render() })
@@ -1256,10 +1313,55 @@ s2.addEventListener('o-input', e => { q2 = e.detail.query; render() })
 
 function render() {
   const a = q1.toLowerCase(), b = q2.toLowerCase()
-  table.data = allData.filter(r =>
-    (!a || r.name.toLowerCase().includes(a) || r.dept.toLowerCase().includes(a)) &&
+  // Assigning .data resets the table to page 1 automatically
+  table.data = allData.filter(r =&gt;
+    (!a || r.name.toLowerCase().includes(a) || r.dept.toLowerCase().includes(a)) &amp;&amp;
     (!b || r.company.toLowerCase().includes(b))
   )
+}
+
+// &lt;o-table page-size="8"&gt; renders its own pager and emits o-page
+table.addEventListener('o-page', e =&gt; console.log(e.detail.page))</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <!-- Calculator -->
+    <h2 id="section-calculator">Calculator</h2>
+    <p class="desc">A working calculator assembled only from OWC components — <code>o-panel</code> shell, <code>o-input</code> display, <code>o-button</code> keypad, <code>o-toast</code> for errors. Click the keys or type; <kbd>Esc</kbd> clears, <kbd>Backspace</kbd> deletes.</p>
+    <o-panel id="calc-panel" move snap="20" style="max-width:300px">
+      <strong style="display:block;margin-bottom:10px">Calculator</strong>
+      <o-input id="calc-display" label="Result" style="display:block;margin-bottom:10px"></o-input>
+      <div class="calc-grid" id="calc-keys">
+        <o-button data-key="C" class="calc-wide">C</o-button>
+        <o-button data-key="back">&#8592;</o-button>
+        <o-button data-key="/">&#247;</o-button>
+        <o-button data-key="7">7</o-button>
+        <o-button data-key="8">8</o-button>
+        <o-button data-key="9">9</o-button>
+        <o-button data-key="*">&#215;</o-button>
+        <o-button data-key="4">4</o-button>
+        <o-button data-key="5">5</o-button>
+        <o-button data-key="6">6</o-button>
+        <o-button data-key="-">&#8722;</o-button>
+        <o-button data-key="1">1</o-button>
+        <o-button data-key="2">2</o-button>
+        <o-button data-key="3">3</o-button>
+        <o-button data-key="+">+</o-button>
+        <o-button data-key="0" class="calc-wide">0</o-button>
+        <o-button data-key=".">.</o-button>
+        <o-button data-key="=">=</o-button>
+      </div>
+    </o-panel>
+    <div class="code-wrap"><div class="code">// Every key is an o-button; the display is an o-input
+keys.addEventListener('click', e =&gt; {
+  const btn = e.target.closest('o-button')
+  if (btn) press(btn.dataset.key)
+})
+
+// Divide-by-zero surfaces through o-toast rather than showing NaN
+if (op === '/' &amp;&amp; b === 0) {
+  toast({ message: 'Cannot divide by zero', type: 'error' })
+  return clear()
 }</div>
       <button class="copy-btn">Copy</button>
     </div>
@@ -1633,6 +1735,113 @@ function render() {
         toast(`Welcome, ${formFields.fname} ${formFields.lname}!`, 'success', { duration: 3000 })
         logEvent('form:submit', { name: `${formFields.fname} ${formFields.lname}` })
       })
+
+      // ── Calculator ──────────────────────────────────────────────
+      const calcDisplay = document.getElementById('calc-display')
+      const calcKeys    = document.getElementById('calc-keys')
+
+      let calcAcc     = null   // value accumulated so far
+      let calcOp      = null   // pending operator, applied on the next = or operator
+      let calcCurrent = '0'    // the number currently being typed
+      let calcReplace = true   // next digit starts a fresh number
+
+      function calcShow() { calcDisplay.value = calcCurrent }
+
+      function calcClear() {
+        calcAcc = null; calcOp = null; calcCurrent = '0'; calcReplace = true
+        calcShow()
+      }
+
+      function calcApply(a, b, op) {
+        if (op === '+') return a + b
+        if (op === '-') return a - b
+        if (op === '*') return a * b
+        if (op === '/') {
+          if (b === 0) return null   // signalled to the caller, never NaN/Infinity
+          return a / b
+        }
+        return b
+      }
+
+      // Fold the typed number into the accumulator. Returns false if the
+      // operation was rejected (divide by zero), which resets the calculator.
+      function calcFold() {
+        const val = parseFloat(calcCurrent)
+        if (calcOp === null || calcAcc === null) { calcAcc = val; return true }
+        const out = calcApply(calcAcc, val, calcOp)
+        if (out === null) {
+          toast('Cannot divide by zero', 'error', { duration: 2600 })
+          logEvent('calculator:error', { reason: 'divide-by-zero' })
+          calcClear()
+          return false
+        }
+        calcAcc = out
+        return true
+      }
+
+      // Trim float noise (0.1+0.2) without truncating genuinely long results.
+      function calcFormat(n) {
+        if (!isFinite(n)) return '0'
+        const r = Math.round(n * 1e10) / 1e10
+        return String(r)
+      }
+
+      function calcPress(key) {
+        if (key >= '0' && key <= '9') {
+          calcCurrent = calcReplace ? key : (calcCurrent === '0' ? key : calcCurrent + key)
+          calcReplace = false
+        } else if (key === '.') {
+          if (calcReplace) { calcCurrent = '0.'; calcReplace = false }
+          else if (!calcCurrent.includes('.')) calcCurrent += '.'
+        } else if (key === 'C') {
+          calcClear(); logEvent('calculator:clear', {}); return
+        } else if (key === 'back') {
+          if (!calcReplace) {
+            calcCurrent = calcCurrent.length > 1 ? calcCurrent.slice(0, -1) : '0'
+            if (calcCurrent === '0') calcReplace = true
+          }
+        } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+          // Chaining: fold the pending op first so 2+3+ shows 5 and keeps going
+          if (!calcReplace || calcOp === null) {
+            if (!calcFold()) return
+            calcCurrent = calcFormat(calcAcc)
+          }
+          calcOp = key
+          calcReplace = true
+        } else if (key === '=') {
+          if (calcOp === null) { calcShow(); return }
+          if (!calcFold()) return
+          calcCurrent = calcFormat(calcAcc)
+          calcOp = null
+          calcAcc = null
+          calcReplace = true
+          logEvent('calculator:result', { value: calcCurrent })
+        }
+        calcShow()
+      }
+
+      calcKeys.addEventListener('click', e => {
+        const btn = e.target.closest('o-button')
+        if (btn && btn.dataset.key) calcPress(btn.dataset.key)
+      })
+
+      // Keyboard support. Ignored while typing into any other field.
+      document.addEventListener('keydown', e => {
+        const tag = (e.target.tagName || '').toLowerCase()
+        if (tag === 'input' || tag === 'textarea' || (tag.startsWith('o-') && tag !== 'o-button')) return
+        const k = e.key
+        if ((k >= '0' && k <= '9') || k === '.' || k === '+' || k === '-' || k === '*' || k === '/') {
+          calcPress(k); e.preventDefault()
+        } else if (k === 'Enter' || k === '=') {
+          calcPress('='); e.preventDefault()
+        } else if (k === 'Escape') {
+          calcPress('C')
+        } else if (k === 'Backspace') {
+          calcPress('back'); e.preventDefault()
+        }
+      })
+
+      calcClear()
 
       // ── Multi-search AND filter ─────────────────────────────────
       const multiTable  = document.getElementById('multi-table')

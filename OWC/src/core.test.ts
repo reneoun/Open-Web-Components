@@ -366,3 +366,13 @@ describe('OWCPanel handle attribute', () => {
     expect(started).toBe(true)
   })
 })
+
+describe('OWCButton part exposure', () => {
+  it('exposes the inner button as part="button" for external sizing', () => {
+    document.body.innerHTML = ''
+    const btn = document.createElement('o-button')
+    document.body.appendChild(btn)
+    const inner = btn.shadowRoot!.querySelector('button')!
+    expect(inner.getAttribute('part')).toBe('button')
+  })
+})

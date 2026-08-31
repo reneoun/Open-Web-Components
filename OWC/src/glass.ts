@@ -473,33 +473,43 @@ export function installGlobalThemeStyles(doc?: Document): boolean {
  * bar stays visible instead of fading out after scrolling stops. Both axes are
  * sized, so horizontal overflow gets a visible bar too.
  */
-export function glassScrollbarStyles(selector = ':host'): string {
+export function glassScrollbarStyles(selector = ':host', prefix = '--glass'): string {
   return `
     /* Firefox */
     ${selector} {
       scrollbar-width: thin;
-      scrollbar-color: var(--glass-scroll-thumb) var(--glass-scroll-track);
+      scrollbar-color: var(${prefix}-scroll-thumb) var(${prefix}-scroll-track);
     }
     /* Webkit (Chrome, Safari, Edge) */
     ${selector}::-webkit-scrollbar {
-      width: var(--glass-scroll-size);
-      height: var(--glass-scroll-size);
+      width: var(${prefix}-scroll-size);
+      height: var(${prefix}-scroll-size);
     }
     ${selector}::-webkit-scrollbar-track {
-      background: var(--glass-scroll-track);
-      border-radius: var(--glass-scroll-radius);
+      background: var(${prefix}-scroll-track);
+      border-radius: var(${prefix}-scroll-radius);
     }
     ${selector}::-webkit-scrollbar-thumb {
-      background: var(--glass-scroll-thumb);
-      border-radius: var(--glass-scroll-radius);
+      background: var(${prefix}-scroll-thumb);
+      border-radius: var(${prefix}-scroll-radius);
       transition: background 0.2s;
     }
     ${selector}::-webkit-scrollbar-thumb:hover {
-      background: var(--glass-scroll-thumb-hover);
+      background: var(${prefix}-scroll-thumb-hover);
     }
     ${selector}::-webkit-scrollbar-corner { background: transparent; }
   `;
 }
+
+/**
+ * Same scrollbar rules for light-DOM (page) elements. Components read
+ * --glass-* inside their shadow root; the page reads the --owc-glass-*
+ * values published by installGlobalThemeStyles(), so only the prefix differs.
+ */
+export function pageScrollbarStyles(selector: string): string {
+  return glassScrollbarStyles(selector, '--owc-glass');
+}
+
 
 export class GlassElement extends HTMLElement {
   constructor() {

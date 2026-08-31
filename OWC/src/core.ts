@@ -147,7 +147,7 @@ class OWCButton extends GlassElement {
                 button:hover { background: var(--glass-hover); }
                 button:active { transform: var(--glass-press); }
             </style>
-            <button><slot>Button</slot></button>
+            <button part="button"><slot>Button</slot></button>
         `;
         this.shadowRoot!.querySelector('button')!.addEventListener('click', () => {
             this.dispatchEvent(new CustomEvent('o-click', { bubbles: true, composed: true }));

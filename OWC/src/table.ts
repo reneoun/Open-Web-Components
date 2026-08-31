@@ -1,4 +1,6 @@
 import { GlassElement, glassBaseStyles, glassScrollbarStyles } from './glass'
+import './paginator'
+import type { OPageEvent } from './paginator'
 
 export interface OTableColumn {
   key: string
@@ -17,7 +19,7 @@ export interface OTableCellChangeEvent { key: string; value: unknown; rowIndex: 
 export interface OTableRowChangeEvent { rowIndex: number; row: Record<string, unknown>; changes: Record<string, unknown> }
 
 export class OTable extends GlassElement {
-  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable', 'editable'] }
+  static get observedAttributes() { return ['storage', 'storage-key', 'resize-mode', 'selectable', 'editable', 'page-size'] }
 
   private _columns: OTableColumn[] = []
   private _data: Record<string, unknown>[] = []
@@ -26,6 +28,9 @@ export class OTable extends GlassElement {
   private _selectedRows: Set<Record<string, unknown>> = new Set()
   private _editingRows: Set<Record<string, unknown>> = new Set()
   private _rowOriginals: Map<Record<string, unknown>, Record<string, unknown>> = new Map()
+  private _page = 1
+  /** Rows actually rendered — the current page, or every sorted row when unpaginated. */
+  private _visibleRows: Record<string, unknown>[] = []
 
   get columns() { return this._columns }
   set columns(v: OTableColumn[]) { this._columns = v; this.render() }
@@ -33,6 +38,7 @@ export class OTable extends GlassElement {
   get data() { return this._data }
   set data(v: Record<string, unknown>[]) {
     this._data = v
+    this._page = 1
     this._selectedRows.clear()
     this._editingRows.clear()
     this._rowOriginals.clear()
@@ -99,6 +105,8 @@ export class OTable extends GlassElement {
       <style>
         ${glassBaseStyles()}
         :host { display: block; overflow-x: auto; }
+        .table-wrap { width: fit-content; max-width: 100%; }
+        o-paginator { display: block; margin-top: 10px; }
         ${glassScrollbarStyles(':host')}
         table {
           border-collapse: collapse;
@@ -163,14 +171,25 @@ export class OTable extends GlassElement {
       ${(() => {
         const hasClickEditable = this._columns.some(c => c.editable === 'click')
         const editTh = this.editable && hasClickEditable ? '<th style="width:72px"></th>' : ''
-        return `<table>
+        const sorted = this.getSortedData()
+        const { start, end } = this.getVisibleRange(sorted.length)
+        this._visibleRows = sorted.slice(start, end)
+        const size = this.pageSize
+        // rowIndex stays absolute into the sorted view, so the existing
+        // getSortedData()[rowIndex] lookups keep resolving the right row on
+        // every page — a page-relative index would silently edit row 0.
+        const rows = this._visibleRows.map((row, i) => this.renderRow(row, start + i, hasClickEditable)).join('')
+        const pager = size == null ? '' : `<o-paginator part="pager" total="${sorted.length}" page-size="${size}" page="${this._page}"></o-paginator>`
+        // Wrapped so the pager inherits the table's intrinsic width and lines
+        // up under its right edge instead of stretching the full host width.
+        return `<div class="table-wrap"><table>
         <thead><tr>
           ${this.selectable ? `<th style="width:36px"><input type="checkbox" data-select-all aria-label="Select all rows"></th>` : ''}
           ${this._columns.map(c => this.renderTh(c)).join('')}
           ${editTh}
         </tr></thead>
-        <tbody>${this.getSortedData().map((row, i) => this.renderRow(row, i, hasClickEditable)).join('')}</tbody>
-      </table>`
+        <tbody>${rows}</tbody>
+      </table>${pager}</div>`
       })()}
     `
     this.attachHandlers()
@@ -257,6 +276,38 @@ export class OTable extends GlassElement {
     return result
   }
 
+  /** Rows per page, or null when pagination is off. */
+  private get pageSize(): number | null {
+    const raw = this.getAttribute('page-size')
+    if (raw == null) return null
+    const n = parseInt(raw)
+    return Number.isFinite(n) && n > 0 ? n : null
+  }
+
+  get page() { return this._page }
+  set page(v: number) {
+    const size = this.pageSize
+    if (size == null) return
+    const pages = Math.max(1, Math.ceil(this.getSortedData().length / size))
+    const next = Math.min(Math.max(1, Math.floor(v) || 1), pages)
+    if (next === this._page) return
+    this._page = next
+    this.render()
+  }
+
+  /**
+   * Slice bounds for the current page against the *sorted* view. Clamps the
+   * page when the dataset shrank under it (e.g. a filter narrowed results).
+   */
+  private getVisibleRange(sortedLength: number): { start: number; end: number } {
+    const size = this.pageSize
+    if (size == null) return { start: 0, end: sortedLength }
+    const pages = Math.max(1, Math.ceil(sortedLength / size))
+    this._page = Math.min(Math.max(1, this._page), pages)
+    const start = (this._page - 1) * size
+    return { start, end: Math.min(start + size, sortedLength) }
+  }
+
   private getSortedData(): Record<string, unknown>[] {
     if (!this._sortCol || this._sortDir === 'none') return this._data
     return [...this._data].sort((a, b) => {
@@ -283,6 +334,22 @@ export class OTable extends GlassElement {
 
   private attachHandlers() {
     const mode = this.getAttribute('resize-mode') ?? 'single'
+
+    // Internal pager. Its o-page is composed, so stop it at the table
+    // boundary and re-emit from the table itself — consumers listen to the
+    // table, not to an implementation detail inside its shadow root.
+    const pager = this.shadowRoot!.querySelector('o-paginator')
+    if (pager) {
+      pager.addEventListener('o-page', (e: Event) => {
+        e.stopPropagation()
+        const detail = (e as CustomEvent<OPageEvent>).detail
+        this._page = detail.page
+        this.render()
+        this.dispatchEvent(new CustomEvent<OPageEvent>('o-page', {
+          bubbles: true, composed: true, detail
+        }))
+      })
+    }
 
     // Sort handlers
     this.shadowRoot!.querySelectorAll<HTMLElement>('th[data-key]').forEach(th => {
@@ -364,11 +431,12 @@ export class OTable extends GlassElement {
       if (headerCb) {
         headerCb.addEventListener('click', (e) => {
           e.stopPropagation()
-          const allSelected = this.getSortedData().every(row => this._selectedRows.has(row))
+          const scope = this._visibleRows
+          const allSelected = scope.length > 0 && scope.every(row => this._selectedRows.has(row))
           if (allSelected) {
-            this._selectedRows.clear()
+            scope.forEach(row => this._selectedRows.delete(row))
           } else {
-            this.getSortedData().forEach(row => this._selectedRows.add(row))
+            scope.forEach(row => this._selectedRows.add(row))
           }
           this.dispatchEvent(new CustomEvent<OTableRowSelectEvent>('o-row-select', {
             bubbles: true, composed: true,
