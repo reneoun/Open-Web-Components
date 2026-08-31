@@ -141,16 +141,25 @@ export class OTable extends GlassElement {
           accent-color: var(--glass-text);
         }
         .cell-input {
+          /* border-box makes the declared width the FINAL width: padding and a
+             theme's border (1px on glass, 3px on pixel) are absorbed rather than
+             added on top. Without it the input grew past its cell and the
+             td's overflow:hidden clipped it out of sight. */
+          box-sizing: border-box;
           background: var(--glass-hover);
           border: var(--glass-border-width) solid var(--accent-warm);
           border-radius: var(--glass-radius-sm);
           color: var(--glass-text);
           padding: 4px 8px;
           font-size: 13px;
-          width: calc(100% - 4px);
+          width: 100%;
+          max-width: 100%;
           outline: none;
           font-family: var(--glass-font);
         }
+        /* An editing cell trades its text padding for a thinner gutter, so a
+           chunky-bordered input still clears the column edge on both sides. */
+        td.cell-edit { padding: 6px 8px; overflow: visible; }
         .cell-input:focus { border-color: var(--accent-warm); background: var(--glass-border); }
         .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
         .edit-btn, .edit-confirm, .edit-cancel {
@@ -158,14 +167,14 @@ export class OTable extends GlassElement {
           font-size: 13px; padding: 2px 4px; opacity: 0.7; color: var(--glass-text); border-radius: var(--glass-radius-xs);
         }
         .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
-        .edit-confirm { color: rgba(74,222,128,0.9); }
-        .edit-cancel { color: rgba(248,113,113,0.9); }
-        tr.editing-highlight td { border-left: 3px solid var(--accent-warm); background: rgba(251,191,36,0.06); }
-        tr.edit-row td { background: var(--glass-bg); border-left: 3px solid var(--accent-warm); padding: 12px 14px; }
+        .edit-confirm { color: var(--glass-positive); }
+        .edit-cancel { color: var(--glass-negative); }
+        tr.editing-highlight td { border-left: var(--glass-border-width) solid var(--accent-warm); background: var(--glass-hover); }
+        tr.edit-row td { background: var(--glass-bg); border-left: var(--glass-border-width) solid var(--accent-warm); padding: 12px 14px; }
         .edit-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
         .edit-field { display: flex; flex-direction: column; gap: 4px; }
         .edit-field label { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
-        .edit-form .cell-input { width: 140px; }
+        .edit-form .cell-input { width: 140px; flex: 0 0 auto; }
         .edit-form-actions { display: flex; gap: 4px; align-items: center; margin-left: auto; }
       </style>
       ${(() => {
@@ -240,7 +249,7 @@ export class OTable extends GlassElement {
     const cells = this._columns.map(c => {
       if (this.editable && c.editable === 'always') {
         const val = String(row[c.key] ?? '').replace(/"/g, '&quot;')
-        return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`
+        return `<td class="cell-edit"><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`
       }
       return `<td>${row[c.key] ?? ''}</td>`
     }).join('')

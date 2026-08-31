@@ -388,6 +388,8 @@
       <span class="sep">·</span>
       <a href="#section-calculator">Calculator</a>
       <span class="sep">·</span>
+      <a href="#section-dropzone">Drop-zone grid</a>
+      <span class="sep">·</span>
       <a href="#section-kitchen">Kitchen sink</a>
       <span class="sep">·</span>
       <a href="#section-events">Events</a>
@@ -1366,6 +1368,34 @@ if (op === '/' &amp;&amp; b === 0) {
       <button class="copy-btn">Copy</button>
     </div>
 
+    <!-- Grid drop-zone -->
+    <h2 id="section-dropzone">o-dropzone — grid drop-zone</h2>
+    <p class="desc">Drag a panel by its handle over the area below. The grid appears only while dragging, the cell under the panel highlights, and on release the panel snaps to fill it. Panels keep their free-drag behaviour — nothing reflows, and dragging back out releases the panel to float again.</p>
+    <div style="margin-bottom:8px;font-size:13px;opacity:0.6" id="dz-status">No panel dropped yet.</div>
+    <o-dropzone id="dz" cols="3" rows="2" gap="10" style="height:320px;border:var(--owc-glass-border-width) dashed var(--owc-glass-border);border-radius:var(--owc-glass-radius)">
+      <o-panel move snap="10" style="position:absolute;left:12px;top:12px">
+        <strong style="display:block;margin-bottom:6px">Drag me</strong>
+        <span style="font-size:13px;opacity:0.7">Drop into a cell</span>
+      </o-panel>
+      <o-panel move snap="10" style="position:absolute;left:12px;top:150px">
+        <strong style="display:block;margin-bottom:6px">And me</strong>
+        <span style="font-size:13px;opacity:0.7">Cells can overlap</span>
+      </o-panel>
+    </o-dropzone>
+    <div class="code-wrap"><div class="code">&lt;o-dropzone cols="3" rows="2" gap="10"&gt;
+  &lt;o-panel move snap="10"&gt;Drag me&lt;/o-panel&gt;
+&lt;/o-dropzone&gt;
+
+// Fires once the panel lands in a cell
+dz.addEventListener('o-drop', e =&gt; {
+  const { panel, col, row } = e.detail
+  console.log(`landed at column ${col}, row ${row}`)
+})</div>
+      <button class="copy-btn" data-copy="&lt;o-dropzone cols=&quot;3&quot; rows=&quot;2&quot; gap=&quot;10&quot;&gt;
+  &lt;o-panel move snap=&quot;10&quot;&gt;Drag me&lt;/o-panel&gt;
+&lt;/o-dropzone&gt;">Copy</button>
+    </div>
+
     <!-- Kitchen sink -->
     <h2 id="section-kitchen">Kitchen sink</h2>
     <p class="desc">All components inside a single draggable + resizable <code>o-panel</code> — a practical multi-component composition.</p>
@@ -1842,6 +1872,17 @@ if (op === '/' &amp;&amp; b === 0) {
       })
 
       calcClear()
+
+      // ── Drop-zone grid ──────────────────────────────────────────
+      const dz = document.getElementById('dz')
+      if (dz) {
+        dz.addEventListener('o-drop', e => {
+          const { col, row } = e.detail
+          document.getElementById('dz-status').textContent =
+            `Panel landed at column ${col + 1}, row ${row + 1}.`
+          logEvent('o-drop', { col, row })
+        })
+      }
 
       // ── Multi-search AND filter ─────────────────────────────────
       const multiTable  = document.getElementById('multi-table')

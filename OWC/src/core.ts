@@ -258,6 +258,11 @@ class OWCPanel extends GlassElement {
                 ${glassBaseStyles()}
                 :host { display: inline-block; }
                 .panel {
+                    /* Sizing hooks: o-dropzone (and any consumer) can size a panel
+                       from outside without piercing the shadow root. Default auto
+                       keeps the panel content-sized exactly as before. */
+                    width: var(--o-panel-width, auto);
+                    height: var(--o-panel-height, auto);
                     background: var(--glass-bg);
                     border: var(--glass-border-width) solid var(--glass-border);
                     backdrop-filter: var(--glass-backdrop);
@@ -317,7 +322,7 @@ class OWCPanel extends GlassElement {
                 .resize-se:hover { border-color: var(--glass-text-muted); }
                 ${glassScrollbarStyles('.content')}
             </style>
-            <div class="panel${hasResize ? ' has-resize' : ''}" role="region">
+            <div part="panel" class="panel${hasResize ? ' has-resize' : ''}" role="region">
                 ${showGrip  ? '<button class="move-handle" title="Drag to move">⠿</button>' : ''}
                 <div class="content"><slot></slot></div>
                 ${hasResize ? `

@@ -449,6 +449,12 @@ describe('WCAG AA contrast', () => {
       it('the accent is visible against the surface', () => {
         expect(contrastOn(t['accent-warm'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
       })
+      it('the positive (confirm) colour clears the non-text threshold', () => {
+        expect(contrastOn(t['glass-positive'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
+      })
+      it('the negative (cancel) colour clears the non-text threshold', () => {
+        expect(contrastOn(t['glass-negative'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
+      })
       it('text on the accent clears AA', () => {
         expect(contrastOn(t['glass-accent-text'], [...surface, t['accent-warm']]))
           .toBeGreaterThanOrEqual(AA_BODY)

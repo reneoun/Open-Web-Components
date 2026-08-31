@@ -385,3 +385,66 @@ describe('OTable', () => {
     })
   })
 })
+
+describe('editable cell input box model', () => {
+  // happy-dom has no layout engine, so a true rendered-width assertion is not
+  // possible here — that measurement is done in the browser pass. What IS
+  // pinnable is the CSS contract that makes the width border-proof, which is
+  // exactly what regressed: a content-box input with a hardcoded `- 4px` fudge
+  // overflowed its cell by padding + 2x border, and td{overflow:hidden} clipped
+  // it out of sight. Worst in pixel, whose border is 3px rather than 1px.
+  const css = () => {
+    const t = document.createElement('o-table') as any
+    document.body.appendChild(t)
+    t.columns = [{ key: 'name', label: 'Name', editable: 'always' }]
+    t.data = [{ name: 'Ada' }]
+    t.setAttribute('editable', '')
+    const style = t.shadowRoot.querySelector('style').textContent as string
+    document.body.removeChild(t)
+    return style
+  }
+
+  it('sizes the input with border-box so padding and border are absorbed', () => {
+    const s = css()
+    const block = s.slice(s.indexOf('.cell-input {'), s.indexOf('.cell-input:focus'))
+    expect(block).toContain('box-sizing: border-box')
+    expect(block).toMatch(/width:\s*100%/)
+  })
+
+  it('no longer hardcodes a 1px-border width fudge', () => {
+    const block = css()
+    expect(block).not.toContain('calc(100% - 4px)')
+  })
+
+  it('derives the input border from the theme, not a fixed width', () => {
+    const s = css()
+    const block = s.slice(s.indexOf('.cell-input {'), s.indexOf('.cell-input:focus'))
+    expect(block).toContain('var(--glass-border-width)')
+  })
+
+  it('gives an editing cell its own gutter so a thick border clears the edge', () => {
+    const s = css()
+    expect(s).toContain('td.cell-edit')
+  })
+
+  it('marks always-editable cells so the gutter rule can target them', () => {
+    const t = document.createElement('o-table') as any
+    document.body.appendChild(t)
+    t.columns = [{ key: 'name', label: 'Name', editable: 'always' }]
+    t.data = [{ name: 'Ada' }]
+    t.setAttribute('editable', '')
+    const td = t.shadowRoot.querySelector('td.cell-edit')
+    expect(td).toBeTruthy()
+    expect(td.querySelector('input.cell-input')).toBeTruthy()
+    document.body.removeChild(t)
+  })
+
+  it('tokenises the confirm and cancel colours instead of hardcoding them', () => {
+    const s = css()
+    // NB: not asserting the raw rgba is absent from the whole sheet — it is now
+    // legitimately present as glass-dark's own --glass-positive token value.
+    // What matters is that the rule references the token rather than a literal.
+    expect(s).toContain('.edit-confirm { color: var(--glass-positive); }')
+    expect(s).toContain('.edit-cancel { color: var(--glass-negative); }')
+  })
+})

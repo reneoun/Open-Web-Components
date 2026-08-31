@@ -54,6 +54,7 @@
     OInput: () => OInput,
     OFFICE_OVERRIDES: () => OFFICE_OVERRIDES,
     ODropdown: () => ODropdown,
+    ODropZone: () => ODropZone,
     MODES: () => MODES,
     LIGHT_OVERRIDES: () => LIGHT_OVERRIDES,
     LEGACY_ALIASES: () => LEGACY_ALIASES,
@@ -92,6 +93,8 @@
     "glass-scroll-track",
     "glass-progress",
     "glass-progress-glow",
+    "glass-positive",
+    "glass-negative",
     "glass-page-bg",
     "glass-page-text",
     "glass-chrome-bg",
@@ -159,6 +162,8 @@
         "glass-scroll-track": "rgba(255,255,255,0.06)",
         "glass-progress": "rgba(74,222,128,0.85)",
         "glass-progress-glow": "0 0 8px rgba(74,222,128,0.5)",
+        "glass-positive": "rgba(74,222,128,0.9)",
+        "glass-negative": "#ffb4ab",
         "glass-page-bg": "linear-gradient(135deg, #059669, #065f46)",
         "glass-page-text": "#ffffff",
         "glass-chrome-bg": "rgba(3,54,25,0.78)",
@@ -182,6 +187,8 @@
         "glass-scroll-track": "rgba(4,60,40,0.08)",
         "glass-progress": "#047857",
         "glass-progress-glow": "none",
+        "glass-positive": "#047857",
+        "glass-negative": "#b3261e",
         "glass-page-bg": "linear-gradient(135deg, #ecfdf5, #d9f2e4)",
         "glass-page-text": "#04291b",
         "glass-chrome-bg": "rgba(233,250,242,0.86)",
@@ -207,6 +214,8 @@
         "glass-scroll-track": "#1d2b53",
         "glass-progress": "#00e436",
         "glass-progress-glow": "none",
+        "glass-positive": "#00e436",
+        "glass-negative": "#ff77a8",
         "glass-page-bg": "#1d2b53",
         "glass-page-text": "#fff1e8",
         "glass-chrome-bg": "#000000",
@@ -230,6 +239,8 @@
         "glass-scroll-track": "#e8dcd2",
         "glass-progress": "#008751",
         "glass-progress-glow": "none",
+        "glass-positive": "#008751",
+        "glass-negative": "#a3002f",
         "glass-page-bg": "#fff1e8",
         "glass-page-text": "#000000",
         "glass-chrome-bg": "#ffffff",
@@ -255,6 +266,8 @@
         "glass-scroll-track": "#1b222b",
         "glass-progress": "#5b9fe3",
         "glass-progress-glow": "none",
+        "glass-positive": "#5ec98a",
+        "glass-negative": "#f0757a",
         "glass-page-bg": "#12171d",
         "glass-page-text": "#e6ebf1",
         "glass-chrome-bg": "#1b222b",
@@ -278,6 +291,8 @@
         "glass-scroll-track": "#e7ebf0",
         "glass-progress": "#2f6fb0",
         "glass-progress-glow": "none",
+        "glass-positive": "#15803d",
+        "glass-negative": "#c02626",
         "glass-page-bg": "#eef1f5",
         "glass-page-text": "#1f2933",
         "glass-chrome-bg": "#ffffff",
@@ -707,6 +722,11 @@ ${pageResolveList(mode)}
                 ${glassBaseStyles()}
                 :host { display: inline-block; }
                 .panel {
+                    /* Sizing hooks: o-dropzone (and any consumer) can size a panel
+                       from outside without piercing the shadow root. Default auto
+                       keeps the panel content-sized exactly as before. */
+                    width: var(--o-panel-width, auto);
+                    height: var(--o-panel-height, auto);
                     background: var(--glass-bg);
                     border: var(--glass-border-width) solid var(--glass-border);
                     backdrop-filter: var(--glass-backdrop);
@@ -766,7 +786,7 @@ ${pageResolveList(mode)}
                 .resize-se:hover { border-color: var(--glass-text-muted); }
                 ${glassScrollbarStyles(".content")}
             </style>
-            <div class="panel${hasResize ? " has-resize" : ""}" role="region">
+            <div part="panel" class="panel${hasResize ? " has-resize" : ""}" role="region">
                 ${showGrip ? '<button class="move-handle" title="Drag to move">⠿</button>' : ""}
                 <div class="content"><slot></slot></div>
                 ${hasResize ? `
@@ -1219,16 +1239,25 @@ ${pageResolveList(mode)}
           accent-color: var(--glass-text);
         }
         .cell-input {
+          /* border-box makes the declared width the FINAL width: padding and a
+             theme's border (1px on glass, 3px on pixel) are absorbed rather than
+             added on top. Without it the input grew past its cell and the
+             td's overflow:hidden clipped it out of sight. */
+          box-sizing: border-box;
           background: var(--glass-hover);
           border: var(--glass-border-width) solid var(--accent-warm);
           border-radius: var(--glass-radius-sm);
           color: var(--glass-text);
           padding: 4px 8px;
           font-size: 13px;
-          width: calc(100% - 4px);
+          width: 100%;
+          max-width: 100%;
           outline: none;
           font-family: var(--glass-font);
         }
+        /* An editing cell trades its text padding for a thinner gutter, so a
+           chunky-bordered input still clears the column edge on both sides. */
+        td.cell-edit { padding: 6px 8px; overflow: visible; }
         .cell-input:focus { border-color: var(--accent-warm); background: var(--glass-border); }
         .edit-actions { width: 72px; text-align: center; padding: 6px 4px; }
         .edit-btn, .edit-confirm, .edit-cancel {
@@ -1236,14 +1265,14 @@ ${pageResolveList(mode)}
           font-size: 13px; padding: 2px 4px; opacity: 0.7; color: var(--glass-text); border-radius: var(--glass-radius-xs);
         }
         .edit-btn:hover, .edit-confirm:hover, .edit-cancel:hover { opacity: 1; }
-        .edit-confirm { color: rgba(74,222,128,0.9); }
-        .edit-cancel { color: rgba(248,113,113,0.9); }
-        tr.editing-highlight td { border-left: 3px solid var(--accent-warm); background: rgba(251,191,36,0.06); }
-        tr.edit-row td { background: var(--glass-bg); border-left: 3px solid var(--accent-warm); padding: 12px 14px; }
+        .edit-confirm { color: var(--glass-positive); }
+        .edit-cancel { color: var(--glass-negative); }
+        tr.editing-highlight td { border-left: var(--glass-border-width) solid var(--accent-warm); background: var(--glass-hover); }
+        tr.edit-row td { background: var(--glass-bg); border-left: var(--glass-border-width) solid var(--accent-warm); padding: 12px 14px; }
         .edit-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
         .edit-field { display: flex; flex-direction: column; gap: 4px; }
         .edit-field label { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
-        .edit-form .cell-input { width: 140px; }
+        .edit-form .cell-input { width: 140px; flex: 0 0 auto; }
         .edit-form-actions { display: flex; gap: 4px; align-items: center; margin-left: auto; }
       </style>
       ${(() => {
@@ -1297,7 +1326,7 @@ ${pageResolveList(mode)}
       const cells = this._columns.map((c) => {
         if (this.editable && c.editable === "always") {
           const val = String(row[c.key] ?? "").replace(/"/g, "&quot;");
-          return `<td><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`;
+          return `<td class="cell-edit"><input class="cell-input" data-key="${c.key}" data-row-index="${rowIndex}" value="${val}" /></td>`;
         }
         return `<td>${row[c.key] ?? ""}</td>`;
       }).join("");
@@ -3242,6 +3271,171 @@ ${pageResolveList(mode)}
     }
   }
   customElements.define("o-skeleton", OSkeleton);
+
+  // src/dropzone.ts
+  class ODropZone extends GlassElement {
+    static get observedAttributes() {
+      return ["cols", "rows", "gap", "disabled"];
+    }
+    _hovered = null;
+    _dragging = false;
+    get cols() {
+      return Math.max(1, parseInt(this.getAttribute("cols") ?? "3") || 3);
+    }
+    set cols(v) {
+      this.setAttribute("cols", String(v));
+    }
+    get rows() {
+      return Math.max(1, parseInt(this.getAttribute("rows") ?? "2") || 2);
+    }
+    set rows(v) {
+      this.setAttribute("rows", String(v));
+    }
+    get gap() {
+      return Math.max(0, parseInt(this.getAttribute("gap") ?? "8") || 0);
+    }
+    set gap(v) {
+      this.setAttribute("gap", String(v));
+    }
+    get disabled() {
+      return this.hasAttribute("disabled");
+    }
+    set disabled(v) {
+      v ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
+    }
+    connectedCallback() {
+      this.render();
+      document.addEventListener("o-drag-start", this.onDragStart);
+      document.addEventListener("o-drag-move", this.onDragMove);
+      document.addEventListener("o-drag-end", this.onDragEnd);
+    }
+    disconnectedCallback() {
+      document.removeEventListener("o-drag-start", this.onDragStart);
+      document.removeEventListener("o-drag-move", this.onDragMove);
+      document.removeEventListener("o-drag-end", this.onDragEnd);
+    }
+    attributeChangedCallback() {
+      if (this.shadowRoot)
+        this.render();
+    }
+    cellRect(col, row) {
+      const r = this.getBoundingClientRect();
+      const g = this.gap;
+      const cw = (r.width - g * (this.cols + 1)) / this.cols;
+      const ch = (r.height - g * (this.rows + 1)) / this.rows;
+      return {
+        col,
+        row,
+        x: r.left + g + col * (cw + g),
+        y: r.top + g + row * (ch + g),
+        width: cw,
+        height: ch
+      };
+    }
+    cellAt(px, py) {
+      const r = this.getBoundingClientRect();
+      if (px < r.left || px > r.right || py < r.top || py > r.bottom)
+        return null;
+      const g = this.gap;
+      const cw = (r.width - g * (this.cols + 1)) / this.cols;
+      const ch = (r.height - g * (this.rows + 1)) / this.rows;
+      const col = Math.min(this.cols - 1, Math.max(0, Math.floor((px - r.left - g) / (cw + g))));
+      const row = Math.min(this.rows - 1, Math.max(0, Math.floor((py - r.top - g) / (ch + g))));
+      return this.cellRect(col, row);
+    }
+    onDragStart = () => {
+      if (this.disabled)
+        return;
+      this._dragging = true;
+      this._hovered = null;
+      this.shadowRoot?.querySelector(".zone")?.classList.add("active");
+    };
+    onDragMove = (e) => {
+      if (this.disabled || !this._dragging)
+        return;
+      const d = e.detail;
+      if (!d?.rect)
+        return;
+      const cx = d.rect.x + d.rect.width / 2;
+      const cy = d.rect.y + d.rect.height / 2;
+      const cell = this.cellAt(cx, cy);
+      this._hovered = cell;
+      this.highlight(cell);
+      if (cell)
+        d.setDropZone?.({ x: cell.x, y: cell.y, width: cell.width, height: cell.height });
+    };
+    onDragEnd = (e) => {
+      const wasDragging = this._dragging;
+      this._dragging = false;
+      this.shadowRoot?.querySelector(".zone")?.classList.remove("active");
+      this.highlight(null);
+      const cell = this._hovered;
+      this._hovered = null;
+      if (this.disabled || !wasDragging || !cell)
+        return;
+      const panel = e.target;
+      const d = e.detail;
+      if (!d?.rect)
+        return;
+      const nx = d.x + (cell.x - d.rect.x);
+      const ny = d.y + (cell.y - d.rect.y);
+      panel.style.transform = `translate(${Math.round(nx)}px, ${Math.round(ny)}px)`;
+      panel.style.setProperty("--o-panel-width", `${Math.round(cell.width)}px`);
+      panel.style.setProperty("--o-panel-height", `${Math.round(cell.height)}px`);
+      this.dispatchEvent(new CustomEvent("o-drop", {
+        bubbles: true,
+        composed: true,
+        detail: { panel, col: cell.col, row: cell.row, cell }
+      }));
+    };
+    highlight(cell) {
+      const cells = this.shadowRoot?.querySelectorAll(".cell");
+      if (!cells)
+        return;
+      const idx = cell ? cell.row * this.cols + cell.col : -1;
+      cells.forEach((el, i) => el.classList.toggle("hot", i === idx));
+    }
+    render() {
+      const total = this.cols * this.rows;
+      const cells = Array.from({ length: total }, () => '<div class="cell"></div>').join("");
+      this.shadowRoot.innerHTML = `
+      <style>
+        ${glassBaseStyles()}
+        :host { display: block; position: relative; }
+        .zone {
+          display: grid;
+          grid-template-columns: repeat(${this.cols}, 1fr);
+          grid-template-rows: repeat(${this.rows}, 1fr);
+          gap: ${this.gap}px;
+          padding: ${this.gap}px;
+          position: absolute; inset: 0;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.18s ease;
+          box-sizing: border-box;
+        }
+        /* Only visible mid-drag — a permanently drawn grid is visual noise. */
+        .zone.active { opacity: 1; }
+        .cell {
+          border: var(--glass-border-width) dashed var(--glass-border);
+          border-radius: var(--glass-radius);
+          background: transparent;
+          transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .cell.hot {
+          border-color: var(--accent-warm);
+          border-style: solid;
+          background: var(--glass-hover);
+        }
+        .slotted { position: relative; min-height: 100%; }
+      </style>
+      <div class="zone">${cells}</div>
+      <div class="slotted"><slot></slot></div>
+    `;
+    }
+  }
+  if (!customElements.get("o-dropzone"))
+    customElements.define("o-dropzone", ODropZone);
 
   // src/scroll.ts
   class OScroll extends GlassElement {

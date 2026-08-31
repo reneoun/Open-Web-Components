@@ -54,6 +54,8 @@ import '@owc/components'
 | [`o-skeleton`](#o-skeleton) | Pulsing placeholder for loading states |
 | [`o-progress`](#o-progress) | Fixed top-of-page loading bar |
 | [`o-paginator`](#o-paginator) | Page navigation, standalone or built into `o-table` |
+| [`o-scroll`](#o-scroll) | Scrollable region with themed glass scrollbars |
+| [`o-dropzone`](#o-dropzone) | Grid landing area that movable panels snap into |
 
 **Utility:**
 
@@ -575,6 +577,78 @@ input.addEventListener('o-change', e => {
 |---|---|---|
 | `o-input` | `{ value }` | Every keystroke |
 | `o-change` | `{ value }` | On blur |
+
+---
+
+### `o-scroll`
+
+A scrollable region that carries the theme's scrollbar styling instead of the
+browser default.
+
+```html
+<o-scroll style="height:200px">
+  <p>Long content…</p>
+</o-scroll>
+```
+
+| Attribute | Description |
+|---|---|
+| `height` | Any CSS length; also settable via inline style |
+
+---
+
+### `o-dropzone`
+
+A grid landing area for movable [`o-panel`](#o-panel)s. The grid stays invisible
+until a drag starts, then the cell under the panel highlights and the panel
+snaps to fill it on release.
+
+It does **not** take over layout: panels keep their free-drag behaviour, nothing
+reflows, and dragging back out of the zone releases the panel to float again.
+
+```html
+<o-dropzone cols="3" rows="2" gap="10">
+  <o-panel move snap="10">Drag me</o-panel>
+</o-dropzone>
+```
+
+```js
+dz.addEventListener('o-drop', e => {
+  const { panel, col, row, cell } = e.detail
+  console.log(`landed at column ${col}, row ${row}`)
+})
+```
+
+| Attribute | Default | Description |
+|---|---|---|
+| `cols` | `3` | Grid columns |
+| `rows` | `2` | Grid rows |
+| `gap` | `8` | Gap between cells, in px |
+| `disabled` | — | Ignore drags entirely |
+
+| Event | `detail` |
+|---|---|
+| `o-drop` | `{ panel, col, row, cell }` — `col`/`row` are 0-based |
+
+| Method | Description |
+|---|---|
+| `cellRect(col, row)` | Geometry of one cell, in viewport coordinates |
+| `cellAt(x, y)` | The cell containing a point, or `null` outside the zone |
+
+**Occupied cells:** a panel dropped onto a cell that already holds one simply
+lands there and the two overlap — the zone never displaces or reflows a panel.
+**Oversized panels** are matched by their centre point, so a panel wider than a
+cell still lands in the cell it visually sits over.
+
+Panels are sized through two custom properties on the panel host, which you can
+also set yourself:
+
+| Property | Description |
+|---|---|
+| `--o-panel-width` | Width of the panel box (default `auto`) |
+| `--o-panel-height` | Height of the panel box (default `auto`) |
+
+`o-panel` also exposes `part="panel"` for styling the panel box directly.
 
 ---
 
