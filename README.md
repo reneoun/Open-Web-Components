@@ -89,6 +89,34 @@ document.querySelector('o-button').addEventListener('o-click', () => {
 |---|---|---|
 | `--o-button-color` | `#fff` | Text color |
 
+#### Confirm before firing
+
+Add `confirm` and the first click arms the button instead of firing it: the label
+swaps to a prompt and a sweep drains across the bottom for the length of the
+window. A second click within the window fires `o-click`; letting it lapse
+reverts. Arming another confirm button cancels the first, and `Escape` or moving
+focus away cancels.
+
+```html
+<o-button confirm>Delete</o-button>
+<o-button confirm="Really delete?" confirm-timeout="6000">Delete account</o-button>
+```
+
+```js
+btn.addEventListener('o-click', e => e.detail.confirmed)   // only on confirmation
+btn.addEventListener('o-confirm-pending', e => e.detail.timeout)
+btn.addEventListener('o-confirm-cancel', e => e.detail.reason) // timeout|escape|blur|superseded
+```
+
+| Attribute | Default | Description |
+|---|---|---|
+| `confirm` | — | Enables confirm mode; its value is the prompt text |
+| `confirm-timeout` | `3000` | Milliseconds to confirm before it reverts |
+
+A button **without** `confirm` is unchanged — it fires `o-click` on the first
+click as it always has. `prefers-reduced-motion` replaces the sweep with a static
+bar, and the prompt is announced via `aria-live`.
+
 ---
 
 ### `o-panel`

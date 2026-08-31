@@ -376,3 +376,131 @@ describe('OWCButton part exposure', () => {
     expect(inner.getAttribute('part')).toBe('button')
   })
 })
+
+describe('OWCButton confirm mode', () => {
+  let el: any
+  const clickBtn = (host: HTMLElement) =>
+    (host.shadowRoot!.querySelector('button') as HTMLButtonElement).click()
+
+  beforeEach(() => { document.body.innerHTML = '' })
+  afterEach(() => { document.body.innerHTML = '' })
+
+  const make = (attrs: Record<string, string> = {}) => {
+    const b = document.createElement('o-button') as any
+    for (const [k, v] of Object.entries(attrs)) b.setAttribute(k, v)
+    b.textContent = 'Delete'
+    document.body.appendChild(b)
+    return b
+  }
+
+  // The regression that matters most: confirm is additive, so a button without
+  // the attribute must behave exactly as it always has.
+  it('a button without confirm fires o-click on the first click', () => {
+    el = make()
+    let fired = 0
+    el.addEventListener('o-click', () => fired++)
+    clickBtn(el)
+    expect(fired).toBe(1)
+  })
+
+  it('does NOT fire o-click on the first click when confirm is set', () => {
+    el = make({ confirm: '' })
+    let fired = 0
+    el.addEventListener('o-click', () => fired++)
+    clickBtn(el)
+    expect(fired).toBe(0)
+    expect(el.isPending).toBe(true)
+  })
+
+  it('fires o-click on the second click, marked confirmed', () => {
+    el = make({ confirm: '' })
+    const seen: any[] = []
+    el.addEventListener('o-click', (e: any) => seen.push(e.detail))
+    clickBtn(el)
+    clickBtn(el)
+    expect(seen.length).toBe(1)
+    expect(seen[0].confirmed).toBe(true)
+    expect(el.isPending).toBe(false)
+  })
+
+  it('emits o-confirm-pending when it arms', () => {
+    el = make({ confirm: 'Really?', 'confirm-timeout': '1200' })
+    const seen: any[] = []
+    el.addEventListener('o-confirm-pending', (e: any) => seen.push(e.detail))
+    clickBtn(el)
+    expect(seen.length).toBe(1)
+    expect(seen[0].text).toBe('Really?')
+    expect(seen[0].timeout).toBe(1200)
+  })
+
+  it('shows the prompt text and hides the label while pending', () => {
+    el = make({ confirm: 'Really delete?' })
+    clickBtn(el)
+    const btn = el.shadowRoot.querySelector('button')
+    expect(btn.hasAttribute('data-pending')).toBe(true)
+    expect(btn.querySelector('.prompt').textContent).toBe('Really delete?')
+  })
+
+  it('falls back to a default prompt when confirm has no value', () => {
+    el = make({ confirm: '' })
+    clickBtn(el)
+    expect(el.shadowRoot.querySelector('.prompt').textContent).toBe('Are you sure?')
+  })
+
+  it('reflects the pending state in the accessible name and announces it', () => {
+    el = make({ confirm: 'Really delete?' })
+    clickBtn(el)
+    const btn = el.shadowRoot.querySelector('button')
+    expect(btn.getAttribute('aria-label')).toBe('Really delete?')
+    expect(btn.getAttribute('aria-live')).toBe('assertive')
+  })
+
+  it('reverts and emits o-confirm-cancel when the window lapses', async () => {
+    el = make({ confirm: '', 'confirm-timeout': '40' })
+    const cancels: any[] = []
+    let fired = 0
+    el.addEventListener('o-confirm-cancel', (e: any) => cancels.push(e.detail))
+    el.addEventListener('o-click', () => fired++)
+    clickBtn(el)
+    await new Promise(r => setTimeout(r, 80))
+    expect(el.isPending).toBe(false)
+    expect(cancels[0].reason).toBe('timeout')
+    expect(fired).toBe(0)
+    expect(el.shadowRoot.querySelector('button').hasAttribute('data-pending')).toBe(false)
+  })
+
+  it('arming a second confirm button cancels the first', () => {
+    const a = make({ confirm: '' })
+    const b = make({ confirm: '' })
+    const cancels: any[] = []
+    a.addEventListener('o-confirm-cancel', (e: any) => cancels.push(e.detail))
+    clickBtn(a)
+    expect(a.isPending).toBe(true)
+    clickBtn(b)
+    expect(a.isPending).toBe(false)
+    expect(b.isPending).toBe(true)
+    expect(cancels[0].reason).toBe('superseded')
+  })
+
+  it('cancelConfirm() abandons without firing o-click', () => {
+    el = make({ confirm: '' })
+    let fired = 0
+    el.addEventListener('o-click', () => fired++)
+    clickBtn(el)
+    el.cancelConfirm()
+    expect(el.isPending).toBe(false)
+    expect(fired).toBe(0)
+  })
+
+  it('ties the sweep duration to the real timeout', () => {
+    el = make({ confirm: '', 'confirm-timeout': '5000' })
+    clickBtn(el)
+    const btn = el.shadowRoot.querySelector('button')
+    expect(btn.style.getPropertyValue('--owc-confirm-duration')).toBe('5000ms')
+  })
+
+  it('rejects a non-positive confirm-timeout and uses the default', () => {
+    el = make({ confirm: '', 'confirm-timeout': '-1' })
+    expect(el.confirmTimeout).toBe(3000)
+  })
+})

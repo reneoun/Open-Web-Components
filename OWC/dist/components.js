@@ -121,6 +121,7 @@
     "glass-chart-surface",
     "glass-grid",
     "glass-table-line",
+    "glass-table-edge",
     "glass-series-1",
     "glass-series-2",
     "glass-series-3",
@@ -199,6 +200,7 @@
         "glass-chart-surface": "#0a2c20",
         "glass-grid": "#16402f",
         "glass-table-line": "rgba(255,255,255,0.53)",
+        "glass-table-edge": "rgba(255,255,255,0.95)",
         "glass-series-1": "#009e5e",
         "glass-series-2": "#a44996",
         "glass-series-3": "#ad8300",
@@ -233,6 +235,7 @@
         "glass-chart-surface": "#f4fcf8",
         "glass-grid": "#dceee6",
         "glass-table-line": "rgba(4,41,27,0.49)",
+        "glass-table-edge": "rgba(4,41,27,0.64)",
         "glass-series-1": "#06b472",
         "glass-series-2": "#539fff",
         "glass-series-3": "#b18600",
@@ -269,6 +272,7 @@
         "glass-chart-surface": "#0d0d1a",
         "glass-grid": "#24243d",
         "glass-table-line": "#c2c3c7",
+        "glass-table-edge": "#c2c3c7",
         "glass-series-1": "#0065b2",
         "glass-series-2": "#9b4600",
         "glass-series-3": "#009f00",
@@ -303,6 +307,7 @@
         "glass-chart-surface": "#ffffff",
         "glass-grid": "#e6ded4",
         "glass-table-line": "#83769c",
+        "glass-table-edge": "#5f574f",
         "glass-series-1": "#3dbbff",
         "glass-series-2": "#ee9300",
         "glass-series-3": "#cb0033",
@@ -339,6 +344,7 @@
         "glass-chart-surface": "#1b222b",
         "glass-grid": "#2b3440",
         "glass-table-line": "#657483",
+        "glass-table-edge": "#7b8a93",
         "glass-series-1": "#196ac7",
         "glass-series-2": "#cf4e12",
         "glass-series-3": "#584cba",
@@ -373,6 +379,7 @@
         "glass-chart-surface": "#ffffff",
         "glass-grid": "#e4e8ee",
         "glass-table-line": "#8a949f",
+        "glass-table-edge": "#656f78",
         "glass-series-1": "#004ea9",
         "glass-series-2": "#ff8552",
         "glass-series-3": "#008755",
@@ -681,8 +688,27 @@ ${pageResolveList(mode)}
       _zoneFadeOut = null;
     }, 220);
   }
+  var _pendingConfirm = null;
+  var DEFAULT_CONFIRM_TEXT = "Are you sure?";
+  var DEFAULT_CONFIRM_TIMEOUT = 3000;
 
   class OWCButton extends GlassElement {
+    static get observedAttributes() {
+      return ["confirm", "confirm-timeout"];
+    }
+    confirmTimer = null;
+    pending = false;
+    get confirmText() {
+      const v = this.getAttribute("confirm");
+      return v && v.trim() ? v : DEFAULT_CONFIRM_TEXT;
+    }
+    get confirmTimeout() {
+      const n = Number(this.getAttribute("confirm-timeout"));
+      return Number.isFinite(n) && n > 0 ? n : DEFAULT_CONFIRM_TIMEOUT;
+    }
+    get isPending() {
+      return this.pending;
+    }
     constructor() {
       super();
       this.shadowRoot.innerHTML = `
@@ -690,6 +716,8 @@ ${pageResolveList(mode)}
                 ${glassBaseStyles()}
                 :host { display: inline-block; }
                 button {
+                    position: relative;
+                    overflow: hidden;
                     cursor: pointer;
                     padding: 8px 20px;
                     border-radius: var(--glass-radius);
@@ -705,12 +733,125 @@ ${pageResolveList(mode)}
                 }
                 button:hover { background: var(--glass-hover); }
                 button:active { transform: var(--glass-press); }
+
+                /* Confirm mode. The prompt replaces the slotted label in flow so
+                   the button keeps a sensible width, and the sweep drains beneath
+                   both, tied to the real timeout via animation-duration. */
+                .prompt { display: none; }
+                button[data-pending] { border-color: var(--glass-negative); }
+                button[data-pending] .label { display: none; }
+                button[data-pending] .prompt { display: inline; color: var(--glass-negative); }
+                .sweep {
+                    position: absolute;
+                    left: 0; bottom: 0;
+                    height: 3px;
+                    width: 100%;
+                    background: var(--glass-negative);
+                    transform-origin: left center;
+                    transform: scaleX(0);
+                }
+                button[data-pending] .sweep {
+                    animation: owc-sweep linear forwards;
+                    animation-duration: var(--owc-confirm-duration, 3000ms);
+                }
+                @keyframes owc-sweep { from { transform: scaleX(1) } to { transform: scaleX(0) } }
+                /* Without motion the sweep becomes a static bar: the pending state
+                   still reads, it just does not animate. */
+                @media (prefers-reduced-motion: reduce) {
+                    button[data-pending] .sweep { animation: none; transform: scaleX(1); }
+                }
             </style>
-            <button part="button"><slot>Button</slot></button>
+            <button part="button"><span class="label"><slot>Button</slot></span><span class="prompt" part="prompt"></span><span class="sweep" part="sweep" aria-hidden="true"></span></button>
         `;
-      this.shadowRoot.querySelector("button").addEventListener("click", () => {
-        this.dispatchEvent(new CustomEvent("o-click", { bubbles: true, composed: true }));
+      this.shadowRoot.querySelector("button").addEventListener("click", () => this.onClick());
+      this.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && this.pending)
+          this.cancelConfirm("escape");
       });
+      this.addEventListener("focusout", () => {
+        if (this.pending)
+          this.cancelConfirm("blur");
+      });
+    }
+    disconnectedCallback() {
+      this.clearTimer();
+      if (_pendingConfirm === this)
+        _pendingConfirm = null;
+    }
+    attributeChangedCallback() {
+      if (this.pending)
+        this.cancelConfirm("attribute-change");
+    }
+    get btn() {
+      return this.shadowRoot.querySelector("button");
+    }
+    clearTimer() {
+      if (this.confirmTimer) {
+        clearTimeout(this.confirmTimer);
+        this.confirmTimer = null;
+      }
+    }
+    onClick() {
+      if (!this.hasAttribute("confirm")) {
+        this.fire();
+        return;
+      }
+      if (this.pending) {
+        this.confirmNow();
+        return;
+      }
+      this.enterPending();
+    }
+    enterPending() {
+      if (_pendingConfirm && _pendingConfirm !== this)
+        _pendingConfirm.cancelConfirm("superseded");
+      _pendingConfirm = this;
+      this.pending = true;
+      const b = this.btn;
+      b.querySelector(".prompt").textContent = this.confirmText;
+      b.style.setProperty("--owc-confirm-duration", `${this.confirmTimeout}ms`);
+      b.setAttribute("data-pending", "");
+      b.setAttribute("aria-label", this.confirmText);
+      b.setAttribute("aria-live", "assertive");
+      this.dispatchEvent(new CustomEvent("o-confirm-pending", {
+        bubbles: true,
+        composed: true,
+        detail: { text: this.confirmText, timeout: this.confirmTimeout }
+      }));
+      this.clearTimer();
+      this.confirmTimer = setTimeout(() => this.cancelConfirm("timeout"), this.confirmTimeout);
+    }
+    exitPending() {
+      this.clearTimer();
+      this.pending = false;
+      if (_pendingConfirm === this)
+        _pendingConfirm = null;
+      const b = this.btn;
+      b.removeAttribute("data-pending");
+      b.removeAttribute("aria-label");
+      b.removeAttribute("aria-live");
+      b.querySelector(".prompt").textContent = "";
+    }
+    cancelConfirm(reason = "cancel") {
+      if (!this.pending)
+        return;
+      this.exitPending();
+      this.dispatchEvent(new CustomEvent("o-confirm-cancel", {
+        bubbles: true,
+        composed: true,
+        detail: { reason }
+      }));
+    }
+    confirmNow() {
+      this.exitPending();
+      this.fire(true);
+    }
+    fire(confirmed = false) {
+      this.dispatchEvent(new CustomEvent("o-click", {
+        bubbles: true,
+        composed: true,
+        detail: { confirmed }
+      }));
     }
   }
   var INTERACTIVE = "select,button,input,textarea,a,label,summary,[contenteditable]";
@@ -1289,9 +1430,16 @@ ${pageResolveList(mode)}
         o-paginator { display: block; margin-top: 10px; }
         ${glassScrollbarStyles(":host")}
         table {
-          border-collapse: collapse;
+          /* separate rather than collapse: a collapsed table merges its own
+             border into the edge cells, which makes border-radius + overflow
+             clipping unreliable and leaves the outer edge undrawn. With
+             border-spacing 0 the layout is identical, and the outer border is
+             the table's own so it rounds and clips correctly. */
+          border-collapse: separate;
+          border-spacing: 0;
           font-family: var(--glass-font); font-size: 14px;
           background: var(--glass-bg);
+          border: var(--glass-border-width) solid var(--glass-table-edge);
           border-radius: var(--glass-radius); overflow: hidden;
           box-shadow: var(--glass-elevation);
         }
@@ -1301,6 +1449,9 @@ ${pageResolveList(mode)}
           color: var(--glass-text); position: relative;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        /* Under border-collapse separate the last row's own bottom line would
+           sit just inside the table border and read as a doubled edge. */
+        tbody tr:last-child td { border-bottom: none; }
         th {
           background: var(--glass-hover);
           user-select: none;

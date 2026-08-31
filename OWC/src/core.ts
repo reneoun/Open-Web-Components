@@ -123,7 +123,32 @@ function hideDropZone() {
     }, 220);
 }
 
+/** Only one button may be awaiting confirmation at a time. */
+let _pendingConfirm: OWCButton | null = null;
+
+const DEFAULT_CONFIRM_TEXT = 'Are you sure?';
+const DEFAULT_CONFIRM_TIMEOUT = 3000;
+
 class OWCButton extends GlassElement {
+    static get observedAttributes() { return ['confirm', 'confirm-timeout'] }
+
+    private confirmTimer: ReturnType<typeof setTimeout> | null = null;
+    private pending = false;
+
+    /** Prompt shown while awaiting the second click. */
+    get confirmText(): string {
+        const v = this.getAttribute('confirm');
+        return v && v.trim() ? v : DEFAULT_CONFIRM_TEXT;
+    }
+
+    get confirmTimeout(): number {
+        const n = Number(this.getAttribute('confirm-timeout'));
+        return Number.isFinite(n) && n > 0 ? n : DEFAULT_CONFIRM_TIMEOUT;
+    }
+
+    /** True while this button is awaiting its confirming click. */
+    get isPending() { return this.pending }
+
     constructor() {
         super();
         this.shadowRoot!.innerHTML = `
@@ -131,6 +156,8 @@ class OWCButton extends GlassElement {
                 ${glassBaseStyles()}
                 :host { display: inline-block; }
                 button {
+                    position: relative;
+                    overflow: hidden;
                     cursor: pointer;
                     padding: 8px 20px;
                     border-radius: var(--glass-radius);
@@ -146,12 +173,106 @@ class OWCButton extends GlassElement {
                 }
                 button:hover { background: var(--glass-hover); }
                 button:active { transform: var(--glass-press); }
+
+                /* Confirm mode. The prompt replaces the slotted label in flow so
+                   the button keeps a sensible width, and the sweep drains beneath
+                   both, tied to the real timeout via animation-duration. */
+                .prompt { display: none; }
+                button[data-pending] { border-color: var(--glass-negative); }
+                button[data-pending] .label { display: none; }
+                button[data-pending] .prompt { display: inline; color: var(--glass-negative); }
+                .sweep {
+                    position: absolute;
+                    left: 0; bottom: 0;
+                    height: 3px;
+                    width: 100%;
+                    background: var(--glass-negative);
+                    transform-origin: left center;
+                    transform: scaleX(0);
+                }
+                button[data-pending] .sweep {
+                    animation: owc-sweep linear forwards;
+                    animation-duration: var(--owc-confirm-duration, 3000ms);
+                }
+                @keyframes owc-sweep { from { transform: scaleX(1) } to { transform: scaleX(0) } }
+                /* Without motion the sweep becomes a static bar: the pending state
+                   still reads, it just does not animate. */
+                @media (prefers-reduced-motion: reduce) {
+                    button[data-pending] .sweep { animation: none; transform: scaleX(1); }
+                }
             </style>
-            <button part="button"><slot>Button</slot></button>
+            <button part="button"><span class="label"><slot>Button</slot></span><span class="prompt" part="prompt"></span><span class="sweep" part="sweep" aria-hidden="true"></span></button>
         `;
-        this.shadowRoot!.querySelector('button')!.addEventListener('click', () => {
-            this.dispatchEvent(new CustomEvent('o-click', { bubbles: true, composed: true }));
+        this.shadowRoot!.querySelector('button')!.addEventListener('click', () => this.onClick());
+        this.addEventListener('keydown', (e: Event) => {
+            if ((e as KeyboardEvent).key === 'Escape' && this.pending) this.cancelConfirm('escape');
         });
+        this.addEventListener('focusout', () => { if (this.pending) this.cancelConfirm('blur') });
+    }
+
+    disconnectedCallback() { this.clearTimer(); if (_pendingConfirm === this) _pendingConfirm = null }
+
+    attributeChangedCallback() { if (this.pending) this.cancelConfirm('attribute-change') }
+
+    private get btn() { return this.shadowRoot!.querySelector('button')! as HTMLButtonElement }
+
+    private clearTimer() {
+        if (this.confirmTimer) { clearTimeout(this.confirmTimer); this.confirmTimer = null }
+    }
+
+    private onClick() {
+        // No `confirm` attribute: behave exactly as the button always has.
+        if (!this.hasAttribute('confirm')) { this.fire(); return }
+        if (this.pending) { this.confirmNow(); return }
+        this.enterPending();
+    }
+
+    private enterPending() {
+        // A second confirm button supersedes the first rather than leaving two armed.
+        if (_pendingConfirm && _pendingConfirm !== this) _pendingConfirm.cancelConfirm('superseded');
+        _pendingConfirm = this;
+        this.pending = true;
+        const b = this.btn;
+        b.querySelector('.prompt')!.textContent = this.confirmText;
+        b.style.setProperty('--owc-confirm-duration', `${this.confirmTimeout}ms`);
+        b.setAttribute('data-pending', '');
+        // The accessible name must follow the visible prompt, and the change has
+        // to be announced — a silent relabel is the failure mode here.
+        b.setAttribute('aria-label', this.confirmText);
+        b.setAttribute('aria-live', 'assertive');
+        this.dispatchEvent(new CustomEvent('o-confirm-pending', {
+            bubbles: true, composed: true, detail: { text: this.confirmText, timeout: this.confirmTimeout },
+        }));
+        this.clearTimer();
+        this.confirmTimer = setTimeout(() => this.cancelConfirm('timeout'), this.confirmTimeout);
+    }
+
+    private exitPending() {
+        this.clearTimer();
+        this.pending = false;
+        if (_pendingConfirm === this) _pendingConfirm = null;
+        const b = this.btn;
+        b.removeAttribute('data-pending');
+        b.removeAttribute('aria-label');
+        b.removeAttribute('aria-live');
+        b.querySelector('.prompt')!.textContent = '';
+    }
+
+    /** Abandon a pending confirmation without firing `o-click`. */
+    cancelConfirm(reason: string = 'cancel') {
+        if (!this.pending) return;
+        this.exitPending();
+        this.dispatchEvent(new CustomEvent('o-confirm-cancel', {
+            bubbles: true, composed: true, detail: { reason },
+        }));
+    }
+
+    private confirmNow() { this.exitPending(); this.fire(true) }
+
+    private fire(confirmed = false) {
+        this.dispatchEvent(new CustomEvent('o-click', {
+            bubbles: true, composed: true, detail: { confirmed },
+        }));
     }
 }
 

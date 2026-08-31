@@ -109,9 +109,16 @@ export class OTable extends GlassElement {
         o-paginator { display: block; margin-top: 10px; }
         ${glassScrollbarStyles(':host')}
         table {
-          border-collapse: collapse;
+          /* separate rather than collapse: a collapsed table merges its own
+             border into the edge cells, which makes border-radius + overflow
+             clipping unreliable and leaves the outer edge undrawn. With
+             border-spacing 0 the layout is identical, and the outer border is
+             the table's own so it rounds and clips correctly. */
+          border-collapse: separate;
+          border-spacing: 0;
           font-family: var(--glass-font); font-size: 14px;
           background: var(--glass-bg);
+          border: var(--glass-border-width) solid var(--glass-table-edge);
           border-radius: var(--glass-radius); overflow: hidden;
           box-shadow: var(--glass-elevation);
         }
@@ -121,6 +128,9 @@ export class OTable extends GlassElement {
           color: var(--glass-text); position: relative;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        /* Under border-collapse separate the last row's own bottom line would
+           sit just inside the table border and read as a doubled edge. */
+        tbody tr:last-child td { border-bottom: none; }
         th {
           background: var(--glass-hover);
           user-select: none;

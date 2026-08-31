@@ -460,6 +460,15 @@ describe('WCAG AA contrast', () => {
       it('does not draw the row separator from the hover surface', () => {
         expect(t['glass-table-line']).not.toBe(t['glass-hover'])
       })
+      it('the table outer edge clears the non-text threshold', () => {
+        // The outer border is the table's silhouette against the page ground,
+        // a harder job than the inner grid: the table had no border at all, so
+        // in glass-light a translucent panel sat on a pale ground with no edge.
+        expect(contrastOn(t['glass-table-edge'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
+      })
+      it('draws the outer edge from a token, not the faint panel border', () => {
+        expect(t['glass-table-edge']).not.toBe(t['glass-border'])
+      })
       it('the positive (confirm) colour clears the non-text threshold', () => {
         expect(contrastOn(t['glass-positive'], surface)).toBeGreaterThanOrEqual(AA_LARGE)
       })

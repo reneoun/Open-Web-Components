@@ -95,6 +95,9 @@
       o-sidebar[collapsed] .nav-cat {
         font-size: 0;
         padding: 0;
+        /* the expanded header's separator rule and spacing would break the rail */
+        margin-top: 0;
+        border-top: none;
         width: 28px; height: 28px;
         display: flex; align-items: center; justify-content: center;
         border-radius: var(--owc-glass-radius-sm);
@@ -203,12 +206,42 @@
         border: 1px solid var(--owc-glass-border);
         border-radius: var(--owc-glass-radius-2xl);
         padding: 20px 24px;
-        margin-bottom: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      /* Title and theme controls on one row; install line and stats beneath. */
+      .hero-top {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
         gap: 16px;
         flex-wrap: wrap;
+      }
+      .hero-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px 20px;
+        flex-wrap: wrap;
+        border-top: 1px solid var(--owc-glass-chrome-border);
+        padding-top: 14px;
+      }
+      /* Nested inside the hero card, the stats need no card of their own. */
+      .hero-foot .stats-bar {
+        background: none; border: none; padding: 0; margin: 0;
+        border-radius: 0;
+      }
+      /* The install line is one long unwrappable string. As an inline-block it
+         sized to its content and pushed the whole document wider than the
+         viewport on phones; capping it lets the .code block's own overflow-x
+         scroll instead. min-width:0 is what allows a flex item to shrink below
+         its content width at all. */
+      .hero-foot .code-wrap { margin: 0; max-width: 100%; min-width: 0; }
+      .hero-foot .code { max-width: 100%; }
+      @media (max-width: 620px) {
+        .hero-foot { justify-content: flex-start; }
       }
       .hero .badge {
         display: inline-block;
@@ -334,11 +367,18 @@
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 14px;
       }
       .collapse-hint { font-size: 12px; color: var(--owc-glass-text-dim); }
+      /* Headers organise the list, so they read as structure rather than as
+         another link: a rule above separates the group, and muted-not-dim ink
+         with real weight lifts them clear of the items they head. */
       .nav-cat {
-        font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
-        color: var(--owc-glass-text-dim); padding: 10px 10px 3px; flex: none;
+        font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+        font-weight: 700;
+        color: var(--owc-glass-text-muted);
+        padding: 10px 10px 4px; flex: none;
+        margin-top: 8px;
+        border-top: var(--owc-glass-border-width) solid var(--owc-glass-chrome-border);
       }
-      .nav-cat:first-child { padding-top: 2px; }
+      .nav-cat:first-child { padding-top: 2px; margin-top: 0; border-top: none; }
       /* The dot separators divided a horizontal bar; in a column they are noise. */
       #nav span.sep { display: none; }
       #nav a.active { background: var(--owc-glass-hover); color: var(--owc-glass-text); }
@@ -475,6 +515,7 @@
       <nav id="nav">
       <span class="nav-cat">Basics</span>
       <a href="#section-button">o-button</a>
+      <a href="#section-button-confirm">o-button confirm</a>
       <a href="#section-toggle">o-toggle</a>
       <a href="#section-input">o-input</a>
       <a href="#section-tooltip">o-tooltip</a>
@@ -527,6 +568,7 @@
 
     <!-- Hero header -->
     <div class="hero">
+     <div class="hero-top">
       <div>
         <h1>Open Web Components <span class="badge">glassmorphism</span></h1>
         <p style="opacity:0.7;margin:6px 0 0;font-size:14px">Zero-dependency web component library. Drop in one script tag.</p>
@@ -545,20 +587,22 @@
           <o-toggle id="tgl-theme" options="None,Blue,Green,Rose,Slate" value="none"></o-toggle>
         </div>
       </div>
-    </div>
+     </div>
 
-    <div class="code-wrap" style="margin:12px 0 0;display:inline-block">
-      <div class="code" style="display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.13.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
-      <button class="copy-btn" data-copy='<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.13.0/OWC/dist/components.js"></script>'>Copy</button>
-    </div>
-
-    <!-- Stats bar -->
-    <div class="stats-bar" style="margin-top:16px">
-      <div class="stat"><span class="val" id="stat-components">14</span><span class="lbl">Components</span></div>
-      <div class="stat"><span class="val" id="stat-events">0</span><span class="lbl">Events fired</span></div>
-      <div class="stat"><span class="val" id="stat-selected">0</span><span class="lbl">Rows selected</span></div>
-      <div class="stat"><span class="val" id="stat-clicks">0</span><span class="lbl">Btn clicks</span></div>
-      <div class="stat"><span class="val" id="stat-searches">0</span><span class="lbl">Searches</span></div>
+     <!-- Install line and live stats belong to the hero, not to the page body -->
+     <div class="hero-foot">
+      <div class="code-wrap">
+        <div class="code" style="display:inline-block">&lt;script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.13.0/OWC/dist/components.js"&gt;&lt;/script&gt;</div>
+        <button class="copy-btn" data-copy='<script src="https://cdn.jsdelivr.net/gh/reneoun/Open-Web-Components@v1.13.0/OWC/dist/components.js"></script>'>Copy</button>
+      </div>
+      <div class="stats-bar">
+        <div class="stat"><span class="val" id="stat-components">–</span><span class="lbl">Components</span></div>
+        <div class="stat"><span class="val" id="stat-events">0</span><span class="lbl">Events fired</span></div>
+        <div class="stat"><span class="val" id="stat-selected">0</span><span class="lbl">Rows selected</span></div>
+        <div class="stat"><span class="val" id="stat-clicks">0</span><span class="lbl">Btn clicks</span></div>
+        <div class="stat"><span class="val" id="stat-searches">0</span><span class="lbl">Searches</span></div>
+      </div>
+     </div>
     </div>
 
     <!-- Keyboard shortcut overlay -->
@@ -619,6 +663,24 @@ btn.addEventListener('o-click', () => console.log('clicked'))">Copy</button>
   btn.textContent = 'Save to server'
   toast('Saved!', 'success')
 })</div>
+      <button class="copy-btn">Copy</button>
+    </div>
+
+    <h2 id="section-button-confirm" style="margin-top:1.5rem;font-size:0.85rem;opacity:0.5">o-button — confirm before firing</h2>
+    <p class="desc">Add <code>confirm</code> and the first click arms the button instead of firing: the label swaps to a prompt and a sweep drains across the bottom for the length of the window. A second click within it fires <code>o-click</code>; letting it lapse reverts. Arming another confirm button cancels the first.</p>
+    <div class="row">
+      <o-button id="btn-confirm-del" confirm="Really delete?">Delete account</o-button>
+      <o-button id="btn-confirm-slow" confirm confirm-timeout="6000">Wipe cache (6s)</o-button>
+      <o-button id="btn-confirm-plain">No confirm — fires at once</o-button>
+    </div>
+    <div id="confirm-output" class="toggle-output">Nothing fired yet.</div>
+    <div class="code-wrap"><div class="code">&lt;o-button confirm="Really delete?"&gt;Delete account&lt;/o-button&gt;
+&lt;o-button confirm confirm-timeout="6000"&gt;Wipe cache&lt;/o-button&gt;
+
+// o-click fires only on the confirming click
+btn.addEventListener('o-click', e =&gt; remove(e.detail.confirmed))
+btn.addEventListener('o-confirm-pending', () =&gt; {})
+btn.addEventListener('o-confirm-cancel', e =&gt; e.detail.reason)</div>
       <button class="copy-btn">Copy</button>
     </div>
     </o-collapse>
@@ -1785,6 +1847,26 @@ send.addEventListener('o-click', send)</div>
       const statClicks   = document.getElementById('stat-clicks')
       const statSearches = document.getElementById('stat-searches')
       let statClickCount = 0, statSearchCount = 0
+
+      // Counted from what the bundle actually registered rather than typed in by
+      // hand — a literal here went stale for several releases. Candidates come
+      // from every o-* tag used on the page plus the component names in the nav,
+      // so adding a component to the demo updates this on its own.
+      ;(function countComponents() {
+        const el = document.getElementById('stat-components')
+        if (!el) return
+        const names = new Set()
+        document.querySelectorAll('*').forEach(n => {
+          const t = n.tagName.toLowerCase()
+          if (t.startsWith('o-')) names.add(t)
+        })
+        document.querySelectorAll('#nav a').forEach(a => {
+          const t = a.textContent.trim().toLowerCase()
+          if (/^o-[a-z-]+$/.test(t)) names.add(t)
+        })
+        const defined = [...names].filter(t => customElements.get(t))
+        el.textContent = defined.length
+      })()
 
       function logEvent(name, detail) {
         totalEvents++
@@ -3126,6 +3208,33 @@ send.addEventListener('o-click', send)</div>
       chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') chatSend() })
       chatRenderSessions()
       chatRenderLog()
+
+      // ── o-button confirm demo ──────────────────────────────────
+      // Appended at the end of the script block rather than anchored on a
+      // matched string: a previous release's insert landed inside a click
+      // handler because the anchor matched as a substring.
+      ;(function confirmDemo() {
+        const out = document.getElementById('confirm-output')
+        if (!out) return
+        const stamp = msg => { out.textContent = `${new Date().toTimeString().slice(0,8)} — ${msg}` }
+        ;['btn-confirm-del','btn-confirm-slow','btn-confirm-plain'].forEach(id => {
+          const b = document.getElementById(id)
+          if (!b) return
+          const name = b.textContent.trim()
+          b.addEventListener('o-click', e => {
+            stamp(`o-click from "${name}" (confirmed: ${e.detail && e.detail.confirmed})`)
+            logEvent('o-click', { button: name, confirmed: !!(e.detail && e.detail.confirmed) })
+          })
+          b.addEventListener('o-confirm-pending', e => {
+            stamp(`armed: "${name}" — ${e.detail.timeout}ms to confirm`)
+            logEvent('o-confirm-pending', { button: name, timeout: e.detail.timeout })
+          })
+          b.addEventListener('o-confirm-cancel', e => {
+            stamp(`cancelled: "${name}" (${e.detail.reason})`)
+            logEvent('o-confirm-cancel', { button: name, reason: e.detail.reason })
+          })
+        })
+      })()
     </script>
 
   </body>
