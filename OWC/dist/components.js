@@ -3564,6 +3564,8 @@ ${pageResolveList(mode)}
     _id = `os-${++uid2}`;
     _rendered = false;
     _mq = null;
+    _autoCollapsed = false;
+    _userSet = false;
     get side() {
       return this.getAttribute("side") === "right" ? "right" : "left";
     }
@@ -3616,6 +3618,7 @@ ${pageResolveList(mode)}
       this.render();
       this._rendered = true;
       this.watchViewport();
+      this.applyResponsiveDefault();
       this.publishOffset();
     }
     disconnectedCallback() {
@@ -3646,6 +3649,8 @@ ${pageResolveList(mode)}
       const next = force === undefined ? !this.collapsed : force;
       if (next === this.collapsed)
         return;
+      this._userSet = true;
+      this._autoCollapsed = false;
       this.collapsed = next;
       this.dispatchEvent(new CustomEvent("o-sidebar-toggle", {
         bubbles: true,
@@ -3669,8 +3674,20 @@ ${pageResolveList(mode)}
     }
     onViewport = () => {
       this.syncOverlay();
+      this.applyResponsiveDefault();
       this.publishOffset();
     };
+    applyResponsiveDefault() {
+      if (this._userSet)
+        return;
+      if (this.overlaying && !this.collapsed) {
+        this.collapsed = true;
+        this._autoCollapsed = true;
+      } else if (!this.overlaying && this._autoCollapsed) {
+        this.collapsed = false;
+        this._autoCollapsed = false;
+      }
+    }
     syncOverlay() {
       this.classList.toggle("o-sidebar-overlay", this.overlaying);
     }

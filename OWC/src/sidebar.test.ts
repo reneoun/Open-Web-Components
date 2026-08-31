@@ -225,6 +225,57 @@ describe('o-sidebar', () => {
     expect(() => mount('<o-sidebar fixed></o-sidebar>')).not.toThrow();
   });
 
+  it('defaults to the rail on a narrow viewport', () => {
+    // Expanded, a fixed sidebar covers most of a phone screen.
+    (window as any).matchMedia = vi.fn().mockImplementation((q: string) => ({
+      matches: true, media: q, addEventListener: vi.fn(), removeEventListener: vi.fn(),
+    }));
+    const el = mount('<o-sidebar fixed></o-sidebar>');
+    expect(el.collapsed).toBe(true);
+  });
+
+  it('stays expanded on a wide viewport', () => {
+    const el = mount('<o-sidebar fixed></o-sidebar>');
+    expect(el.collapsed).toBe(false);
+  });
+
+  it('does not override an explicit user toggle when the viewport changes', () => {
+    let handler: null | (() => void) = null;
+    const fire = () => { (handler as (() => void) | null)?.(); };
+    let matches = false;
+    (window as any).matchMedia = vi.fn().mockImplementation((q: string) => ({
+      get matches() { return matches },
+      media: q,
+      addEventListener: (_: string, h: () => void) => { handler = h },
+      removeEventListener: vi.fn(),
+    }));
+    const el = mount('<o-sidebar fixed></o-sidebar>');
+    el.expand();          // no-op, already expanded
+    el.collapse();        // user collapses
+    el.expand();          // user deliberately expands again
+    matches = true;
+    fire();               // viewport goes narrow
+    // The user asked for it open; the responsive default must not fight them.
+    expect(el.collapsed).toBe(false);
+  });
+
+  it('restores the expanded default when the viewport widens again', () => {
+    let handler: null | (() => void) = null;
+    const fire = () => { (handler as (() => void) | null)?.(); };
+    let matches = true;
+    (window as any).matchMedia = vi.fn().mockImplementation((q: string) => ({
+      get matches() { return matches },
+      media: q,
+      addEventListener: (_: string, h: () => void) => { handler = h },
+      removeEventListener: vi.fn(),
+    }));
+    const el = mount('<o-sidebar fixed></o-sidebar>');
+    expect(el.collapsed).toBe(true);   // auto-collapsed while narrow
+    matches = false;
+    fire();
+    expect(el.collapsed).toBe(false);  // and auto-restored
+  });
+
   it('exposes named slots for search and footer', () => {
     const el = mount('<o-sidebar></o-sidebar>');
     expect(el.shadowRoot?.querySelector('slot[name="search"]')).toBeTruthy();

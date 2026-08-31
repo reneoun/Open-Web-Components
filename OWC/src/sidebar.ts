@@ -29,6 +29,10 @@ export class OSidebar extends GlassElement {
   private _id = `os-${++uid}`;
   private _rendered = false;
   private _mq: MediaQueryList | null = null;
+  /** True when WE collapsed it for a narrow viewport, so we may undo it. */
+  private _autoCollapsed = false;
+  /** Set once the user drives the toggle; we then stop overriding their choice. */
+  private _userSet = false;
 
   get side() { return this.getAttribute('side') === 'right' ? 'right' : 'left' }
   set side(v: string) { this.setAttribute('side', v) }
@@ -62,6 +66,7 @@ export class OSidebar extends GlassElement {
     this.render();
     this._rendered = true;
     this.watchViewport();
+    this.applyResponsiveDefault();
     this.publishOffset();
   }
 
@@ -87,6 +92,10 @@ export class OSidebar extends GlassElement {
   toggle(force?: boolean) {
     const next = force === undefined ? !this.collapsed : force;
     if (next === this.collapsed) return;
+    // An explicit toggle is the user's decision — stop applying the
+    // narrow-viewport default over the top of it.
+    this._userSet = true;
+    this._autoCollapsed = false;
     this.collapsed = next;
     this.dispatchEvent(new CustomEvent<OSidebarToggleDetail>('o-sidebar-toggle', {
       bubbles: true, composed: true,
@@ -107,7 +116,24 @@ export class OSidebar extends GlassElement {
 
   private onViewport = () => {
     this.syncOverlay();
+    this.applyResponsiveDefault();
     this.publishOffset();
+  }
+
+  /**
+   * An expanded sidebar overlaying a phone screen covers most of the content,
+   * so default to the rail while narrow. Only ever overrides the state we set
+   * ourselves — once the user works the toggle, their choice stands.
+   */
+  private applyResponsiveDefault() {
+    if (this._userSet) return;
+    if (this.overlaying && !this.collapsed) {
+      this.collapsed = true;
+      this._autoCollapsed = true;
+    } else if (!this.overlaying && this._autoCollapsed) {
+      this.collapsed = false;
+      this._autoCollapsed = false;
+    }
   }
 
   private syncOverlay() {
