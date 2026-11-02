@@ -54,7 +54,7 @@ git commit -m "style(owc-demo): change body text color to #fff"
 git push origin main
 
 curl -s -X POST "http://localhost:3000/api/trpc/application.deploy" \
-  -H "x-api-key: My_ClaudeskihlpSfynpNyIToHmePaqAIhVWbrEyuPauQdPviEMyhZHKETGlXhzyfWXQkztAYYUk" \
+  -H "x-api-key: <dokploy-api-key>" \
   -H "Content-Type: application/json" \
   -d '{"json":{"applicationId":"E8U4j5cHt_2gr8FvRdIDr"}}'
 ```
@@ -1058,7 +1058,7 @@ git commit -m "feat(owc-demo): add o-input, o-skeleton, o-progress demos; update
 git push origin main
 
 curl -s -X POST "http://localhost:3000/api/trpc/application.deploy" \
-  -H "x-api-key: My_ClaudeskihlpSfynpNyIToHmePaqAIhVWbrEyuPauQdPviEMyhZHKETGlXhzyfWXQkztAYYUk" \
+  -H "x-api-key: <dokploy-api-key>" \
   -H "Content-Type: application/json" \
   -d '{"json":{"applicationId":"E8U4j5cHt_2gr8FvRdIDr"}}'
 ```
